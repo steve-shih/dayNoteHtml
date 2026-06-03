@@ -1,0 +1,430 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TOEIC 多益 500+ 片語發音版</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--ink:#1f2937;--muted:#64748b;--brand:#2563eb;--brand2:#7c3aed;--ok:#059669;--warn:#d97706;--line:#e5e7eb;--danger:#dc2626}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.75}
+header{background:linear-gradient(135deg,var(--brand),var(--brand2));color:white;padding:34px 22px}
+header h1{margin:0;font-size:30px}
+header p{margin:8px 0 0;opacity:.95}
+nav{position:sticky;top:0;z-index:10;background:white;border-bottom:1px solid var(--line);padding:10px 16px;display:flex;gap:8px;flex-wrap:wrap}
+nav a,button{border:1px solid var(--line);background:white;color:var(--ink);border-radius:999px;padding:8px 12px;text-decoration:none;cursor:pointer}
+nav a:hover,button:hover{border-color:var(--brand);color:var(--brand)}
+main{max-width:1220px;margin:24px auto;padding:0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin:16px 0;box-shadow:0 8px 24px rgba(15,23,42,.05)}
+h2{margin:0 0 12px;font-size:24px}
+.badge{display:inline-block;padding:2px 10px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:13px;margin:2px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.tip{border-left:5px solid var(--brand);background:#f8fafc;padding:12px;border-radius:12px}
+.mnemonic{border-left:5px solid var(--ok);background:#ecfdf5;padding:12px;border-radius:12px}
+.warn{border-left:5px solid var(--warn);background:#fffbeb;padding:12px;border-radius:12px}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 16px;align-items:center}
+input,select{padding:10px 12px;border:1px solid var(--line);border-radius:12px;min-width:190px;font-size:15px;background:white}
+input[type="range"]{min-width:120px}
+table{width:100%;border-collapse:collapse;background:white;border-radius:14px;overflow:hidden}
+th,td{border-bottom:1px solid var(--line);padding:10px;text-align:left;vertical-align:top}
+th{background:#f1f5f9;position:sticky;top:49px;z-index:5}
+tr:hover{background:#f8fafc}
+.small{color:var(--muted);font-size:14px}
+details{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fff;margin:10px 0}
+summary{cursor:pointer;font-weight:700}
+.quiz{background:#f8fafc;border-radius:14px;padding:14px;margin:10px 0}
+.answer{display:none;margin-top:8px;color:#065f46;font-weight:700}
+.footer{color:var(--muted);text-align:center;padding:30px}
+.speak-btn{padding:5px 9px;border-radius:10px;font-size:13px;margin:2px;background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}
+.speak-btn:hover{background:#dbeafe}
+.stop-btn{background:#fef2f2;border-color:#fecaca;color:var(--danger)}
+.playing-row{background:#ecfeff !important;outline:2px solid #67e8f9}
+.voice-panel{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;align-items:end}
+.control-box{background:#f8fafc;border:1px solid var(--line);border-radius:14px;padding:12px}
+.control-box label{display:block;font-weight:700;margin-bottom:4px}
+.status{font-weight:700;color:#0f766e}
+.phrase-text{font-weight:800;color:#111827;cursor:pointer}
+.example-text{color:#334155}
+@media print{nav,.controls,button,.voice-panel{display:none}body{background:white}.card{box-shadow:none;break-inside:avoid}th{position:static}}
+</style>
+</head>
+<body>
+<header>
+  <h1>TOEIC 多益 500+ 片語發音版</h1>
+  <p>片語、例句皆可播放；支援英美口音、語速調整、自動播放。總片語：<b id="totalCount"></b> 個。</p>
+</header>
+
+<nav>
+  <a href="#player">發音設定</a>
+  <a href="#phrases">500+ 片語表</a>
+  <a href="#cloze">克漏字技巧</a>
+  <a href="#grammar">常考文法</a>
+  <a href="#mnemonics">口訣</a>
+  <a href="#quiz">小測驗</a>
+  <button onclick="window.print()">列印 / 另存 PDF</button>
+</nav>
+
+<main>
+<section id="player" class="card">
+  <h2>一、發音設定</h2>
+  <div class="voice-panel">
+    <div class="control-box">
+      <label for="voiceSelect">選擇聲音 / 口音</label>
+      <select id="voiceSelect"></select>
+      <div class="small">若沒有聲音，請先點任一播放鈕，瀏覽器才會載入語音。</div>
+    </div>
+    <div class="control-box">
+      <label for="langSelect">語言偏好</label>
+      <select id="langSelect" onchange="loadVoices()">
+        <option value="en-US">美式英文 en-US</option>
+        <option value="en-GB">英式英文 en-GB</option>
+        <option value="en-AU">澳洲英文 en-AU</option>
+        <option value="en-CA">加拿大英文 en-CA</option>
+      </select>
+    </div>
+    <div class="control-box">
+      <label for="rateRange">語速：<span id="rateValue">0.85</span></label>
+      <input id="rateRange" type="range" min="0.5" max="1.3" step="0.05" value="0.85" oninput="updateRateLabel()">
+      <div class="small">TOEIC 初期建議 0.8～0.9。</div>
+    </div>
+    <div class="control-box">
+      <label for="autoMode">自動播放模式</label>
+      <select id="autoMode">
+        <option value="phrase">只念片語</option>
+        <option value="example">只念例句</option>
+        <option value="both">片語 + 例句</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button onclick="startAutoPlay()">▶ 自動播放目前清單</button>
+    <button class="stop-btn" onclick="stopSpeaking()">⏹ 停止</button>
+    <button onclick="speakText('attend a meeting')">測試：attend a meeting</button>
+    <span class="status" id="playStatus">狀態：尚未播放</span>
+  </div>
+
+  <div class="warn">
+    <b>學習建議：</b>先用「片語 + 例句」自動播放，聽 1 輪後再看中文。聽力卡住時，把語速降到 0.75，熟了再拉回 1.0。
+  </div>
+</section>
+
+<section id="phrases" class="card">
+  <h2>二、TOEIC 常考片語 500+</h2>
+  <p class="small">可搜尋英文、中文、例句，也可依主題分類。每列可播放片語或完整例句。</p>
+  <div class="controls">
+    <input id="searchBox" placeholder="搜尋：meeting / 預約 / with / submit..." oninput="renderTable()" />
+    <select id="categoryFilter" onchange="renderTable()">
+      <option value="">全部分類</option>
+    </select>
+    <button onclick="resetFilters()">清除篩選</button>
+    <button onclick="speakVisibleFirst()">🔊 念目前第一筆</button>
+  </div>
+  <div class="small">目前顯示：<b id="visibleCount"></b> 個</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:60px">#</th>
+        <th style="width:170px">分類</th>
+        <th style="width:250px">片語</th>
+        <th style="width:200px">中文</th>
+        <th>例句</th>
+        <th style="width:170px">播放</th>
+      </tr>
+    </thead>
+    <tbody id="phraseTable"></tbody>
+  </table>
+</section>
+
+<section id="cloze" class="card">
+  <h2>三、Part 6 克漏字技巧</h2>
+  <div class="warn"><b>核心流程：</b>先看空格前後判斷詞性 → 再看文法形態 → 最後看上下文語意。不要一開始就翻整篇，會浪費時間。</div>
+  <div id="clozeTips" class="grid"></div>
+</section>
+
+<section id="grammar" class="card">
+  <h2>四、TOEIC 常考文法總整理</h2>
+  <p class="small">這些是 Part 5、Part 6 最常出現的文法骨架。</p>
+  <div id="grammarList"></div>
+</section>
+
+<section id="mnemonics" class="card">
+  <h2>五、文法口訣</h2>
+  <div id="mnemonicList" class="grid"></div>
+</section>
+
+<section id="quiz" class="card">
+  <h2>六、考前小測驗</h2>
+  <div class="quiz">
+    <b>1. The report must be _____ by Friday.</b><br>
+    (A) submit　(B) submitted　(C) submitting　(D) submission<br>
+    <button onclick="toggleAnswer('a1')">看答案</button>
+    <button class="speak-btn" onclick="speakText('The report must be submitted by Friday.')">🔊 念正確句</button>
+    <div id="a1" class="answer">答案：B。被動語態 must be + p.p.。</div>
+  </div>
+  <div class="quiz">
+    <b>2. We look forward to _____ you at the seminar.</b><br>
+    (A) meet　(B) meeting　(C) met　(D) meets<br>
+    <button onclick="toggleAnswer('a2')">看答案</button>
+    <button class="speak-btn" onclick="speakText('We look forward to meeting you at the seminar.')">🔊 念正確句</button>
+    <div id="a2" class="answer">答案：B。look forward to 的 to 是介系詞，後面接 V-ing。</div>
+  </div>
+  <div class="quiz">
+    <b>3. The manager is responsible _____ training new employees.</b><br>
+    (A) of　(B) to　(C) for　(D) with<br>
+    <button onclick="toggleAnswer('a3')">看答案</button>
+    <button class="speak-btn" onclick="speakText('The manager is responsible for training new employees.')">🔊 念正確句</button>
+    <div id="a3" class="answer">答案：C。固定搭配 be responsible for。</div>
+  </div>
+</section>
+</main>
+
+<div class="footer">TOEIC 發音版：建議每天 20 分鐘，先聽片語，再聽例句，最後做克漏字。</div>
+
+<script>
+const phrases = [{"category": "商務會議與溝通", "phrase": "attend a meeting", "zh": "參加會議", "example": "Please attend the meeting at 9 a.m."}, {"category": "商務會議與溝通", "phrase": "hold a meeting", "zh": "舉行會議", "example": "The team will hold a meeting tomorrow."}, {"category": "商務會議與溝通", "phrase": "schedule a meeting", "zh": "安排會議", "example": "She scheduled a meeting with the client."}, {"category": "商務會議與溝通", "phrase": "postpone a meeting", "zh": "延期會議", "example": "We had to postpone the meeting."}, {"category": "商務會議與溝通", "phrase": "cancel a meeting", "zh": "取消會議", "example": "The manager canceled the meeting."}, {"category": "商務會議與溝通", "phrase": "take minutes", "zh": "做會議紀錄", "example": "He was asked to take minutes."}, {"category": "商務會議與溝通", "phrase": "make a presentation", "zh": "做簡報", "example": "I will make a presentation on sales."}, {"category": "商務會議與溝通", "phrase": "give a presentation", "zh": "進行簡報", "example": "She gave a presentation to the board."}, {"category": "商務會議與溝通", "phrase": "prepare an agenda", "zh": "準備議程", "example": "Please prepare an agenda in advance."}, {"category": "商務會議與溝通", "phrase": "stick to the agenda", "zh": "照議程進行", "example": "Let’s stick to the agenda."}, {"category": "商務會議與溝通", "phrase": "bring up an issue", "zh": "提出問題", "example": "He brought up an issue about costs."}, {"category": "商務會議與溝通", "phrase": "address a concern", "zh": "處理疑慮", "example": "The speaker addressed customer concerns."}, {"category": "商務會議與溝通", "phrase": "reach an agreement", "zh": "達成協議", "example": "Both sides reached an agreement."}, {"category": "商務會議與溝通", "phrase": "come to a conclusion", "zh": "得出結論", "example": "We came to a conclusion after discussion."}, {"category": "商務會議與溝通", "phrase": "make a decision", "zh": "做決定", "example": "The committee made a decision."}, {"category": "商務會議與溝通", "phrase": "take action", "zh": "採取行動", "example": "The company will take action immediately."}, {"category": "商務會議與溝通", "phrase": "follow up on", "zh": "追蹤後續", "example": "I will follow up on the request."}, {"category": "商務會議與溝通", "phrase": "get back to someone", "zh": "回覆某人", "example": "I’ll get back to you soon."}, {"category": "商務會議與溝通", "phrase": "keep someone informed", "zh": "讓某人持續得知消息", "example": "Please keep me informed."}, {"category": "商務會議與溝通", "phrase": "point out", "zh": "指出", "example": "She pointed out several errors."}, {"category": "商務會議與溝通", "phrase": "go over", "zh": "檢視；複習", "example": "Let’s go over the report."}, {"category": "商務會議與溝通", "phrase": "look into", "zh": "調查", "example": "We will look into the problem."}, {"category": "商務會議與溝通", "phrase": "work out a plan", "zh": "擬定計畫", "example": "They worked out a new plan."}, {"category": "商務會議與溝通", "phrase": "draw up a proposal", "zh": "草擬提案", "example": "The consultant drew up a proposal."}, {"category": "商務會議與溝通", "phrase": "submit a report", "zh": "提交報告", "example": "Submit the report by Friday."}, {"category": "商務會議與溝通", "phrase": "review a document", "zh": "審閱文件", "example": "The lawyer reviewed the document."}, {"category": "商務會議與溝通", "phrase": "approve a request", "zh": "核准請求", "example": "The supervisor approved the request."}, {"category": "商務會議與溝通", "phrase": "reject a proposal", "zh": "拒絕提案", "example": "The board rejected the proposal."}, {"category": "商務會議與溝通", "phrase": "raise a question", "zh": "提出問題", "example": "A participant raised a question."}, {"category": "商務會議與溝通", "phrase": "exchange ideas", "zh": "交換想法", "example": "The workshop helped us exchange ideas."}, {"category": "商務會議與溝通", "phrase": "in charge of", "zh": "負責", "example": "She is in charge of marketing."}, {"category": "商務會議與溝通", "phrase": "be responsible for", "zh": "負責", "example": "He is responsible for training."}, {"category": "商務會議與溝通", "phrase": "on behalf of", "zh": "代表", "example": "I’m writing on behalf of the director."}, {"category": "商務會議與溝通", "phrase": "in response to", "zh": "回應", "example": "I’m calling in response to your email."}, {"category": "商務會議與溝通", "phrase": "with regard to", "zh": "關於", "example": "With regard to your inquiry, we agree."}, {"category": "商務會議與溝通", "phrase": "in terms of", "zh": "就……而言", "example": "In terms of quality, this is better."}, {"category": "商務會議與溝通", "phrase": "as a result", "zh": "因此", "example": "Sales increased as a result."}, {"category": "商務會議與溝通", "phrase": "in addition", "zh": "此外", "example": "In addition, we need more staff."}, {"category": "商務會議與溝通", "phrase": "for instance", "zh": "例如", "example": "For instance, we can reduce costs."}, {"category": "商務會議與溝通", "phrase": "in particular", "zh": "尤其", "example": "This applies to managers in particular."}, {"category": "商務會議與溝通", "phrase": "as soon as possible", "zh": "盡快", "example": "Please reply as soon as possible."}, {"category": "商務會議與溝通", "phrase": "at your earliest convenience", "zh": "方便時盡早", "example": "Please call me at your earliest convenience."}, {"category": "商務會議與溝通", "phrase": "by the end of", "zh": "在……結束前", "example": "Finish it by the end of the week."}, {"category": "商務會議與溝通", "phrase": "ahead of schedule", "zh": "提前", "example": "The project finished ahead of schedule."}, {"category": "商務會議與溝通", "phrase": "behind schedule", "zh": "進度落後", "example": "The project is behind schedule."}, {"category": "商務會議與溝通", "phrase": "on schedule", "zh": "準時；按進度", "example": "The shipment arrived on schedule."}, {"category": "商務會議與溝通", "phrase": "set a deadline", "zh": "設定期限", "example": "We need to set a deadline."}, {"category": "商務會議與溝通", "phrase": "meet a deadline", "zh": "趕上期限", "example": "She always meets deadlines."}, {"category": "商務會議與溝通", "phrase": "miss a deadline", "zh": "錯過期限", "example": "They missed the deadline."}, {"category": "商務會議與溝通", "phrase": "take place", "zh": "發生；舉行", "example": "The seminar will take place in June."}, {"category": "辦公室與行政", "phrase": "fill out a form", "zh": "填寫表格", "example": "Please fill out this form."}, {"category": "辦公室與行政", "phrase": "hand in a form", "zh": "繳交表格", "example": "Hand in the form by noon."}, {"category": "辦公室與行政", "phrase": "sign a contract", "zh": "簽合約", "example": "They signed a contract yesterday."}, {"category": "辦公室與行政", "phrase": "renew a contract", "zh": "續約", "example": "The company renewed the contract."}, {"category": "辦公室與行政", "phrase": "terminate a contract", "zh": "終止合約", "example": "They terminated the contract early."}, {"category": "辦公室與行政", "phrase": "make a copy", "zh": "影印", "example": "Could you make a copy of this file?"}, {"category": "辦公室與行政", "phrase": "print out", "zh": "列印出來", "example": "Please print out the invoice."}, {"category": "辦公室與行政", "phrase": "set up equipment", "zh": "架設設備", "example": "The staff set up the equipment."}, {"category": "辦公室與行政", "phrase": "turn on the projector", "zh": "打開投影機", "example": "Turn on the projector before the meeting."}, {"category": "辦公室與行政", "phrase": "turn off the lights", "zh": "關燈", "example": "Please turn off the lights."}, {"category": "辦公室與行政", "phrase": "run out of paper", "zh": "紙用完", "example": "The printer ran out of paper."}, {"category": "辦公室與行政", "phrase": "be out of order", "zh": "故障", "example": "The elevator is out of order."}, {"category": "辦公室與行政", "phrase": "under repair", "zh": "維修中", "example": "The copier is under repair."}, {"category": "辦公室與行政", "phrase": "in use", "zh": "使用中", "example": "The conference room is in use."}, {"category": "辦公室與行政", "phrase": "available for use", "zh": "可使用", "example": "The room is available for use."}, {"category": "辦公室與行政", "phrase": "make arrangements", "zh": "做安排", "example": "We made arrangements for visitors."}, {"category": "辦公室與行政", "phrase": "arrange transportation", "zh": "安排交通", "example": "The assistant arranged transportation."}, {"category": "辦公室與行政", "phrase": "book a room", "zh": "訂房；預約會議室", "example": "I booked a room for the seminar."}, {"category": "辦公室與行政", "phrase": "reserve a seat", "zh": "預訂座位", "example": "Please reserve a seat for me."}, {"category": "辦公室與行政", "phrase": "confirm a reservation", "zh": "確認預約", "example": "Call to confirm the reservation."}, {"category": "辦公室與行政", "phrase": "cancel a reservation", "zh": "取消預約", "example": "She canceled the reservation."}, {"category": "辦公室與行政", "phrase": "office supplies", "zh": "辦公用品", "example": "We need to order office supplies."}, {"category": "辦公室與行政", "phrase": "place an order", "zh": "下訂單", "example": "I placed an order for paper."}, {"category": "辦公室與行政", "phrase": "process paperwork", "zh": "處理文件", "example": "The clerk processed the paperwork."}, {"category": "辦公室與行政", "phrase": "keep records", "zh": "保存紀錄", "example": "The department keeps records carefully."}, {"category": "辦公室與行政", "phrase": "update a file", "zh": "更新檔案", "example": "Update the file after the meeting."}, {"category": "辦公室與行政", "phrase": "store documents", "zh": "儲存文件", "example": "Store documents in the cabinet."}, {"category": "辦公室與行政", "phrase": "send an attachment", "zh": "寄附件", "example": "I sent an attachment with the email."}, {"category": "辦公室與行政", "phrase": "forward an email", "zh": "轉寄電子郵件", "example": "Please forward the email to John."}, {"category": "辦公室與行政", "phrase": "reply to an email", "zh": "回覆電子郵件", "example": "She replied to the email quickly."}, {"category": "辦公室與行政", "phrase": "check voicemail", "zh": "查看語音留言", "example": "Check your voicemail after lunch."}, {"category": "辦公室與行政", "phrase": "leave a message", "zh": "留言", "example": "Please leave a message."}, {"category": "辦公室與行政", "phrase": "return a call", "zh": "回電", "example": "I will return your call."}, {"category": "辦公室與行政", "phrase": "make an appointment", "zh": "預約", "example": "I made an appointment with the doctor."}, {"category": "辦公室與行政", "phrase": "reschedule an appointment", "zh": "重新安排預約", "example": "Can we reschedule the appointment?"}, {"category": "辦公室與行政", "phrase": "keep an appointment", "zh": "赴約", "example": "He kept the appointment."}, {"category": "辦公室與行政", "phrase": "miss an appointment", "zh": "錯過預約", "example": "She missed her appointment."}, {"category": "辦公室與行政", "phrase": "take a day off", "zh": "請一天假", "example": "He took a day off yesterday."}, {"category": "辦公室與行政", "phrase": "apply for leave", "zh": "申請休假", "example": "Employees can apply for leave online."}, {"category": "辦公室與行政", "phrase": "sick leave", "zh": "病假", "example": "She is on sick leave."}, {"category": "辦公室與行政", "phrase": "annual leave", "zh": "年假", "example": "I used my annual leave."}, {"category": "辦公室與行政", "phrase": "work overtime", "zh": "加班", "example": "They worked overtime last week."}, {"category": "辦公室與行政", "phrase": "clock in", "zh": "打卡上班", "example": "Employees clock in at 8."}, {"category": "辦公室與行政", "phrase": "clock out", "zh": "打卡下班", "example": "Workers clock out at 5."}, {"category": "辦公室與行政", "phrase": "be on duty", "zh": "值班", "example": "A nurse is on duty tonight."}, {"category": "辦公室與行政", "phrase": "be off duty", "zh": "下班；不值班", "example": "He is off duty now."}, {"category": "辦公室與行政", "phrase": "take over", "zh": "接手", "example": "She took over the task."}, {"category": "辦公室與行政", "phrase": "cover for someone", "zh": "代班", "example": "Can you cover for me tomorrow?"}, {"category": "辦公室與行政", "phrase": "report to someone", "zh": "向某人報告", "example": "He reports to the director."}, {"category": "辦公室與行政", "phrase": "be assigned to", "zh": "被指派到", "example": "She was assigned to the project."}, {"category": "人資與職場", "phrase": "apply for a position", "zh": "申請職位", "example": "She applied for a position in sales."}, {"category": "人資與職場", "phrase": "look for a job", "zh": "找工作", "example": "He is looking for a job."}, {"category": "人資與職場", "phrase": "be qualified for", "zh": "有資格做", "example": "She is qualified for the role."}, {"category": "人資與職場", "phrase": "meet the requirements", "zh": "符合條件", "example": "You meet the requirements."}, {"category": "人資與職場", "phrase": "submit a resume", "zh": "提交履歷", "example": "Submit your resume online."}, {"category": "人資與職場", "phrase": "write a cover letter", "zh": "寫求職信", "example": "He wrote a cover letter."}, {"category": "人資與職場", "phrase": "attend an interview", "zh": "參加面試", "example": "She attended an interview."}, {"category": "人資與職場", "phrase": "conduct an interview", "zh": "進行面試", "example": "The manager conducted interviews."}, {"category": "人資與職場", "phrase": "hire an employee", "zh": "雇用員工", "example": "They hired three employees."}, {"category": "人資與職場", "phrase": "recruit new staff", "zh": "招募新員工", "example": "The company is recruiting new staff."}, {"category": "人資與職場", "phrase": "train employees", "zh": "訓練員工", "example": "We train employees every month."}, {"category": "人資與職場", "phrase": "orientation session", "zh": "新人訓練說明會", "example": "The orientation session starts Monday."}, {"category": "人資與職場", "phrase": "probationary period", "zh": "試用期", "example": "The probationary period is three months."}, {"category": "人資與職場", "phrase": "full-time position", "zh": "全職職位", "example": "This is a full-time position."}, {"category": "人資與職場", "phrase": "part-time position", "zh": "兼職職位", "example": "She wants a part-time position."}, {"category": "人資與職場", "phrase": "temporary position", "zh": "臨時職位", "example": "He accepted a temporary position."}, {"category": "人資與職場", "phrase": "permanent position", "zh": "正式職位", "example": "She got a permanent position."}, {"category": "人資與職場", "phrase": "job opening", "zh": "職缺", "example": "There is a job opening."}, {"category": "人資與職場", "phrase": "career opportunity", "zh": "職涯機會", "example": "This is a great career opportunity."}, {"category": "人資與職場", "phrase": "work experience", "zh": "工作經驗", "example": "He has five years of work experience."}, {"category": "人資與職場", "phrase": "previous employer", "zh": "前雇主", "example": "Contact your previous employer."}, {"category": "人資與職場", "phrase": "salary increase", "zh": "加薪", "example": "Employees expect a salary increase."}, {"category": "人資與職場", "phrase": "pay raise", "zh": "加薪", "example": "He asked for a pay raise."}, {"category": "人資與職場", "phrase": "benefit package", "zh": "福利方案", "example": "The benefit package is attractive."}, {"category": "人資與職場", "phrase": "health insurance", "zh": "健康保險", "example": "The job includes health insurance."}, {"category": "人資與職場", "phrase": "paid vacation", "zh": "帶薪休假", "example": "Employees receive paid vacation."}, {"category": "人資與職場", "phrase": "performance review", "zh": "績效考核", "example": "The performance review is next week."}, {"category": "人資與職場", "phrase": "receive feedback", "zh": "收到回饋", "example": "She received positive feedback."}, {"category": "人資與職場", "phrase": "set goals", "zh": "設定目標", "example": "Managers set goals with employees."}, {"category": "人資與職場", "phrase": "achieve a goal", "zh": "達成目標", "example": "The team achieved its goal."}, {"category": "人資與職場", "phrase": "promote an employee", "zh": "升遷員工", "example": "The company promoted him."}, {"category": "人資與職場", "phrase": "be promoted to", "zh": "被升為", "example": "She was promoted to manager."}, {"category": "人資與職場", "phrase": "resign from a job", "zh": "辭職", "example": "He resigned from his job."}, {"category": "人資與職場", "phrase": "retire from", "zh": "退休", "example": "She retired from the company."}, {"category": "人資與職場", "phrase": "lay off workers", "zh": "裁員", "example": "The factory laid off workers."}, {"category": "人資與職場", "phrase": "staff shortage", "zh": "人手不足", "example": "There is a staff shortage."}, {"category": "人資與職場", "phrase": "workforce development", "zh": "人力發展", "example": "Workforce development is important."}, {"category": "人資與職場", "phrase": "employee satisfaction", "zh": "員工滿意度", "example": "Employee satisfaction improved."}, {"category": "人資與職場", "phrase": "team building", "zh": "團隊建立", "example": "We held a team-building event."}, {"category": "人資與職場", "phrase": "collaborate with", "zh": "與……合作", "example": "She collaborated with designers."}, {"category": "人資與職場", "phrase": "work closely with", "zh": "密切合作", "example": "We work closely with clients."}, {"category": "人資與職場", "phrase": "supervise a team", "zh": "管理團隊", "example": "He supervises a team of ten."}, {"category": "人資與職場", "phrase": "manage a department", "zh": "管理部門", "example": "She manages the finance department."}, {"category": "人資與職場", "phrase": "delegate tasks", "zh": "分派任務", "example": "Managers should delegate tasks."}, {"category": "人資與職場", "phrase": "take responsibility for", "zh": "承擔責任", "example": "He took responsibility for the error."}, {"category": "人資與職場", "phrase": "be familiar with", "zh": "熟悉", "example": "She is familiar with Excel."}, {"category": "人資與職場", "phrase": "be capable of", "zh": "有能力", "example": "He is capable of leading the team."}, {"category": "人資與職場", "phrase": "be willing to", "zh": "願意", "example": "Candidates must be willing to travel."}, {"category": "人資與職場", "phrase": "be expected to", "zh": "被期望", "example": "Employees are expected to arrive on time."}, {"category": "人資與職場", "phrase": "be required to", "zh": "被要求", "example": "Visitors are required to sign in."}, {"category": "銷售與行銷", "phrase": "increase sales", "zh": "增加銷售", "example": "The campaign increased sales."}, {"category": "銷售與行銷", "phrase": "boost revenue", "zh": "提升營收", "example": "The new product boosted revenue."}, {"category": "銷售與行銷", "phrase": "launch a product", "zh": "推出產品", "example": "They launched a new product."}, {"category": "銷售與行銷", "phrase": "promote a product", "zh": "推廣產品", "example": "The company promoted the product online."}, {"category": "銷售與行銷", "phrase": "advertising campaign", "zh": "廣告活動", "example": "The advertising campaign was successful."}, {"category": "銷售與行銷", "phrase": "target customers", "zh": "目標客戶", "example": "We need to target customers carefully."}, {"category": "銷售與行銷", "phrase": "potential customers", "zh": "潛在客戶", "example": "Potential customers visited the booth."}, {"category": "銷售與行銷", "phrase": "existing customers", "zh": "既有客戶", "example": "Existing customers get a discount."}, {"category": "銷售與行銷", "phrase": "customer loyalty", "zh": "顧客忠誠度", "example": "Customer loyalty is increasing."}, {"category": "銷售與行銷", "phrase": "market research", "zh": "市場調查", "example": "They conducted market research."}, {"category": "銷售與行銷", "phrase": "conduct a survey", "zh": "進行問卷調查", "example": "We conducted a survey."}, {"category": "銷售與行銷", "phrase": "collect feedback", "zh": "蒐集回饋", "example": "The team collected feedback."}, {"category": "銷售與行銷", "phrase": "analyze data", "zh": "分析資料", "example": "Analysts analyzed sales data."}, {"category": "銷售與行銷", "phrase": "sales figures", "zh": "銷售數字", "example": "Sales figures rose sharply."}, {"category": "銷售與行銷", "phrase": "market share", "zh": "市場佔有率", "example": "The company gained market share."}, {"category": "銷售與行銷", "phrase": "brand awareness", "zh": "品牌知名度", "example": "Ads improved brand awareness."}, {"category": "銷售與行銷", "phrase": "competitive price", "zh": "有競爭力的價格", "example": "They offer competitive prices."}, {"category": "銷售與行銷", "phrase": "special offer", "zh": "特價優惠", "example": "The store has a special offer."}, {"category": "銷售與行銷", "phrase": "limited-time offer", "zh": "限時優惠", "example": "This is a limited-time offer."}, {"category": "銷售與行銷", "phrase": "free trial", "zh": "免費試用", "example": "Customers can get a free trial."}, {"category": "銷售與行銷", "phrase": "money-back guarantee", "zh": "退款保證", "example": "The product has a money-back guarantee."}, {"category": "銷售與行銷", "phrase": "product demonstration", "zh": "產品展示", "example": "A product demonstration is scheduled."}, {"category": "銷售與行銷", "phrase": "trade show", "zh": "商展", "example": "We attended a trade show."}, {"category": "銷售與行銷", "phrase": "sales representative", "zh": "業務代表", "example": "A sales representative called me."}, {"category": "銷售與行銷", "phrase": "customer service", "zh": "客服", "example": "Customer service is available 24 hours."}, {"category": "銷售與行銷", "phrase": "handle complaints", "zh": "處理客訴", "example": "Staff handle complaints politely."}, {"category": "銷售與行銷", "phrase": "meet customer needs", "zh": "滿足客戶需求", "example": "The product meets customer needs."}, {"category": "銷售與行銷", "phrase": "improve quality", "zh": "改善品質", "example": "The factory improved quality."}, {"category": "銷售與行銷", "phrase": "reduce costs", "zh": "降低成本", "example": "We need to reduce costs."}, {"category": "銷售與行銷", "phrase": "offer a discount", "zh": "提供折扣", "example": "They offered a discount."}, {"category": "銷售與行銷", "phrase": "give a refund", "zh": "退款", "example": "The store gave me a refund."}, {"category": "銷售與行銷", "phrase": "make a purchase", "zh": "購買", "example": "Customers can make a purchase online."}, {"category": "銷售與行銷", "phrase": "place an order", "zh": "下訂單", "example": "We placed an order yesterday."}, {"category": "銷售與行銷", "phrase": "receive an order", "zh": "收到訂單", "example": "The warehouse received an order."}, {"category": "銷售與行銷", "phrase": "fill an order", "zh": "出貨；履行訂單", "example": "The company filled the order."}, {"category": "銷售與行銷", "phrase": "track an order", "zh": "追蹤訂單", "example": "You can track your order online."}, {"category": "銷售與行銷", "phrase": "process a payment", "zh": "處理付款", "example": "The system processes payments."}, {"category": "銷售與行銷", "phrase": "accept payment", "zh": "接受付款", "example": "We accept payment by card."}, {"category": "銷售與行銷", "phrase": "payment method", "zh": "付款方式", "example": "Choose a payment method."}, {"category": "銷售與行銷", "phrase": "invoice number", "zh": "發票號碼", "example": "Enter the invoice number."}, {"category": "銷售與行銷", "phrase": "issue an invoice", "zh": "開發票", "example": "The seller issued an invoice."}, {"category": "銷售與行銷", "phrase": "sales promotion", "zh": "促銷", "example": "The sales promotion ends soon."}, {"category": "銷售與行銷", "phrase": "product line", "zh": "產品線", "example": "The company expanded its product line."}, {"category": "銷售與行銷", "phrase": "customer base", "zh": "客戶群", "example": "We have a large customer base."}, {"category": "銷售與行銷", "phrase": "price range", "zh": "價格範圍", "example": "The price range is reasonable."}, {"category": "銷售與行銷", "phrase": "high demand", "zh": "高需求", "example": "There is high demand for tablets."}, {"category": "銷售與行銷", "phrase": "low demand", "zh": "低需求", "example": "Demand is low this season."}, {"category": "銷售與行銷", "phrase": "sell out", "zh": "售完", "example": "Tickets sold out quickly."}, {"category": "銷售與行銷", "phrase": "be in stock", "zh": "有庫存", "example": "The item is in stock."}, {"category": "銷售與行銷", "phrase": "be out of stock", "zh": "缺貨", "example": "The item is out of stock."}, {"category": "財務與會計", "phrase": "annual budget", "zh": "年度預算", "example": "The annual budget was approved."}, {"category": "財務與會計", "phrase": "budget proposal", "zh": "預算提案", "example": "The budget proposal was revised."}, {"category": "財務與會計", "phrase": "stay within budget", "zh": "控制在預算內", "example": "We must stay within budget."}, {"category": "財務與會計", "phrase": "go over budget", "zh": "超出預算", "example": "The project went over budget."}, {"category": "財務與會計", "phrase": "cut expenses", "zh": "削減開支", "example": "The company cut expenses."}, {"category": "財務與會計", "phrase": "operating costs", "zh": "營運成本", "example": "Operating costs increased."}, {"category": "財務與會計", "phrase": "profit margin", "zh": "利潤率", "example": "The profit margin improved."}, {"category": "財務與會計", "phrase": "net profit", "zh": "淨利", "example": "Net profit rose last year."}, {"category": "財務與會計", "phrase": "gross income", "zh": "總收入", "example": "Gross income increased."}, {"category": "財務與會計", "phrase": "financial statement", "zh": "財務報表", "example": "The accountant reviewed the financial statement."}, {"category": "財務與會計", "phrase": "balance sheet", "zh": "資產負債表", "example": "The balance sheet is ready."}, {"category": "財務與會計", "phrase": "cash flow", "zh": "現金流", "example": "Cash flow is stable."}, {"category": "財務與會計", "phrase": "tax return", "zh": "報稅表", "example": "File your tax return by April."}, {"category": "財務與會計", "phrase": "file taxes", "zh": "報稅", "example": "Businesses must file taxes."}, {"category": "財務與會計", "phrase": "audit report", "zh": "稽核報告", "example": "The audit report was submitted."}, {"category": "財務與會計", "phrase": "expense report", "zh": "費用報告", "example": "Submit an expense report."}, {"category": "財務與會計", "phrase": "reimburse expenses", "zh": "報銷費用", "example": "The company reimbursed travel expenses."}, {"category": "財務與會計", "phrase": "business trip expenses", "zh": "出差費", "example": "Business trip expenses are covered."}, {"category": "財務與會計", "phrase": "make a deposit", "zh": "存款；付訂金", "example": "We made a deposit."}, {"category": "財務與會計", "phrase": "withdraw money", "zh": "提款", "example": "He withdrew money from the bank."}, {"category": "財務與會計", "phrase": "bank account", "zh": "銀行帳戶", "example": "Open a bank account."}, {"category": "財務與會計", "phrase": "interest rate", "zh": "利率", "example": "The interest rate is low."}, {"category": "財務與會計", "phrase": "exchange rate", "zh": "匯率", "example": "The exchange rate changed."}, {"category": "財務與會計", "phrase": "credit card statement", "zh": "信用卡帳單", "example": "Check your credit card statement."}, {"category": "財務與會計", "phrase": "overdue payment", "zh": "逾期付款", "example": "The customer has an overdue payment."}, {"category": "財務與會計", "phrase": "late fee", "zh": "滯納金", "example": "A late fee will be charged."}, {"category": "財務與會計", "phrase": "monthly payment", "zh": "月付款", "example": "The monthly payment is due."}, {"category": "財務與會計", "phrase": "pay in installments", "zh": "分期付款", "example": "You can pay in installments."}, {"category": "財務與會計", "phrase": "billing address", "zh": "帳單地址", "example": "Enter your billing address."}, {"category": "財務與會計", "phrase": "purchase order", "zh": "採購單", "example": "The purchase order was approved."}, {"category": "財務與會計", "phrase": "accounts payable", "zh": "應付帳款", "example": "Accounts payable must be updated."}, {"category": "財務與會計", "phrase": "accounts receivable", "zh": "應收帳款", "example": "Accounts receivable increased."}, {"category": "財務與會計", "phrase": "financial forecast", "zh": "財務預測", "example": "The forecast looks positive."}, {"category": "財務與會計", "phrase": "quarterly earnings", "zh": "季度盈餘", "example": "Quarterly earnings were strong."}, {"category": "財務與會計", "phrase": "annual report", "zh": "年度報告", "example": "The annual report is online."}, {"category": "財務與會計", "phrase": "raise funds", "zh": "籌資", "example": "The nonprofit raised funds."}, {"category": "財務與會計", "phrase": "secure funding", "zh": "取得資金", "example": "The startup secured funding."}, {"category": "財務與會計", "phrase": "investment plan", "zh": "投資計畫", "example": "The investment plan was discussed."}, {"category": "財務與會計", "phrase": "return on investment", "zh": "投資報酬率", "example": "Return on investment was high."}, {"category": "財務與會計", "phrase": "cost-effective solution", "zh": "具成本效益的解決方案", "example": "This is a cost-effective solution."}, {"category": "財務與會計", "phrase": "make a profit", "zh": "獲利", "example": "The company made a profit."}, {"category": "財務與會計", "phrase": "suffer a loss", "zh": "虧損", "example": "The store suffered a loss."}, {"category": "財務與會計", "phrase": "break even", "zh": "損益兩平", "example": "The business broke even."}, {"category": "財務與會計", "phrase": "financial support", "zh": "財務支援", "example": "The project needs financial support."}, {"category": "財務與會計", "phrase": "allocate resources", "zh": "分配資源", "example": "Managers allocated resources."}, {"category": "財務與會計", "phrase": "calculate the total", "zh": "計算總額", "example": "Calculate the total cost."}, {"category": "財務與會計", "phrase": "estimate the cost", "zh": "估算成本", "example": "We estimated the cost."}, {"category": "財務與會計", "phrase": "approve the budget", "zh": "核准預算", "example": "The director approved the budget."}, {"category": "財務與會計", "phrase": "reduce overhead", "zh": "降低間接成本", "example": "They reduced overhead."}, {"category": "財務與會計", "phrase": "settle an account", "zh": "結清帳款", "example": "The customer settled the account."}, {"category": "旅遊交通與住宿", "phrase": "make travel arrangements", "zh": "安排旅行", "example": "The assistant made travel arrangements."}, {"category": "旅遊交通與住宿", "phrase": "book a flight", "zh": "訂機票", "example": "I booked a flight to Tokyo."}, {"category": "旅遊交通與住宿", "phrase": "catch a flight", "zh": "趕上班機", "example": "She caught the morning flight."}, {"category": "旅遊交通與住宿", "phrase": "miss a flight", "zh": "錯過班機", "example": "He missed his flight."}, {"category": "旅遊交通與住宿", "phrase": "boarding pass", "zh": "登機證", "example": "Print your boarding pass."}, {"category": "旅遊交通與住宿", "phrase": "departure gate", "zh": "登機門", "example": "Go to the departure gate."}, {"category": "旅遊交通與住宿", "phrase": "arrival time", "zh": "抵達時間", "example": "Check the arrival time."}, {"category": "旅遊交通與住宿", "phrase": "flight delay", "zh": "班機延誤", "example": "There was a flight delay."}, {"category": "旅遊交通與住宿", "phrase": "direct flight", "zh": "直飛航班", "example": "We prefer a direct flight."}, {"category": "旅遊交通與住宿", "phrase": "connecting flight", "zh": "轉機航班", "example": "He took a connecting flight."}, {"category": "旅遊交通與住宿", "phrase": "baggage claim", "zh": "行李提領處", "example": "Meet me at baggage claim."}, {"category": "旅遊交通與住宿", "phrase": "carry-on luggage", "zh": "手提行李", "example": "Carry-on luggage is limited."}, {"category": "旅遊交通與住宿", "phrase": "checked baggage", "zh": "托運行李", "example": "Checked baggage costs extra."}, {"category": "旅遊交通與住宿", "phrase": "customs declaration", "zh": "海關申報", "example": "Complete the customs declaration."}, {"category": "旅遊交通與住宿", "phrase": "go through customs", "zh": "通過海關", "example": "We went through customs quickly."}, {"category": "旅遊交通與住宿", "phrase": "rent a car", "zh": "租車", "example": "They rented a car."}, {"category": "旅遊交通與住宿", "phrase": "public transportation", "zh": "大眾運輸", "example": "Public transportation is convenient."}, {"category": "旅遊交通與住宿", "phrase": "commute to work", "zh": "通勤上班", "example": "She commutes to work by train."}, {"category": "旅遊交通與住宿", "phrase": "traffic jam", "zh": "交通堵塞", "example": "There was a traffic jam."}, {"category": "旅遊交通與住宿", "phrase": "road construction", "zh": "道路施工", "example": "Road construction caused delays."}, {"category": "旅遊交通與住宿", "phrase": "parking lot", "zh": "停車場", "example": "The parking lot is full."}, {"category": "旅遊交通與住宿", "phrase": "parking space", "zh": "停車位", "example": "I found a parking space."}, {"category": "旅遊交通與住宿", "phrase": "train station", "zh": "火車站", "example": "The train station is nearby."}, {"category": "旅遊交通與住宿", "phrase": "bus stop", "zh": "公車站", "example": "Wait at the bus stop."}, {"category": "旅遊交通與住宿", "phrase": "subway line", "zh": "地鐵線", "example": "Take the green subway line."}, {"category": "旅遊交通與住宿", "phrase": "fare increase", "zh": "票價上漲", "example": "A fare increase was announced."}, {"category": "旅遊交通與住宿", "phrase": "travel agency", "zh": "旅行社", "example": "The travel agency booked the tour."}, {"category": "旅遊交通與住宿", "phrase": "guided tour", "zh": "導覽行程", "example": "We joined a guided tour."}, {"category": "旅遊交通與住宿", "phrase": "tourist attraction", "zh": "觀光景點", "example": "The museum is a tourist attraction."}, {"category": "旅遊交通與住宿", "phrase": "hotel reservation", "zh": "飯店預訂", "example": "Confirm your hotel reservation."}, {"category": "旅遊交通與住宿", "phrase": "check in", "zh": "辦理入住；報到", "example": "We checked in at 3 p.m."}, {"category": "旅遊交通與住宿", "phrase": "check out", "zh": "退房", "example": "Check out before noon."}, {"category": "旅遊交通與住宿", "phrase": "front desk", "zh": "櫃台", "example": "Ask the front desk for help."}, {"category": "旅遊交通與住宿", "phrase": "room service", "zh": "客房服務", "example": "Room service is available."}, {"category": "旅遊交通與住宿", "phrase": "single room", "zh": "單人房", "example": "I booked a single room."}, {"category": "旅遊交通與住宿", "phrase": "double room", "zh": "雙人房", "example": "They requested a double room."}, {"category": "旅遊交通與住宿", "phrase": "conference hotel", "zh": "會議飯店", "example": "The conference hotel is downtown."}, {"category": "旅遊交通與住宿", "phrase": "complimentary breakfast", "zh": "免費早餐", "example": "The hotel offers complimentary breakfast."}, {"category": "旅遊交通與住宿", "phrase": "vacancy sign", "zh": "空房標示", "example": "The vacancy sign was on."}, {"category": "旅遊交通與住宿", "phrase": "fully booked", "zh": "客滿", "example": "The hotel is fully booked."}, {"category": "旅遊交通與住宿", "phrase": "travel itinerary", "zh": "旅遊行程表", "example": "Send me the itinerary."}, {"category": "旅遊交通與住宿", "phrase": "business trip", "zh": "商務旅行", "example": "He went on a business trip."}, {"category": "旅遊交通與住宿", "phrase": "expense allowance", "zh": "津貼", "example": "Employees receive a travel allowance."}, {"category": "旅遊交通與住宿", "phrase": "lost and found", "zh": "失物招領", "example": "Check lost and found."}, {"category": "旅遊交通與住宿", "phrase": "valid passport", "zh": "有效護照", "example": "You need a valid passport."}, {"category": "旅遊交通與住宿", "phrase": "visa application", "zh": "簽證申請", "example": "Submit a visa application."}, {"category": "旅遊交通與住宿", "phrase": "travel insurance", "zh": "旅遊保險", "example": "Buy travel insurance."}, {"category": "旅遊交通與住宿", "phrase": "weather forecast", "zh": "天氣預報", "example": "Check the weather forecast."}, {"category": "旅遊交通與住宿", "phrase": "local time", "zh": "當地時間", "example": "The local time is 8 a.m."}, {"category": "旅遊交通與住宿", "phrase": "tour package", "zh": "套裝行程", "example": "The tour package includes meals."}, {"category": "餐飲與活動", "phrase": "make a reservation", "zh": "訂位", "example": "I made a reservation for two."}, {"category": "餐飲與活動", "phrase": "reserve a table", "zh": "訂桌", "example": "Please reserve a table."}, {"category": "餐飲與活動", "phrase": "menu item", "zh": "菜單品項", "example": "This menu item is popular."}, {"category": "餐飲與活動", "phrase": "daily special", "zh": "每日特餐", "example": "The daily special is fish."}, {"category": "餐飲與活動", "phrase": "main course", "zh": "主餐", "example": "The main course was excellent."}, {"category": "餐飲與活動", "phrase": "side dish", "zh": "配菜", "example": "Rice is a side dish."}, {"category": "餐飲與活動", "phrase": "beverage menu", "zh": "飲料單", "example": "Check the beverage menu."}, {"category": "餐飲與活動", "phrase": "place an order", "zh": "點餐", "example": "We placed our order."}, {"category": "餐飲與活動", "phrase": "take an order", "zh": "接受點餐", "example": "The waiter took our order."}, {"category": "餐飲與活動", "phrase": "serve a meal", "zh": "上餐", "example": "The restaurant serves meals quickly."}, {"category": "餐飲與活動", "phrase": "clear the table", "zh": "清桌", "example": "Staff cleared the table."}, {"category": "餐飲與活動", "phrase": "split the bill", "zh": "分帳", "example": "Let’s split the bill."}, {"category": "餐飲與活動", "phrase": "leave a tip", "zh": "給小費", "example": "Customers usually leave a tip."}, {"category": "餐飲與活動", "phrase": "food safety", "zh": "食品安全", "example": "Food safety is important."}, {"category": "餐飲與活動", "phrase": "health inspection", "zh": "衛生檢查", "example": "The restaurant passed the inspection."}, {"category": "餐飲與活動", "phrase": "catering service", "zh": "外燴服務", "example": "We hired a catering service."}, {"category": "餐飲與活動", "phrase": "banquet hall", "zh": "宴會廳", "example": "The banquet hall is large."}, {"category": "餐飲與活動", "phrase": "annual banquet", "zh": "年度宴會", "example": "The annual banquet is Friday."}, {"category": "餐飲與活動", "phrase": "company picnic", "zh": "公司野餐", "example": "The company picnic is in July."}, {"category": "餐飲與活動", "phrase": "charity event", "zh": "慈善活動", "example": "They held a charity event."}, {"category": "餐飲與活動", "phrase": "fund-raising event", "zh": "募款活動", "example": "A fund-raising event was held."}, {"category": "餐飲與活動", "phrase": "opening ceremony", "zh": "開幕典禮", "example": "The opening ceremony starts at 10."}, {"category": "餐飲與活動", "phrase": "closing ceremony", "zh": "閉幕典禮", "example": "The closing ceremony ended late."}, {"category": "餐飲與活動", "phrase": "award ceremony", "zh": "頒獎典禮", "example": "She attended an award ceremony."}, {"category": "餐飲與活動", "phrase": "guest speaker", "zh": "特邀講者", "example": "The guest speaker was famous."}, {"category": "餐飲與活動", "phrase": "registration desk", "zh": "報到櫃台", "example": "Go to the registration desk."}, {"category": "餐飲與活動", "phrase": "admission fee", "zh": "入場費", "example": "The admission fee is ten dollars."}, {"category": "餐飲與活動", "phrase": "event venue", "zh": "活動場地", "example": "The venue is near the station."}, {"category": "餐飲與活動", "phrase": "set up a booth", "zh": "設攤位", "example": "We set up a booth."}, {"category": "餐飲與活動", "phrase": "display products", "zh": "展示產品", "example": "The booth displayed products."}, {"category": "餐飲與活動", "phrase": "hand out flyers", "zh": "發傳單", "example": "Staff handed out flyers."}, {"category": "餐飲與活動", "phrase": "draw a crowd", "zh": "吸引人潮", "example": "The event drew a crowd."}, {"category": "餐飲與活動", "phrase": "make an announcement", "zh": "發布公告", "example": "The host made an announcement."}, {"category": "餐飲與活動", "phrase": "hold a raffle", "zh": "舉辦抽獎", "example": "They held a raffle."}, {"category": "餐飲與活動", "phrase": "attend a workshop", "zh": "參加工作坊", "example": "Employees attended a workshop."}, {"category": "餐飲與活動", "phrase": "training session", "zh": "訓練課程", "example": "The training session was useful."}, {"category": "餐飲與活動", "phrase": "seminar room", "zh": "研討室", "example": "The seminar room is upstairs."}, {"category": "餐飲與活動", "phrase": "conference center", "zh": "會議中心", "example": "The conference center is downtown."}, {"category": "餐飲與活動", "phrase": "exhibition hall", "zh": "展覽館", "example": "The exhibition hall opened today."}, {"category": "餐飲與活動", "phrase": "museum exhibit", "zh": "博物館展覽", "example": "The museum exhibit is popular."}, {"category": "餐飲與活動", "phrase": "concert ticket", "zh": "演唱會票", "example": "Concert tickets sold out."}, {"category": "餐飲與活動", "phrase": "performance review", "zh": "表演評論；績效考核", "example": "The performance review was positive."}, {"category": "餐飲與活動", "phrase": "dress code", "zh": "服裝規定", "example": "The dress code is formal."}, {"category": "餐飲與活動", "phrase": "formal attire", "zh": "正式服裝", "example": "Formal attire is required."}, {"category": "餐飲與活動", "phrase": "casual dress", "zh": "休閒服裝", "example": "Casual dress is allowed."}, {"category": "餐飲與活動", "phrase": "refreshments will be served", "zh": "將供應點心", "example": "Refreshments will be served."}, {"category": "餐飲與活動", "phrase": "available upon request", "zh": "可依要求提供", "example": "Vegetarian meals are available upon request."}, {"category": "餐飲與活動", "phrase": "limited seating", "zh": "座位有限", "example": "The event has limited seating."}, {"category": "餐飲與活動", "phrase": "early registration", "zh": "早鳥報名", "example": "Early registration ends Friday."}, {"category": "製造物流與採購", "phrase": "manufacturing process", "zh": "製造流程", "example": "The manufacturing process improved."}, {"category": "製造物流與採購", "phrase": "production line", "zh": "生產線", "example": "The production line stopped."}, {"category": "製造物流與採購", "phrase": "assembly line", "zh": "裝配線", "example": "Workers are on the assembly line."}, {"category": "製造物流與採購", "phrase": "quality control", "zh": "品質管制", "example": "Quality control is strict."}, {"category": "製造物流與採購", "phrase": "quality assurance", "zh": "品質保證", "example": "Quality assurance checks products."}, {"category": "製造物流與採購", "phrase": "safety standards", "zh": "安全標準", "example": "The factory meets safety standards."}, {"category": "製造物流與採購", "phrase": "equipment maintenance", "zh": "設備維護", "example": "Equipment maintenance is scheduled."}, {"category": "製造物流與採購", "phrase": "routine inspection", "zh": "例行檢查", "example": "Routine inspection found no issues."}, {"category": "製造物流與採購", "phrase": "machine operator", "zh": "機台操作員", "example": "The machine operator was trained."}, {"category": "製造物流與採購", "phrase": "raw materials", "zh": "原物料", "example": "Raw materials arrived late."}, {"category": "製造物流與採購", "phrase": "finished goods", "zh": "成品", "example": "Finished goods are stored here."}, {"category": "製造物流與採購", "phrase": "warehouse inventory", "zh": "倉庫庫存", "example": "Warehouse inventory was updated."}, {"category": "製造物流與採購", "phrase": "inventory level", "zh": "庫存水位", "example": "Inventory levels are low."}, {"category": "製造物流與採購", "phrase": "stockroom clerk", "zh": "倉管人員", "example": "The stockroom clerk checked supplies."}, {"category": "製造物流與採購", "phrase": "supply chain", "zh": "供應鏈", "example": "The supply chain was disrupted."}, {"category": "製造物流與採購", "phrase": "supplier agreement", "zh": "供應商協議", "example": "They signed a supplier agreement."}, {"category": "製造物流與採購", "phrase": "delivery schedule", "zh": "配送時程", "example": "The delivery schedule changed."}, {"category": "製造物流與採購", "phrase": "shipping address", "zh": "收貨地址", "example": "Confirm the shipping address."}, {"category": "製造物流與採購", "phrase": "shipping fee", "zh": "運費", "example": "The shipping fee is included."}, {"category": "製造物流與採購", "phrase": "shipment tracking", "zh": "貨運追蹤", "example": "Shipment tracking is available."}, {"category": "製造物流與採購", "phrase": "deliver goods", "zh": "配送貨物", "example": "The company delivers goods daily."}, {"category": "製造物流與採購", "phrase": "receive goods", "zh": "收貨", "example": "The warehouse received goods."}, {"category": "製造物流與採購", "phrase": "damaged goods", "zh": "受損貨物", "example": "Damaged goods were returned."}, {"category": "製造物流與採購", "phrase": "return policy", "zh": "退貨政策", "example": "Read the return policy."}, {"category": "製造物流與採購", "phrase": "purchase supplies", "zh": "採購用品", "example": "We purchased supplies."}, {"category": "製造物流與採購", "phrase": "bulk order", "zh": "大量訂購", "example": "Bulk orders get a discount."}, {"category": "製造物流與採購", "phrase": "minimum order", "zh": "最低訂購量", "example": "There is a minimum order."}, {"category": "製造物流與採購", "phrase": "vendor list", "zh": "供應商名單", "example": "The vendor list was updated."}, {"category": "製造物流與採購", "phrase": "compare prices", "zh": "比較價格", "example": "We compared prices."}, {"category": "製造物流與採購", "phrase": "negotiate a contract", "zh": "議約", "example": "They negotiated a contract."}, {"category": "製造物流與採購", "phrase": "place a bid", "zh": "投標", "example": "The contractor placed a bid."}, {"category": "製造物流與採購", "phrase": "submit a quote", "zh": "提交報價", "example": "The supplier submitted a quote."}, {"category": "製造物流與採購", "phrase": "request a quote", "zh": "要求報價", "example": "We requested a quote."}, {"category": "製造物流與採購", "phrase": "lead time", "zh": "前置時間", "example": "Lead time is two weeks."}, {"category": "製造物流與採購", "phrase": "on-time delivery", "zh": "準時交貨", "example": "On-time delivery improved."}, {"category": "製造物流與採購", "phrase": "late delivery", "zh": "延遲交貨", "example": "Late delivery caused problems."}, {"category": "製造物流與採購", "phrase": "expedite an order", "zh": "加急訂單", "example": "Can you expedite the order?"}, {"category": "製造物流與採購", "phrase": "back order", "zh": "缺貨待補訂單", "example": "The item is on back order."}, {"category": "製造物流與採購", "phrase": "packaging material", "zh": "包裝材料", "example": "Packaging material is recyclable."}, {"category": "製造物流與採購", "phrase": "loading dock", "zh": "裝卸貨區", "example": "Trucks wait at the loading dock."}, {"category": "製造物流與採購", "phrase": "freight company", "zh": "貨運公司", "example": "A freight company delivered it."}, {"category": "製造物流與採購", "phrase": "custom-made product", "zh": "客製產品", "example": "This is a custom-made product."}, {"category": "製造物流與採購", "phrase": "product defect", "zh": "產品瑕疵", "example": "A product defect was found."}, {"category": "製造物流與採購", "phrase": "recall a product", "zh": "召回產品", "example": "The company recalled a product."}, {"category": "製造物流與採購", "phrase": "meet specifications", "zh": "符合規格", "example": "The parts meet specifications."}, {"category": "製造物流與採購", "phrase": "technical specification", "zh": "技術規格", "example": "Read the technical specification."}, {"category": "製造物流與採購", "phrase": "installation manual", "zh": "安裝手冊", "example": "The installation manual is included."}, {"category": "製造物流與採購", "phrase": "operating manual", "zh": "操作手冊", "example": "Check the operating manual."}, {"category": "製造物流與採購", "phrase": "spare parts", "zh": "備品", "example": "Spare parts are available."}, {"category": "製造物流與採購", "phrase": "preventive maintenance", "zh": "預防性維護", "example": "Preventive maintenance reduces downtime."}, {"category": "科技設備與服務", "phrase": "technical support", "zh": "技術支援", "example": "Technical support is available."}, {"category": "科技設備與服務", "phrase": "customer support", "zh": "客戶支援", "example": "Customer support replied quickly."}, {"category": "科技設備與服務", "phrase": "software update", "zh": "軟體更新", "example": "Install the software update."}, {"category": "科技設備與服務", "phrase": "system upgrade", "zh": "系統升級", "example": "The system upgrade is complete."}, {"category": "科技設備與服務", "phrase": "security patch", "zh": "安全修補", "example": "Apply the security patch."}, {"category": "科技設備與服務", "phrase": "user account", "zh": "使用者帳號", "example": "Create a user account."}, {"category": "科技設備與服務", "phrase": "reset a password", "zh": "重設密碼", "example": "I need to reset my password."}, {"category": "科技設備與服務", "phrase": "log in to", "zh": "登入", "example": "Log in to your account."}, {"category": "科技設備與服務", "phrase": "log out of", "zh": "登出", "example": "Log out of the system."}, {"category": "科技設備與服務", "phrase": "access a file", "zh": "存取檔案", "example": "Users can access the file."}, {"category": "科技設備與服務", "phrase": "download a file", "zh": "下載檔案", "example": "Download the file."}, {"category": "科技設備與服務", "phrase": "upload a document", "zh": "上傳文件", "example": "Upload the document online."}, {"category": "科技設備與服務", "phrase": "data backup", "zh": "資料備份", "example": "Data backup is automatic."}, {"category": "科技設備與服務", "phrase": "recover data", "zh": "恢復資料", "example": "The technician recovered data."}, {"category": "科技設備與服務", "phrase": "network connection", "zh": "網路連線", "example": "The network connection is slow."}, {"category": "科技設備與服務", "phrase": "internet access", "zh": "網路存取", "example": "Free internet access is available."}, {"category": "科技設備與服務", "phrase": "wireless network", "zh": "無線網路", "example": "Connect to the wireless network."}, {"category": "科技設備與服務", "phrase": "power outage", "zh": "停電", "example": "A power outage occurred."}, {"category": "科技設備與服務", "phrase": "server maintenance", "zh": "伺服器維護", "example": "Server maintenance starts tonight."}, {"category": "科技設備與服務", "phrase": "database system", "zh": "資料庫系統", "example": "The database system is secure."}, {"category": "科技設備與服務", "phrase": "online platform", "zh": "線上平台", "example": "Use the online platform."}, {"category": "科技設備與服務", "phrase": "mobile application", "zh": "手機應用程式", "example": "The mobile application is free."}, {"category": "科技設備與服務", "phrase": "install software", "zh": "安裝軟體", "example": "Install software before class."}, {"category": "科技設備與服務", "phrase": "uninstall a program", "zh": "移除程式", "example": "Uninstall the program."}, {"category": "科技設備與服務", "phrase": "troubleshoot a problem", "zh": "排除問題", "example": "Technicians troubleshoot problems."}, {"category": "科技設備與服務", "phrase": "resolve an issue", "zh": "解決問題", "example": "Support resolved the issue."}, {"category": "科技設備與服務", "phrase": "report a bug", "zh": "回報錯誤", "example": "Users reported a bug."}, {"category": "科技設備與服務", "phrase": "fix an error", "zh": "修正錯誤", "example": "The developer fixed an error."}, {"category": "科技設備與服務", "phrase": "user manual", "zh": "使用手冊", "example": "Read the user manual."}, {"category": "科技設備與服務", "phrase": "technical manual", "zh": "技術手冊", "example": "The technical manual is detailed."}, {"category": "科技設備與服務", "phrase": "compatible with", "zh": "與……相容", "example": "The device is compatible with Windows."}, {"category": "科技設備與服務", "phrase": "be equipped with", "zh": "配備", "example": "The room is equipped with monitors."}, {"category": "科技設備與服務", "phrase": "high-speed internet", "zh": "高速網路", "example": "The hotel has high-speed internet."}, {"category": "科技設備與服務", "phrase": "digital device", "zh": "數位設備", "example": "Digital devices are useful."}, {"category": "科技設備與服務", "phrase": "electronic device", "zh": "電子設備", "example": "Electronic devices must be turned off."}, {"category": "科技設備與服務", "phrase": "office equipment", "zh": "辦公設備", "example": "Office equipment was replaced."}, {"category": "科技設備與服務", "phrase": "photocopier machine", "zh": "影印機", "example": "The photocopier machine broke."}, {"category": "科技設備與服務", "phrase": "printer cartridge", "zh": "印表機墨匣", "example": "Replace the printer cartridge."}, {"category": "科技設備與服務", "phrase": "power cord", "zh": "電源線", "example": "The power cord is missing."}, {"category": "科技設備與服務", "phrase": "extension cord", "zh": "延長線", "example": "Use an extension cord."}, {"category": "科技設備與服務", "phrase": "plug in", "zh": "插上電源", "example": "Plug in the laptop."}, {"category": "科技設備與服務", "phrase": "unplug", "zh": "拔掉電源", "example": "Unplug the device."}, {"category": "科技設備與服務", "phrase": "turn up the volume", "zh": "調高音量", "example": "Turn up the volume."}, {"category": "科技設備與服務", "phrase": "turn down the volume", "zh": "調低音量", "example": "Turn down the volume."}, {"category": "科技設備與服務", "phrase": "online registration", "zh": "線上註冊", "example": "Online registration is required."}, {"category": "科技設備與服務", "phrase": "digital signature", "zh": "數位簽章", "example": "Use a digital signature."}, {"category": "科技設備與服務", "phrase": "cloud storage", "zh": "雲端儲存", "example": "Cloud storage saves files."}, {"category": "科技設備與服務", "phrase": "video conference", "zh": "視訊會議", "example": "We joined a video conference."}, {"category": "科技設備與服務", "phrase": "remote access", "zh": "遠端存取", "example": "Remote access is enabled."}, {"category": "科技設備與服務", "phrase": "technical difficulty", "zh": "技術困難", "example": "We experienced technical difficulties."}, {"category": "健康安全與公共服務", "phrase": "safety procedure", "zh": "安全程序", "example": "Follow safety procedures."}, {"category": "健康安全與公共服務", "phrase": "emergency exit", "zh": "緊急出口", "example": "Use the emergency exit."}, {"category": "健康安全與公共服務", "phrase": "fire drill", "zh": "消防演習", "example": "A fire drill is scheduled."}, {"category": "健康安全與公共服務", "phrase": "first aid kit", "zh": "急救箱", "example": "The first aid kit is in the office."}, {"category": "健康安全與公共服務", "phrase": "medical appointment", "zh": "醫療預約", "example": "I have a medical appointment."}, {"category": "健康安全與公共服務", "phrase": "health checkup", "zh": "健康檢查", "example": "Employees receive a health checkup."}, {"category": "健康安全與公共服務", "phrase": "doctor's note", "zh": "醫生證明", "example": "Bring a doctor's note."}, {"category": "健康安全與公共服務", "phrase": "health insurance card", "zh": "健保卡", "example": "Show your health insurance card."}, {"category": "健康安全與公共服務", "phrase": "take medicine", "zh": "吃藥", "example": "Take medicine after meals."}, {"category": "健康安全與公共服務", "phrase": "fill a prescription", "zh": "領藥", "example": "The pharmacy filled the prescription."}, {"category": "健康安全與公共服務", "phrase": "medical record", "zh": "病歷", "example": "Medical records are confidential."}, {"category": "健康安全與公共服務", "phrase": "patient care", "zh": "病患照護", "example": "Patient care improved."}, {"category": "健康安全與公共服務", "phrase": "nursing staff", "zh": "護理人員", "example": "Nursing staff are busy."}, {"category": "健康安全與公共服務", "phrase": "hospital ward", "zh": "病房", "example": "The hospital ward is full."}, {"category": "健康安全與公共服務", "phrase": "emergency room", "zh": "急診室", "example": "Go to the emergency room."}, {"category": "健康安全與公共服務", "phrase": "public announcement", "zh": "公共公告", "example": "A public announcement was made."}, {"category": "健康安全與公共服務", "phrase": "community center", "zh": "社區中心", "example": "The community center offers classes."}, {"category": "健康安全與公共服務", "phrase": "public library", "zh": "公共圖書館", "example": "The public library is closed."}, {"category": "健康安全與公共服務", "phrase": "local government", "zh": "地方政府", "example": "Local government announced new rules."}, {"category": "健康安全與公共服務", "phrase": "city council", "zh": "市議會", "example": "The city council approved it."}, {"category": "健康安全與公共服務", "phrase": "public service", "zh": "公共服務", "example": "Public service is important."}, {"category": "健康安全與公共服務", "phrase": "waste disposal", "zh": "廢棄物處理", "example": "Waste disposal is regulated."}, {"category": "健康安全與公共服務", "phrase": "recycling program", "zh": "回收計畫", "example": "The recycling program expanded."}, {"category": "健康安全與公共服務", "phrase": "environmental protection", "zh": "環境保護", "example": "Environmental protection matters."}, {"category": "健康安全與公共服務", "phrase": "energy conservation", "zh": "節能", "example": "Energy conservation saves money."}, {"category": "健康安全與公共服務", "phrase": "water supply", "zh": "供水", "example": "The water supply was interrupted."}, {"category": "健康安全與公共服務", "phrase": "power supply", "zh": "電力供應", "example": "The power supply is stable."}, {"category": "健康安全與公共服務", "phrase": "public facility", "zh": "公共設施", "example": "Public facilities need repair."}, {"category": "健康安全與公共服務", "phrase": "maintenance work", "zh": "維護工程", "example": "Maintenance work starts Monday."}, {"category": "健康安全與公共服務", "phrase": "construction site", "zh": "工地", "example": "Wear a helmet at the construction site."}, {"category": "健康安全與公共服務", "phrase": "safety equipment", "zh": "安全設備", "example": "Safety equipment is required."}, {"category": "健康安全與公共服務", "phrase": "protective clothing", "zh": "防護衣", "example": "Wear protective clothing."}, {"category": "健康安全與公共服務", "phrase": "warning sign", "zh": "警告標誌", "example": "There is a warning sign."}, {"category": "健康安全與公共服務", "phrase": "traffic regulation", "zh": "交通規則", "example": "Follow traffic regulations."}, {"category": "健康安全與公共服務", "phrase": "speed limit", "zh": "速限", "example": "The speed limit is 50 km/h."}, {"category": "健康安全與公共服務", "phrase": "parking regulation", "zh": "停車規定", "example": "Parking regulations changed."}, {"category": "健康安全與公共服務", "phrase": "public notice", "zh": "公告", "example": "Read the public notice."}, {"category": "健康安全與公共服務", "phrase": "community event", "zh": "社區活動", "example": "The community event is free."}, {"category": "健康安全與公共服務", "phrase": "volunteer work", "zh": "志工服務", "example": "She does volunteer work."}, {"category": "健康安全與公共服務", "phrase": "make a donation", "zh": "捐款", "example": "They made a donation."}, {"category": "健康安全與公共服務", "phrase": "social responsibility", "zh": "社會責任", "example": "The company values social responsibility."}, {"category": "健康安全與公共服務", "phrase": "public health", "zh": "公共衛生", "example": "Public health improved."}, {"category": "健康安全與公共服務", "phrase": "disease prevention", "zh": "疾病預防", "example": "Disease prevention is essential."}, {"category": "健康安全與公共服務", "phrase": "safety training", "zh": "安全訓練", "example": "Safety training is mandatory."}, {"category": "健康安全與公共服務", "phrase": "risk assessment", "zh": "風險評估", "example": "The team conducted a risk assessment."}, {"category": "健康安全與公共服務", "phrase": "hazardous material", "zh": "危險物質", "example": "Hazardous materials must be labeled."}, {"category": "健康安全與公共服務", "phrase": "inspection report", "zh": "檢查報告", "example": "The inspection report was clean."}, {"category": "健康安全與公共服務", "phrase": "comply with regulations", "zh": "遵守法規", "example": "Companies must comply with regulations."}, {"category": "健康安全與公共服務", "phrase": "violate a rule", "zh": "違反規定", "example": "He violated a rule."}, {"category": "健康安全與公共服務", "phrase": "issue a permit", "zh": "核發許可證", "example": "The city issued a permit."}, {"category": "健康安全與公共服務", "phrase": "renew a license", "zh": "更新執照", "example": "Renew your license online."}, {"category": "常見介系詞與固定搭配", "phrase": "be interested in", "zh": "對……有興趣", "example": "She is interested in marketing."}, {"category": "常見介系詞與固定搭配", "phrase": "be involved in", "zh": "參與", "example": "He is involved in the project."}, {"category": "常見介系詞與固定搭配", "phrase": "be satisfied with", "zh": "對……滿意", "example": "Customers are satisfied with service."}, {"category": "常見介系詞與固定搭配", "phrase": "be pleased with", "zh": "對……高興", "example": "We are pleased with the results."}, {"category": "常見介系詞與固定搭配", "phrase": "be disappointed with", "zh": "對……失望", "example": "They were disappointed with delivery."}, {"category": "常見介系詞與固定搭配", "phrase": "be known for", "zh": "以……聞名", "example": "The company is known for quality."}, {"category": "常見介系詞與固定搭配", "phrase": "be famous for", "zh": "以……有名", "example": "The city is famous for food."}, {"category": "常見介系詞與固定搭配", "phrase": "be suitable for", "zh": "適合", "example": "This room is suitable for meetings."}, {"category": "常見介系詞與固定搭配", "phrase": "be eligible for", "zh": "有資格", "example": "Employees are eligible for benefits."}, {"category": "常見介系詞與固定搭配", "phrase": "be subject to", "zh": "受……約束；可能有", "example": "Prices are subject to change."}, {"category": "常見介系詞與固定搭配", "phrase": "be aware of", "zh": "知道；意識到", "example": "Be aware of the deadline."}, {"category": "常見介系詞與固定搭配", "phrase": "be concerned about", "zh": "擔心", "example": "Managers are concerned about costs."}, {"category": "常見介系詞與固定搭配", "phrase": "be based on", "zh": "根據", "example": "The report is based on survey data."}, {"category": "常見介系詞與固定搭配", "phrase": "be related to", "zh": "與……相關", "example": "The issue is related to software."}, {"category": "常見介系詞與固定搭配", "phrase": "be responsible for", "zh": "負責", "example": "She is responsible for hiring."}, {"category": "常見介系詞與固定搭配", "phrase": "be committed to", "zh": "致力於", "example": "We are committed to quality."}, {"category": "常見介系詞與固定搭配", "phrase": "be dedicated to", "zh": "致力於", "example": "The team is dedicated to service."}, {"category": "常見介系詞與固定搭配", "phrase": "be associated with", "zh": "與……有關", "example": "The brand is associated with luxury."}, {"category": "常見介系詞與固定搭配", "phrase": "be comparable to", "zh": "可與……相比", "example": "This model is comparable to ours."}, {"category": "常見介系詞與固定搭配", "phrase": "be different from", "zh": "不同於", "example": "This product is different from others."}, {"category": "常見介系詞與固定搭配", "phrase": "be similar to", "zh": "類似於", "example": "The plan is similar to yours."}, {"category": "常見介系詞與固定搭配", "phrase": "be available to", "zh": "可供……使用", "example": "The service is available to members."}, {"category": "常見介系詞與固定搭配", "phrase": "be available for", "zh": "可用於", "example": "The room is available for meetings."}, {"category": "常見介系詞與固定搭配", "phrase": "be open to", "zh": "願意接受", "example": "We are open to suggestions."}, {"category": "常見介系詞與固定搭配", "phrase": "be opposed to", "zh": "反對", "example": "Some members are opposed to the plan."}, {"category": "常見介系詞與固定搭配", "phrase": "be accustomed to", "zh": "習慣於", "example": "She is accustomed to travel."}, {"category": "常見介系詞與固定搭配", "phrase": "be used to", "zh": "習慣於", "example": "He is used to working late."}, {"category": "常見介系詞與固定搭配", "phrase": "look forward to", "zh": "期待", "example": "I look forward to hearing from you."}, {"category": "常見介系詞與固定搭配", "phrase": "object to", "zh": "反對", "example": "They objected to the proposal."}, {"category": "常見介系詞與固定搭配", "phrase": "respond to", "zh": "回應", "example": "Please respond to the email."}, {"category": "常見介系詞與固定搭配", "phrase": "refer to", "zh": "指的是；參考", "example": "Refer to page three."}, {"category": "常見介系詞與固定搭配", "phrase": "belong to", "zh": "屬於", "example": "This file belongs to the manager."}, {"category": "常見介系詞與固定搭配", "phrase": "lead to", "zh": "導致", "example": "Poor planning led to delays."}, {"category": "常見介系詞與固定搭配", "phrase": "contribute to", "zh": "促成；貢獻", "example": "Training contributes to success."}, {"category": "常見介系詞與固定搭配", "phrase": "adjust to", "zh": "適應", "example": "He adjusted to the new role."}, {"category": "常見介系詞與固定搭配", "phrase": "adapt to", "zh": "適應", "example": "The company adapted to changes."}, {"category": "常見介系詞與固定搭配", "phrase": "apply to", "zh": "適用於；申請", "example": "This rule applies to everyone."}, {"category": "常見介系詞與固定搭配", "phrase": "depend on", "zh": "依賴；取決於", "example": "Success depends on teamwork."}, {"category": "常見介系詞與固定搭配", "phrase": "rely on", "zh": "依賴", "example": "We rely on accurate data."}, {"category": "常見介系詞與固定搭配", "phrase": "focus on", "zh": "專注於", "example": "Focus on customer needs."}, {"category": "常見介系詞與固定搭配", "phrase": "insist on", "zh": "堅持", "example": "She insisted on checking again."}, {"category": "常見介系詞與固定搭配", "phrase": "spend money on", "zh": "花錢在", "example": "They spent money on ads."}, {"category": "常見介系詞與固定搭配", "phrase": "prevent from", "zh": "阻止", "example": "Safety rules prevent accidents."}, {"category": "常見介系詞與固定搭配", "phrase": "protect from", "zh": "保護免於", "example": "The cover protects devices from dust."}, {"category": "常見介系詞與固定搭配", "phrase": "provide with", "zh": "提供某人某物", "example": "The hotel provides guests with towels."}, {"category": "常見介系詞與固定搭配", "phrase": "supply with", "zh": "供應某人某物", "example": "The vendor supplied us with parts."}, {"category": "常見介系詞與固定搭配", "phrase": "replace with", "zh": "用……取代", "example": "Replace the old printer with a new one."}, {"category": "常見介系詞與固定搭配", "phrase": "compare with", "zh": "與……比較", "example": "Compare this plan with yours."}, {"category": "常見介系詞與固定搭配", "phrase": "divide into", "zh": "分成", "example": "The report is divided into sections."}, {"category": "常見介系詞與固定搭配", "phrase": "translate into", "zh": "翻譯成", "example": "Translate the document into English."}];
+const grammarSections = [["名詞（Noun）與可數/不可數", "看到 many/few → 可數複數；much/little → 不可數；a/an → 單數可數。", ["many employees", "much information", "a report"]], ["代名詞（Pronoun）", "主格當主詞；受格當受詞；所有格後接名詞；反身代名詞強調自己。", ["She contacted him.", "his report", "by herself"]], ["動詞時態（Tense）", "明確過去時間用過去式；since/for 常配完成式；未來時間用 will/be going to。", ["yesterday → completed", "since 2020 → has worked"]], ["主詞動詞一致（Subject-Verb Agreement）", "真正主詞決定動詞，介系詞片語先括號刪掉。", ["The list of items is ready.", "Employees are invited."]], ["被動語態（Passive Voice）", "物當主詞 + be + p.p.；常見於公告、規定、流程。", ["The form must be submitted.", "The room was cleaned."]], ["分詞（Participle）", "V-ing 主動/進行；p.p. 被動/完成。", ["a confusing rule", "a confused customer", "updated files"]], ["不定詞與動名詞", "plan/decide/agree + to V；enjoy/avoid/consider + V-ing；介系詞後接 V-ing。", ["decide to leave", "avoid making mistakes", "look forward to meeting"]], ["形容詞與副詞", "形容詞修飾名詞；副詞修飾動詞、形容詞、副詞或整句。", ["a careful review", "review carefully", "extremely important"]], ["比較級與最高級", "than 前用比較級；of/in 範圍用最高級。", ["more efficient than", "the most reliable product"]], ["關係代名詞", "人 who/whom；物 which；人或物 that；所有格 whose。", ["the manager who called", "the report that I read"]], ["連接詞", "because/although/if/when 後接子句；介系詞 despite/due to 後接名詞。", ["Although it rained, we went.", "Despite the rain"]], ["介系詞", "時間：at 點、on 日、in 月年季；地點：at 點、on 面、in 空間。", ["at 9", "on Monday", "in June"]], ["冠詞", "第一次提到 a/an；第二次或特定 the；不可數與複數泛稱通常不加冠詞。", ["a report → the report", "information"]], ["假設語氣", "現在相反：If + 過去式, would V；過去相反：If + had p.p., would have p.p.", ["If I were you", "If we had known"]], ["倒裝句", "否定副詞句首常倒裝：Never/Rarely/Not only + 助動詞 + 主詞。", ["Never have I seen...", "Not only did he help..."]], ["平行結構", "and/or/but 前後詞性一致。", ["to plan, to organize, and to report", "fast and reliable"]], ["名詞子句", "that/what/whether/how + S + V 可當主詞、受詞、補語。", ["I know that he left.", "What we need is time."]], ["副詞子句省略", "當主詞相同，可省略主詞與 be。", ["When finished, submit the form.", "Although tired, she continued."]], ["使役動詞", "make/have/let + 原形 V；get + to V；have/get + 物 + p.p.", ["make him wait", "get him to sign", "have the car repaired"]], ["語意連接副詞", "however 表轉折；therefore 表結果；moreover 表補充；otherwise 表否則。", ["However, sales fell.", "Therefore, we changed the plan."]]];
+const clozeTips = [["先判斷詞性", "空格前後決定答案是名詞、動詞、形容詞或副詞。", "冠詞/所有格 + ____ → 名詞；be + ____ → 形容詞或分詞。"], ["再判斷文法形態", "名詞看單複數；動詞看時態、主動被動、主詞一致。", "The reports ___ submitted yesterday. → were"], ["最後判斷語意", "四個選項詞性都對時，看上下文邏輯。", "although/however/despite 這種題要看轉折關係。"], ["介系詞固定搭配優先背", "TOEIC 很愛考 be interested in / responsible for / subject to。", "看到形容詞或動詞搭配介系詞，優先套固定搭配。"], ["連接詞 vs 介系詞", "because/although/if 後面接 S+V；because of/despite/due to 後面接名詞。", "Although the weather was bad / Despite the bad weather"], ["分詞題看主被動", "修飾人事物時，主動用 V-ing，被動用 p.p.。", "updated information；increasing sales"], ["副詞位置題", "副詞常放動詞前後、形容詞前、p.p. 前。", "carefully reviewed / highly recommended"], ["時間線索題", "yesterday/last/year ago → 過去式；since/for/recently → 完成式常見。", "has worked since 2020"], ["被動題", "空格後沒有受詞，且主詞是物，常考被動。", "The package was delivered."], ["平行結構題", "and/or/but 前後形式要一樣。", "planning, organizing, and reporting"]];
+const mnemonics = [["名詞位置口訣", "冠所介後找名詞：冠詞、所有格、介系詞後面常接名詞。"], ["副詞口訣", "副詞很忙，修動、修形、修副、修全句。"], ["分詞口訣", "事情令人 V-ing，人感到 p.p.：exciting news / excited people。"], ["被動口訣", "物當主詞沒受詞，be p.p. 先懷疑。"], ["連接詞口訣", "有主有動用連接，只有名詞用介系。"], ["時態口訣", "過去時間過去式，since/for 找完成。"], ["主動被動口訣", "人做事主動，物被做被動。"], ["平行口訣", "A and B 要同型，to V 配 to V，V-ing 配 V-ing。"], ["比較口訣", "看到 than 想比較，看到 in/of 想最高。"], ["關代口訣", "前有人用 who，前有物用 which，萬用 that 但逗號後少用。"]];
+
+let currentVisibleRows = [];
+let autoPlayIndex = 0;
+let isAutoPlaying = false;
+let availableVoices = [];
+
+function escapeHtml(value){
+  return String(value).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[s]));
+}
+
+function updateRateLabel(){
+  document.getElementById('rateValue').textContent = document.getElementById('rateRange').value;
+}
+
+function loadVoices(){
+  const preferredLang = document.getElementById('langSelect').value;
+  const voiceSelect = document.getElementById('voiceSelect');
+  availableVoices = speechSynthesis.getVoices();
+
+  const englishVoices = availableVoices.filter(voice => voice.lang && voice.lang.startsWith('en'));
+  const preferredVoices = englishVoices.filter(voice => voice.lang === preferredLang);
+  const finalVoices = preferredVoices.length ? preferredVoices : englishVoices;
+
+  voiceSelect.innerHTML = finalVoices.map(voice => {
+    return `<option value="${escapeHtml(voice.name)}">${escapeHtml(voice.name)}｜${escapeHtml(voice.lang)}</option>`;
+  }).join('');
+
+  if (!finalVoices.length) {
+    voiceSelect.innerHTML = '<option value="">使用瀏覽器預設英文聲音</option>';
+  }
+}
+
+function getSelectedVoice(){
+  const selectedName = document.getElementById('voiceSelect').value;
+  return availableVoices.find(voice => voice.name === selectedName) || null;
+}
+
+function speakText(text, onEnd){
+  speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = document.getElementById('langSelect').value;
+  utterance.rate = Number(document.getElementById('rateRange').value);
+  utterance.pitch = 1;
+
+  const selectedVoice = getSelectedVoice();
+  if (selectedVoice) utterance.voice = selectedVoice;
+
+  utterance.onstart = () => {
+    document.getElementById('playStatus').textContent = '狀態：播放中 → ' + text;
+  };
+
+  utterance.onend = () => {
+    document.getElementById('playStatus').textContent = '狀態：播放完成';
+    if (typeof onEnd === 'function') onEnd();
+  };
+
+  utterance.onerror = () => {
+    document.getElementById('playStatus').textContent = '狀態：播放失敗，請換聲音或重新點播放';
+  };
+
+  speechSynthesis.speak(utterance);
+}
+
+function speakPhrase(index){
+  const phrase = phrases[index];
+  markPlayingRow(index);
+  speakText(phrase.phrase);
+}
+
+function speakExample(index){
+  const phrase = phrases[index];
+  markPlayingRow(index);
+  speakText(phrase.example);
+}
+
+function speakBoth(index, onEnd){
+  const phrase = phrases[index];
+  markPlayingRow(index);
+  speakText(phrase.phrase, () => {
+    setTimeout(() => speakText(phrase.example, onEnd), 450);
+  });
+}
+
+function stopSpeaking(){
+  isAutoPlaying = false;
+  speechSynthesis.cancel();
+  clearPlayingRows();
+  document.getElementById('playStatus').textContent = '狀態：已停止';
+}
+
+function clearPlayingRows(){
+  document.querySelectorAll('tr[data-original-index]').forEach(row => row.classList.remove('playing-row'));
+}
+
+function markPlayingRow(originalIndex){
+  clearPlayingRows();
+  const row = document.querySelector(`tr[data-original-index="${originalIndex}"]`);
+  if (row) {
+    row.classList.add('playing-row');
+    row.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+}
+
+function speakVisibleFirst(){
+  if (!currentVisibleRows.length) return;
+  const originalIndex = phrases.indexOf(currentVisibleRows[0]);
+  speakBoth(originalIndex);
+}
+
+function startAutoPlay(){
+  if (!currentVisibleRows.length) {
+    document.getElementById('playStatus').textContent = '狀態：目前沒有可播放資料';
+    return;
+  }
+  isAutoPlaying = true;
+  autoPlayIndex = 0;
+  playNextVisibleRow();
+}
+
+function playNextVisibleRow(){
+  if (!isAutoPlaying || autoPlayIndex >= currentVisibleRows.length) {
+    isAutoPlaying = false;
+    clearPlayingRows();
+    document.getElementById('playStatus').textContent = '狀態：自動播放完成';
+    return;
+  }
+
+  const item = currentVisibleRows[autoPlayIndex];
+  const originalIndex = phrases.indexOf(item);
+  const mode = document.getElementById('autoMode').value;
+
+  const next = () => {
+    autoPlayIndex++;
+    setTimeout(playNextVisibleRow, 850);
+  };
+
+  if (mode === 'phrase') {
+    markPlayingRow(originalIndex);
+    speakText(item.phrase, next);
+  } else if (mode === 'example') {
+    markPlayingRow(originalIndex);
+    speakText(item.example, next);
+  } else {
+    speakBoth(originalIndex, next);
+  }
+}
+
+function initCategories(){
+  const select = document.getElementById('categoryFilter');
+  [...new Set(phrases.map(p => p.category))].forEach(category => {
+    const option = document.createElement('option');
+    option.value = category;
+    option.textContent = category;
+    select.appendChild(option);
+  });
+}
+
+function renderTable(){
+  const keyword = document.getElementById('searchBox').value.trim().toLowerCase();
+  const category = document.getElementById('categoryFilter').value;
+  currentVisibleRows = phrases.filter(p => {
+    const matchedCategory = !category || p.category === category;
+    const text = `${p.category} ${p.phrase} ${p.zh} ${p.example}`.toLowerCase();
+    const matchedKeyword = !keyword || text.includes(keyword);
+    return matchedCategory && matchedKeyword;
+  });
+
+  document.getElementById('visibleCount').textContent = currentVisibleRows.length;
+  document.getElementById('phraseTable').innerHTML = currentVisibleRows.map((p, index) => {
+    const originalIndex = phrases.indexOf(p);
+    return `
+      <tr data-original-index="${originalIndex}">
+        <td>${index + 1}</td>
+        <td><span class="badge">${escapeHtml(p.category)}</span></td>
+        <td><span class="phrase-text" onclick="speakPhrase(${originalIndex})" title="點片語可發音">${escapeHtml(p.phrase)}</span></td>
+        <td>${escapeHtml(p.zh)}</td>
+        <td><span class="example-text">${escapeHtml(p.example)}</span></td>
+        <td>
+          <button class="speak-btn" onclick="speakPhrase(${originalIndex})">🔊 片語</button>
+          <button class="speak-btn" onclick="speakExample(${originalIndex})">🔊 例句</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function resetFilters(){
+  document.getElementById('searchBox').value = '';
+  document.getElementById('categoryFilter').value = '';
+  renderTable();
+}
+
+function renderCloze(){
+  document.getElementById('clozeTips').innerHTML = clozeTips.map((item, index) => `
+    <div class="tip">
+      <b>${index + 1}. ${escapeHtml(item[0])}</b><br>
+      ${escapeHtml(item[1])}<br>
+      <span class="small">例：${escapeHtml(item[2])}</span>
+    </div>
+  `).join('');
+}
+
+function renderGrammar(){
+  document.getElementById('grammarList').innerHTML = grammarSections.map((item, index) => `
+    <details ${index < 5 ? 'open' : ''}>
+      <summary>${index + 1}. ${escapeHtml(item[0])}</summary>
+      <p><b>判斷口訣：</b>${escapeHtml(item[1])}</p>
+      <p><b>常見例子：</b>${item[2].map(x => `<span class="badge">${escapeHtml(x)}</span>`).join(' ')}</p>
+    </details>
+  `).join('');
+}
+
+function renderMnemonics(){
+  document.getElementById('mnemonicList').innerHTML = mnemonics.map(item => `
+    <div class="mnemonic"><b>${escapeHtml(item[0])}</b><br>${escapeHtml(item[1])}</div>
+  `).join('');
+}
+
+function toggleAnswer(id){
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === 'block' ? 'none' : 'block';
+}
+
+document.getElementById('totalCount').textContent = phrases.length;
+initCategories();
+renderTable();
+renderCloze();
+renderGrammar();
+renderMnemonics();
+updateRateLabel();
+
+if ('speechSynthesis' in window) {
+  loadVoices();
+  speechSynthesis.onvoiceschanged = loadVoices;
+} else {
+  document.getElementById('playStatus').textContent = '狀態：此瀏覽器不支援語音播放';
+}
+</script>
+</body>
+</html>

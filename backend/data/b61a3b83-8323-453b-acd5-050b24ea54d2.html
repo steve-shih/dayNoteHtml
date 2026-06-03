@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<!-- saved from url=(1411)https://ff780dd9436218976599408fc2320f3a83340c0a4aa2bc94d07b095-apidata.googleusercontent.com/download/storage/v1/b/devops_region/o/sre-devops-multi-view-company-diagrams-v3.html?jk=AbRIizzRreeza5m1ylZtMhPRwOHq6SWnopfrSu54-aoB7J9XyWNx84LTpZeDQDihYMMjG7S9EHJbDNibC5wxrXGZD5K6iNKJGfIDoRivYJoc0aJ7tO8nN6ofooAN2Wbzf-Pt3WFH9K6R0X-hYYZl7WGuL5giQ4MTbV3c0szdGXvaL5QZFKjis9CCPYnHmUqF43AMyov8trFqZPTka5byv3crxSnp-aJwiqcUs-cTev7xINWX9n33Mkm85Hz0xC-FUdxWJj53KVjkzw5mMv1xcpwfAuVxx0S7umLhNvOwamss2jDzkgzkuERQPtMV9_VIlzta8otWvUNKnViPbpY0fmeHPQ9YvMC_XaMtBha5Zmg4-qf8YKnu3_PFGl53y6pxhoLoxczENBNzq2_qzqfhnw3m1frK5EVP-FqRrNfw8qJNnLKcTpBqL7TepPAPPnoK8zqbvAAGA7jZk_6NaGzuWapNBGSk5BQAG97H9egO4ULfMgbBMq8W9Mouqib1lHKiU2OW2jQ2_x5oQpWPA4C0jLArpfMjZwxrj7CUAxKxSvbdBVkRcnDLHeOz8TGpvkPIUsNNOmejid-jB883VoObZzShyobb71xwv61RslhpY6nx-nIOjlmDmChQtLfwl7ydhnYxdP0KtZH7XPFK8miERjEwtu6NlNJmxl72KWt29jomSJvLfdhkM20xsBUiZb4RRfR29E4pON1d3xbLysMDKk1fnMvqVcqSakdYhG3j7bZ9wbQUWRP7BgBm3pij7XeDOaNKZqKTdWzVPf8wm_cZSVdS3ms8uMEn3_9YDEosykj88hG9VQQRXNHuTGu1joxH20lU0QzVtzyNPrKPZ1xJ-VyCEvP9IULu6aNPAUbDdH2gLZqyMaqZsNh3aS4UYxxbzr0nLRBMM6eH1yV1lruyJ8973ZoVErYpPwGa8pmHkuHF2QfOus-ncj8QsJT7iFnONztE13mqXreqCOwYiZVRxHDz9YGqSo0FupD8zAPljNH2evSFGgcprYycp1NdrxdR5COxc8505Xt3ykzvi0luVQksWKc4n1arQEekaWYMJpI5HxTP9ovB3XqR5Qxx4R-LSoeHnYqyG3gY3bEpCXtdxiZJVkIzt_4hgshnlyd_-NMEz96eLmfASZzCH0d8gGfaswhyq1dnGoCyDcOiJiXW3Ypc4hPa2FoX00Od3QmFIYlNwQlt6MmgGnLeRDe-n7XMQjsOzg&isca=1 -->
+<html lang="zh-Hant"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SRE / DevOps 大中小超大型公司多視角細節圖 V3</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+      background: #f4f6f8;
+      color: #222;
+    }
+
+    header {
+      padding: 18px 24px;
+      background: #111827;
+      color: white;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 26px;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: #d1d5db;
+      line-height: 1.7;
+      max-width: 1200px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding: 14px 24px;
+      background: white;
+      border-bottom: 1px solid #ddd;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .controls label {
+      font-weight: bold;
+      margin-right: 6px;
+    }
+
+    select {
+      padding: 8px 10px;
+      font-size: 15px;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(780px, 1fr) 440px;
+      gap: 16px;
+      padding: 16px 24px;
+    }
+
+    .panel {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .summary {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      line-height: 1.7;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+      font-size: 13px;
+    }
+
+    .legend span {
+      border: 1px solid #ddd;
+      background: #fafafa;
+      padding: 5px 8px;
+      border-radius: 4px;
+    }
+
+    .diagram-wrap {
+      overflow: auto;
+      border: 1px solid #ccc;
+      background: #fbfbfb;
+      border-radius: 6px;
+    }
+
+    .diagram {
+      position: relative;
+      width: 1380px;
+      height: 980px;
+      background:
+        linear-gradient(#eef2f7 1px, transparent 1px),
+        linear-gradient(90deg, #eef2f7 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .group {
+      position: absolute;
+      border: 2px dashed #cbd5e1;
+      background: rgba(241,245,249,0.55);
+      border-radius: 12px;
+      z-index: 1;
+    }
+
+    .group-title {
+      position: absolute;
+      top: 6px;
+      left: 10px;
+      font-weight: bold;
+      color: #334155;
+      font-size: 13px;
+      background: white;
+      border: 1px solid #ddd;
+      padding: 2px 8px;
+      border-radius: 99px;
+    }
+
+    .node {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      width: 132px;
+      min-height: 66px;
+      padding: 8px;
+      border: 2px solid #555;
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+      text-align: center;
+      z-index: 5;
+    }
+
+    .node:hover,
+    .node.active {
+      border-color: #2563eb;
+      background: #eff6ff;
+      z-index: 10;
+    }
+
+    .node-title {
+      font-weight: bold;
+      font-size: 13px;
+      line-height: 1.25;
+      margin-bottom: 4px;
+    }
+
+    .node-meta {
+      font-size: 11px;
+      color: #555;
+      line-height: 1.35;
+    }
+
+    .network { border-top: 6px solid #2563eb; }
+    .security { border-top: 6px solid #dc2626; }
+    .compute { border-top: 6px solid #7c3aed; }
+    .app { border-top: 6px solid #d97706; }
+    .data { border-top: 6px solid #059669; }
+    .observe { border-top: 6px solid #db2777; }
+    .async { border-top: 6px solid #0891b2; }
+
+    .line {
+      stroke: #475569;
+      stroke-width: 2.2;
+      fill: none;
+      marker-end: url(#arrow);
+    }
+
+    .line.cache {
+      stroke: #059669;
+      stroke-dasharray: 7 5;
+    }
+
+    .line.security {
+      stroke: #dc2626;
+    }
+
+    .line.replica {
+      stroke: #7c3aed;
+      stroke-dasharray: 4 4;
+    }
+
+    .line.observe {
+      stroke: #db2777;
+      stroke-dasharray: 8 4;
+    }
+
+    .detail-panel h2 {
+      margin-top: 0;
+      font-size: 24px;
+    }
+
+    .field {
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+    }
+
+    .field-title {
+      font-weight: bold;
+      color: #374151;
+      margin-bottom: 4px;
+    }
+
+    .field-value {
+      line-height: 1.65;
+      color: #333;
+    }
+
+    ul {
+      margin-top: 6px;
+      padding-left: 20px;
+      line-height: 1.75;
+    }
+
+    .tables {
+      padding: 0 24px 28px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      min-width: 1180px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      vertical-align: top;
+      line-height: 1.6;
+    }
+
+    th {
+      background: #f3f4f6;
+    }
+
+    .table-scroll {
+      overflow-x: auto;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: white;
+    }
+
+    @media (max-width: 1200px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+
+      .detail-panel {
+        order: -1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SRE / DevOps 大中小超大型公司多視角細節圖 V3</h1>
+    <p class="subtitle">
+      這版強化中型、大型、超大型架構：加入 App Cluster、VM Group、K8S Cluster、Redis Cluster、Replica Set、Read Replica、Shard、Queue、Worker、CDC、Data Warehouse、跨區同步與觀測路徑。圖面加大、節點縮小、加入群組框避免黏在一起。
+    </p>
+  </header>
+
+  <section class="controls">
+    <div>
+      <label for="sizeSelect">公司規模：</label>
+      <select id="sizeSelect">
+        <option value="small">小型公司</option>
+        <option value="medium">中型公司</option>
+        <option value="large">大型 / 中大型公司</option>
+        <option value="xlarge">超大型公司</option>
+      </select>
+    </div>
+    <div>
+      <label for="viewSelect">觀察角度：</label>
+      <select id="viewSelect">
+        <option value="architecture">架構圖</option>
+        <option value="traffic">流量圖</option>
+        <option value="security">資安圖</option>
+        <option value="troubleshooting">故障排除圖</option>
+        <option value="database">資料庫圖</option>
+      </select>
+    </div>
+  </section>
+
+  <main>
+    <section class="panel">
+      <div class="legend">
+        <span>藍：網路入口</span>
+        <span>紅：資安</span>
+        <span>紫：運算 / Cluster</span>
+        <span>橘：應用服務</span>
+        <span>綠：資料 / Cache / DB</span>
+        <span>青：非同步 / Queue</span>
+        <span>粉：監控觀測</span>
+      </div>
+
+      <div id="summary" class="summary">架構圖：看從入口到 App、Cache、Queue、DB、監控的完整結構。新版加入群組框，特別強化中大型公司的 Cluster、Replica、Shard。</div>
+
+      <div class="diagram-wrap">
+        <div id="diagram" class="diagram">
+          <svg id="lineSvg">
+            <defs>
+              <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L0,6 L9,3 z" fill="#475569"></path>
+              </marker>
+            </defs>
+          <path d="M 690 70 C 690 110, 690 130, 690 170" class="line "></path><path d="M 690 170 C 690 210, 690 270, 690 310" class="line "></path><path d="M 690 310 C 690 350, 690 410, 690 450" class="line "></path><path d="M 690 450 C 690 512.5, 690 637.5, 690 700" class="line "></path><path d="M 690 700 C 690 777.5, 900 722.5, 900 800" class="line replica"></path><path d="M 690 450 C 690 552.5, 1080 367.5, 1080 470" class="line observe"></path><path d="M 690 700 C 690 855, 1080 315, 1080 470" class="line observe"></path></svg>
+        <div class="group" style="left: 490px; top: 250px; width: 400px; height: 330px;"><div class="group-title">Single VM</div></div><div class="group" style="left: 520px; top: 660px; width: 340px; height: 170px;"><div class="group-title">Data</div></div><div class="node network active" id="node-user" style="left: 690px; top: 70px;">
+          <div class="node-title">User</div>
+          <div class="node-meta">L7 Application；HTTP / HTTPS。</div>
+        </div><div class="node network" id="node-dns" style="left: 690px; top: 170px;">
+          <div class="node-title">DNS</div>
+          <div class="node-meta">DNS；通常 UDP 53 / TCP 53。</div>
+        </div><div class="node app" id="node-nginx" style="left: 690px; top: 310px;">
+          <div class="node-title">Nginx</div>
+          <div class="node-meta">L7 HTTP / HTTPS / WebSocket。</div>
+        </div><div class="node app" id="node-app" style="left: 690px; top: 450px;">
+          <div class="node-title">Node.js + PM2</div>
+          <div class="node-meta">L7 HTTP / HTTPS。</div>
+        </div><div class="node data" id="node-db" style="left: 690px; top: 700px;">
+          <div class="node-title">Single DB</div>
+          <div class="node-meta">Data Layer；MongoDB/MySQL/PostgreSQL TCP。</div>
+        </div><div class="node data" id="node-backup" style="left: 900px; top: 800px;">
+          <div class="node-title">Backup</div>
+          <div class="node-meta">Data Protection。</div>
+        </div><div class="node observe" id="node-observe" style="left: 1080px; top: 470px;">
+          <div class="node-title">Basic Logs</div>
+          <div class="node-meta">SRE Layer。</div>
+        </div></div>
+      </div>
+    </section>
+
+    <aside class="panel detail-panel">
+      <h2 id="detailTitle">User / Browser</h2>
+
+      <div class="field">
+        <div class="field-title">定位</div>
+        <div id="detailRole" class="field-value">請求來源，也是體驗最終反映點。</div>
+      </div>
+
+      <div class="field">
+        <div class="field-title">層級 / 協定</div>
+        <div id="detailLayer" class="field-value">L7 Application；HTTP / HTTPS。</div>
+      </div>
+
+      <div class="field">
+        <div class="field-title">為何這樣做</div>
+        <ul id="detailWhy"><li>所有架構最終都服務使用者。</li><li>排查故障時，先確認是單一使用者、單一地區，還是全體異常。</li></ul>
+      </div>
+
+      <div class="field">
+        <div class="field-title">可以幹嘛</div>
+        <ul id="detailCanDo"><li>發送網頁請求。</li><li>發送 API request。</li><li>用 DevTools 看 DNS、TLS、TTFB、下載時間。</li></ul>
+      </div>
+
+      <div class="field">
+        <div class="field-title">流量與規模差異</div>
+        <ul id="detailTraffic"><li>小型：直接進 Nginx。</li><li>中型：先進 LB，再進 VM。</li><li>大型：先經 CDN / WAF / LB。</li><li>超大型：先被 Global DNS 導到某個 Region。</li></ul>
+      </div>
+
+      <div class="field">
+        <div class="field-title">資安重點</div>
+        <ul id="detailSecurity"><li>Cookie、JWT、CORS、CSRF 都會與瀏覽器相關。</li></ul>
+      </div>
+
+      <div class="field">
+        <div class="field-title">故障排除重點</div>
+        <ul id="detailTrouble"><li>看瀏覽器 Network。</li><li>確認是否只有特定地區慢。</li><li>確認是否為前端快取或 Cookie 問題。</li></ul>
+      </div>
+    </aside>
+  </main>
+
+  <section class="tables">
+    <h2>架構演化重點表</h2>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>規模</th>
+            <th>入口層</th>
+            <th>運算層</th>
+            <th>Cache / Queue</th>
+            <th>DB Cluster / Replica</th>
+            <th>流量處理</th>
+            <th>故障排除主軸</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>小型</td>
+            <td>DNS → Nginx</td>
+            <td>單台 VM + PM2 / Docker</td>
+            <td>通常沒有，或單一 Redis</td>
+            <td>單機 DB + Backup</td>
+            <td>Nginx 做基本反向代理與限流</td>
+            <td>DNS、Nginx、App Log、DB slow query</td>
+          </tr>
+          <tr>
+            <td>中型</td>
+            <td>DNS → Cloud LB → Nginx</td>
+            <td>MIG / VM Group / 多台 App</td>
+            <td>Redis Cache、簡單 Queue、Worker</td>
+            <td>Primary + Secondary + Read Replica + Backup</td>
+            <td>LB 分 VM；Nginx 分 API；Redis 擋 DB；Queue 削峰</td>
+            <td>LB Health、VM 飽和、Nginx 502、App latency、Replica lag</td>
+          </tr>
+          <tr>
+            <td>大型 / 中大型</td>
+            <td>DNS → CDN → WAF → LB → Ingress</td>
+            <td>K8S Cluster、多服務、多 Pod、HPA</td>
+            <td>Redis Cluster、Kafka/RabbitMQ、Worker Pool</td>
+            <td>DB Cluster、Replica Set、Shard、Data Warehouse、CDC</td>
+            <td>CDN 吃靜態；WAF 擋攻擊；K8S 擴容；DB 分讀寫</td>
+            <td>Golden Signals、Trace、Queue Lag、Cache Hit、DB Explain</td>
+          </tr>
+          <tr>
+            <td>超大型</td>
+            <td>Global DNS → Multi CDN/WAF → Regional LB</td>
+            <td>Multi Region K8S / Service Mesh</td>
+            <td>Regional Redis Cluster、Global Event Stream</td>
+            <td>Multi-Region DB、Shard by region/tenant、Cross-region replica</td>
+            <td>依國家/延遲/健康度導流；區域故障切換</td>
+            <td>先判斷全球或單區，再查跨區同步、DNS、Region Health</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <script>
+    const DETAILS = {
+      user: {
+        title: "User / Browser",
+        role: "請求來源，也是體驗最終反映點。",
+        layer: "L7 Application；HTTP / HTTPS。",
+        why: ["所有架構最終都服務使用者。", "排查故障時，先確認是單一使用者、單一地區，還是全體異常。"],
+        canDo: ["發送網頁請求。", "發送 API request。", "用 DevTools 看 DNS、TLS、TTFB、下載時間。"],
+        traffic: ["小型：直接進 Nginx。", "中型：先進 LB，再進 VM。", "大型：先經 CDN / WAF / LB。", "超大型：先被 Global DNS 導到某個 Region。"],
+        security: ["Cookie、JWT、CORS、CSRF 都會與瀏覽器相關。"],
+        trouble: ["看瀏覽器 Network。", "確認是否只有特定地區慢。", "確認是否為前端快取或 Cookie 問題。"]
+      },
+      dns: {
+        title: "DNS / Global DNS",
+        role: "網域解析、入口導流、跨區域流量分配。",
+        layer: "DNS；通常 UDP 53 / TCP 53。",
+        why: ["讓使用者不用記 IP。", "中大型可把 domain 指向 Load Balancer。", "超大型可依地區、延遲、健康度導到不同 Region。"],
+        canDo: ["A Record。", "CNAME。", "Geo DNS。", "Failover DNS。", "Weighted Routing。"],
+        traffic: ["小型：domain → 單一 VM。", "中型：domain → LB。", "超大型：台灣 → Asia Region，美國 → US Region。"],
+        security: ["防止 DNS 設定錯誤。", "重要域名可搭配 DNSSEC。"],
+        trouble: ["dig / nslookup。", "檢查 TTL。", "不同地區解析結果是否一致。"]
+      },
+      cdn: {
+        title: "CDN / Edge Cache",
+        role: "邊緣節點快取，降低源站壓力。",
+        layer: "L7 HTTP / HTTPS。",
+        why: ["圖片、JS、CSS、影片不需要每次回 App。", "把靜態流量擋在離使用者更近的地方。", "大型流量下可大幅降低 origin 壓力。"],
+        canDo: ["快取靜態檔案。", "TLS 加速。", "壓縮。", "保護 origin。"],
+        traffic: ["大型：可能 70%~95% 靜態流量由 CDN 回應。", "Cache miss 才會回源到 LB / App。"],
+        security: ["隱藏 origin。", "搭配 WAF、Bot 防護。"],
+        trouble: ["看 Cache Hit Rate。", "確認是否快取到舊版本。", "檢查回源失敗與 CDN 節點異常。"]
+      },
+      waf: {
+        title: "WAF / Cloud Armor",
+        role: "Web 應用防火牆，將攻擊擋在 App 前。",
+        layer: "L7 HTTP / HTTPS。",
+        why: ["攻擊越早擋越便宜。", "避免惡意請求打進 VM、K8S、DB。", "降低暴力破解、Bot、SQL Injection、XSS 風險。"],
+        canDo: ["IP 黑白名單。", "Rate Limit。", "OWASP Rule。", "Bot 管理。", "DDoS 防護搭配。"],
+        traffic: ["中型：常搭配 LB。", "大型：在 CDN/LB 周邊清洗大量惡意流量。"],
+        security: ["避免誤擋正常 API。", "規則需依 path 分層，不同 API 有不同風險。"],
+        trouble: ["看 WAF hit log。", "確認是否有正常請求被擋。", "調整 rate limit 與例外規則。"]
+      },
+      lb: {
+        title: "Load Balancer",
+        role: "機器級、服務級或區域級流量分配。",
+        layer: "L4 TCP/UDP 或 L7 HTTP/HTTPS。",
+        why: ["多台機器時，需要決定流量送哪台。", "後端壞掉時要自動避開。", "可集中 SSL、Health Check、Path Routing。"],
+        canDo: ["分流到 VM Group。", "分流到 K8S Ingress。", "健康檢查。", "HTTPS 憑證。", "跨 Region 導流。"],
+        traffic: ["中型：10000 requests → VM1/VM2/VM3。", "大型：LB → Ingress → Service → Pod。", "超大型：Global LB + Regional LB 分層。"],
+        security: ["只允許 LB 打進後端。", "搭配 WAF/Cloud Armor。"],
+        trouble: ["看 Backend Health。", "看 502/503。", "確認 health check path、port、防火牆。"]
+      },
+      vmGroup: {
+        title: "VM Group / MIG",
+        role: "多台 VM 的集合，可自動擴容、自動重建。",
+        layer: "Infrastructure；L3/L4 承載 TCP/IP。",
+        why: ["單台 VM 掛掉不能讓服務全掛。", "流量變大時可新增 VM。", "MIG 可讓壞掉的 VM 自動重建。"],
+        canDo: ["Auto Healing。", "Auto Scaling。", "Rolling Update。", "Instance Template。"],
+        traffic: ["LB 把流量分到 VM 群。", "每台 VM 內再由 Nginx/App 處理。"],
+        security: ["VM 不直接公開 DB。", "只開必要 port。", "SSH 限制來源。"],
+        trouble: ["查 VM CPU、Memory、Disk I/O。", "查 MIG 是否有重建。", "查 startup script 與 health check。"]
+      },
+      nginx: {
+        title: "Nginx / Ingress",
+        role: "應用入口、反向代理、服務級路由。",
+        layer: "L7 HTTP / HTTPS / WebSocket。",
+        why: ["LB 決定哪台機器，Nginx 決定進機器後去哪個服務。", "可做靜態檔、反向代理、限流、壓縮。"],
+        canDo: ["Reverse Proxy。", "Path Routing。", "Rate Limit。", "Static Files。", "WebSocket Proxy。"],
+        traffic: ["/api → Node API。", "/admin → Admin App。", "/static → 靜態檔案。", "大型 K8S 用 Ingress 做類似角色。"],
+        security: ["限制 body size。", "加 security headers。", "擋基本惡意 IP。"],
+        trouble: ["access.log / error.log。", "proxy timeout。", "upstream 502/504。"]
+      },
+      k8sCluster: {
+        title: "K8S Cluster",
+        role: "大型公司的容器服務平台。",
+        layer: "Orchestration；Service Discovery；L3-L7。",
+        why: ["服務太多時，手動管理 VM 會失控。", "需要 HPA、自動修復、滾動部署。", "多團隊可用 Namespace / RBAC 隔離。"],
+        canDo: ["Deployment。", "Service。", "Ingress。", "HPA。", "Rolling Update。", "Self-healing。"],
+        traffic: ["LB → Ingress → Service → Pods。", "HPA 根據 CPU/RPS 擴 Pod。", "Service 做 Pod 內部負載均衡。"],
+        security: ["RBAC。", "Network Policy。", "Secret 管理。", "Namespace 隔離。"],
+        trouble: ["kubectl get pod。", "kubectl logs。", "kubectl describe。", "看 restart count、resource limit、HPA。"]
+      },
+      api: {
+        title: "API Service / App Pods",
+        role: "實際處理業務邏輯的服務。",
+        layer: "L7 HTTP / HTTPS。",
+        why: ["登入、查詢、排班、報表、更新都在 App 層。", "中大型會依功能拆成多個服務。"],
+        canDo: ["Auth。", "CRUD。", "Validation。", "呼叫 Cache/DB/Queue。", "回傳 JSON。"],
+        traffic: ["小型：單一 App 吃全部 API。", "大型：API、Auth、Report、Worker 拆開擴。"],
+        security: ["JWT / Session 驗證。", "RBAC 權限。", "輸入驗證。", "避免 NoSQL Injection。"],
+        trouble: ["API latency。", "Error rate。", "Event loop delay。", "DB query 慢。"]
+      },
+      auth: {
+        title: "Auth Service",
+        role: "認證與授權服務。",
+        layer: "L7 HTTP / HTTPS。",
+        why: ["大型系統會把登入、Token、權限獨立處理。", "避免每個服務自己亂做驗證。"],
+        canDo: ["Login。", "JWT。", "Session。", "OAuth/OIDC。", "Permission check。"],
+        traffic: ["登入流量與一般 API 分離。", "Token 驗證可被 API Gateway 或 Service Mesh 使用。"],
+        security: ["密碼 hash。", "MFA。", "Token 過期與刷新。", "防暴力破解。"],
+        trouble: ["看登入錯誤率。", "查 Token 過期、Clock skew、Session store。"]
+      },
+      queue: {
+        title: "Queue / Event Stream",
+        role: "削峰填谷與非同步處理。",
+        layer: "L7 Message Protocol；AMQP / Kafka / TCP。",
+        why: ["報表、寄信、匯出、通知不應卡住 API。", "尖峰流量可先排隊，Worker 慢慢消化。"],
+        canDo: ["背景任務。", "重試。", "事件驅動。", "批次處理。", "跨服務解耦。"],
+        traffic: ["API → Queue → Worker。", "大型：Kafka/RabbitMQ/SQS 讓高峰請求不直接壓垮 DB。"],
+        security: ["訊息不可放明文密碼/敏感資料。", "Queue ACL。"],
+        trouble: ["Queue depth。", "Consumer lag。", "Poison message。", "Retry storm。"]
+      },
+      worker: {
+        title: "Worker Pool",
+        role: "背景工作執行群。",
+        layer: "Application Worker。",
+        why: ["把慢任務移出 API request path。", "可獨立擴容，不影響前台 API。"],
+        canDo: ["產報表。", "寄通知。", "資料同步。", "批次匯出。"],
+        traffic: ["Queue 任務量增加 → Worker 數量增加。", "避免使用者等待重任務完成。"],
+        security: ["Worker 權限應最小化。", "避免批次任務誤刪大量資料。"],
+        trouble: ["看 job duration。", "看 failed jobs。", "看 retry 次數與死信佇列。"]
+      },
+      redisNode: {
+        title: "Redis Node / Cache",
+        role: "快取、Session、短期高頻資料。",
+        layer: "L7 Data Service；RESP / TCP 6379。",
+        why: ["熱門查詢不能每次都打 DB。", "Session、Rate Limit counter 適合放 Redis。"],
+        canDo: ["Cache。", "Session Store。", "Distributed Lock。", "Rate Limit Counter。"],
+        traffic: ["Cache Hit → 不打 DB。", "Cache Miss → 查 DB 後回填 Cache。"],
+        security: ["Redis 不應公開 Internet。", "Private network、ACL、TLS。"],
+        trouble: ["Cache hit rate。", "Hot key。", "Memory usage。", "Eviction。"]
+      },
+      redisCluster: {
+        title: "Redis Cluster",
+        role: "多節點快取叢集，支撐大量讀取。",
+        layer: "Data Cache Cluster。",
+        why: ["單一 Redis 容量與可用性有限。", "大型服務需要分散 key 與備援。"],
+        canDo: ["分片存 key。", "Replica。", "Failover。", "降低 DB 讀取壓力。"],
+        traffic: ["API 先打 Redis Cluster。", "不同 key 會分散到不同 Redis node。"],
+        security: ["Redis ACL。", "隔離在內網。", "敏感資料不要長時間快取。"],
+        trouble: ["Cluster slot。", "Node memory。", "Replication lag。", "Hot key。"]
+      },
+      primaryDb: {
+        title: "Primary DB",
+        role: "主資料庫，負責寫入。",
+        layer: "Data Layer；MongoDB/MySQL/PostgreSQL TCP。",
+        why: ["新增、修改、刪除需要一致的寫入點。", "Primary 負責維持資料正確性。"],
+        canDo: ["Write。", "Transaction。", "Index。", "Oplog / Binlog。"],
+        traffic: ["所有寫入進 Primary。", "讀取可依架構分到 Read Replica。"],
+        security: ["限制寫入帳號權限。", "Audit log。", "備份加密。"],
+        trouble: ["Slow query。", "Lock。", "Disk I/O。", "Connection pool。"]
+      },
+      secondaryDb: {
+        title: "Secondary / Replica",
+        role: "資料副本，支援讀取與故障切換。",
+        layer: "Data Layer；Replication over TCP。",
+        why: ["Primary 掛掉時可選出新 Primary。", "讀取可以分流。", "備份可打副本避免影響主庫。"],
+        canDo: ["Read Replica。", "Failover。", "Backup target。", "Disaster recovery。"],
+        traffic: ["Primary → Secondary 持續同步。", "報表/查詢可導到 Secondary。"],
+        security: ["副本資料一樣敏感。", "備份與副本都要控權限。"],
+        trouble: ["Replication lag。", "Election。", "Read consistency。"]
+      },
+      shard: {
+        title: "Shard / Partition",
+        role: "資料分片，解決單庫容量與寫入壓力。",
+        layer: "Distributed Data Layer。",
+        why: ["資料量太大，一台 DB 放不下。", "寫入太高，一台 Primary 撐不住。", "不同租戶/地區可拆不同 shard。"],
+        canDo: ["依 tenantId 分片。", "依 region 分片。", "依 hash key 分片。", "分散儲存與寫入。"],
+        traffic: ["Router 根據 shard key 決定去哪個 shard。", "Shard key 選錯會造成熱點。"],
+        security: ["不同 shard 可能有不同資料主權要求。", "跨 shard 查詢要小心權限與成本。"],
+        trouble: ["Chunk imbalance。", "Hot shard。", "Cross-shard query。", "Shard key 是否合理。"]
+      },
+      dbRouter: {
+        title: "DB Router / Query Router",
+        role: "決定查詢要進 Primary、Replica 或 Shard。",
+        layer: "Data Routing Layer。",
+        why: ["App 不應手動知道每個 DB 節點。", "集中做讀寫分離、分片路由、故障切換。"],
+        canDo: ["Read/Write split。", "Shard routing。", "Connection pooling。", "Failover routing。"],
+        traffic: ["Write → Primary。", "Read → Replica。", "By shard key → 指定 shard。"],
+        security: ["避免 App 直接拿所有 DB 節點權限。", "可集中控管連線與政策。"],
+        trouble: ["路由錯誤。", "連線池耗盡。", "Replica lag 導致讀舊資料。"]
+      },
+      backup: {
+        title: "Backup / Snapshot",
+        role: "資料復原保險。",
+        layer: "Data Protection。",
+        why: ["誤刪、資料毀損、勒索攻擊都需要可還原。", "高可用不等於備份，Replica 會同步錯誤刪除。"],
+        canDo: ["Daily backup。", "Point-in-time recovery。", "Cross-region backup。", "Restore drill。"],
+        traffic: ["備份流量最好不要打 Primary。", "大型會打 Secondary 或 Snapshot。"],
+        security: ["備份加密。", "限制刪除權限。", "異地保存。"],
+        trouble: ["定期演練 restore。", "確認 RPO/RTO。", "確認備份沒有壞。"]
+      },
+      warehouse: {
+        title: "Data Warehouse / OLAP",
+        role: "報表分析庫，避免拖垮正式 DB。",
+        layer: "Analytics Data Layer。",
+        why: ["報表查詢常常很重，不應直接打 Primary。", "營運分析需要大量聚合與歷史資料。"],
+        canDo: ["BI 報表。", "長期趨勢。", "使用者行為分析。", "資料科學。"],
+        traffic: ["正式 DB → CDC/ETL → Warehouse。", "報表查 Warehouse，不查正式庫。"],
+        security: ["資料去識別化。", "欄位權限。", "查詢審計。"],
+        trouble: ["ETL lag。", "資料口徑不一致。", "重查詢成本過高。"]
+      },
+      cdc: {
+        title: "CDC / Oplog / Binlog",
+        role: "資料異動流，用於同步、分析、搜尋索引。",
+        layer: "Data Streaming Layer。",
+        why: ["系統需要知道 DB 發生哪些新增/修改/刪除。", "可把異動同步到搜尋、報表、其他區域。"],
+        canDo: ["同步到 Data Warehouse。", "同步到 Search。", "跨區資料複製。", "事件驅動。"],
+        traffic: ["DB change → CDC stream → consumer。", "流量與資料異動量相關。"],
+        security: ["CDC 可能包含敏感欄位。", "需要遮罩、加密與權限控管。"],
+        trouble: ["Consumer lag。", "資料重放。", "事件順序。", "重複處理。"]
+      },
+      observe: {
+        title: "Observability",
+        role: "Metrics、Logs、Traces、Alerting。",
+        layer: "SRE Layer。",
+        why: ["沒有觀測就只能猜。", "SRE 要看 Latency、Traffic、Error、Saturation。"],
+        canDo: ["Dashboard。", "Alert。", "Log search。", "Distributed tracing。", "SLO/Error Budget。"],
+        traffic: ["不承接使用者流量，但收集所有元件狀態。"],
+        security: ["Log 不可記明文密碼、Token、個資。", "監控平台也要權限控管。"],
+        trouble: ["用 trace id 追 request。", "比對部署前後指標。", "看哪一層 latency 變高。"]
+      },
+      region: {
+        title: "Region / Availability Zone",
+        role: "地理區域與可用區。",
+        layer: "Cloud Infrastructure。",
+        why: ["單一機房故障不能讓服務全掛。", "降低不同國家的延遲。", "支援災難復原與法規要求。"],
+        canDo: ["Multi-AZ。", "Multi-Region。", "Failover。", "Geo routing。"],
+        traffic: ["使用者被導到最近 Region。", "Region 故障時切到其他 Region。"],
+        security: ["資料主權。", "區域隔離。", "跨區權限控管。"],
+        trouble: ["判斷是否單一 Region 異常。", "查 regional LB、K8S、DB replication。"]
+      },
+      serviceMesh: {
+        title: "Service Mesh",
+        role: "服務與服務之間的流量治理。",
+        layer: "L7 Service-to-Service。",
+        why: ["微服務變多後，服務間流量很難控。", "需要 mTLS、retry、timeout、circuit breaker。"],
+        canDo: ["mTLS。", "Traffic splitting。", "Circuit breaker。", "Canary release。", "Service tracing。"],
+        traffic: ["East-West traffic：服務間流量。", "可做 90% 舊版、10% 新版導流。"],
+        security: ["服務間 mTLS。", "細粒度 authorization。"],
+        trouble: ["檢查 retry storm。", "檢查 timeout。", "看 service-to-service trace。"]
+      }
+    };
+
+    const SUMMARY = {
+      architecture: "架構圖：看從入口到 App、Cache、Queue、DB、監控的完整結構。新版加入群組框，特別強化中大型公司的 Cluster、Replica、Shard。",
+      traffic: "流量圖：看請求如何被 CDN 快取、WAF 清洗、LB 分流、K8S 擴容、Redis 吸收、Queue 削峰、DB 分讀寫。",
+      security: "資安圖：看風險如何從 Edge、WAF、LB、網路隔離、App 權限、DB 權限逐層降低。",
+      troubleshooting: "故障排除圖：看 SRE 如何從全球/入口/運算/App/Cache/Queue/DB/監控逐層縮小問題。",
+      database: "資料庫圖：看單機 DB 如何演化成 Primary/Secondary、Read Replica、DB Router、Shard、CDC、Warehouse、Backup。"
+    };
+
+    function node(id, detail, x, y, type, label) {
+      return { id, detail, x, y, type, label };
+    }
+
+    function group(label, x, y, w, h) {
+      return { label, x, y, w, h };
+    }
+
+    const DIAGRAMS = {
+      small: {
+        architecture: {
+          groups: [group("Single VM", 490, 250, 400, 330), group("Data", 520, 660, 340, 170)],
+          nodes: [
+            node("user","user",690,70,"network","User"),
+            node("dns","dns",690,170,"network","DNS"),
+            node("nginx","nginx",690,310,"app","Nginx"),
+            node("app","api",690,450,"app","Node.js + PM2"),
+            node("db","primaryDb",690,700,"data","Single DB"),
+            node("backup","backup",900,800,"data","Backup"),
+            node("observe","observe",1080,470,"observe","Basic Logs")
+          ],
+          edges: [["user","dns"],["dns","nginx"],["nginx","app"],["app","db"],["db","backup","replica"],["app","observe","observe"],["db","observe","observe"]]
+        },
+        traffic: {
+          groups: [group("Request Path", 440, 70, 520, 760)],
+          nodes: [
+            node("req","user",690,80,"network","Request"),
+            node("nginx","nginx",690,220,"app","Nginx"),
+            node("static","nginx",500,390,"app","Static File"),
+            node("api","api",880,390,"app","API"),
+            node("db","primaryDb",880,560,"data","DB Query"),
+            node("res","user",690,760,"network","Response")
+          ],
+          edges: [["req","nginx"],["nginx","static"],["nginx","api"],["api","db"],["db","api"],["api","res"],["static","res"]]
+        },
+        security: {
+          groups: [group("Basic Security Boundary", 500, 120, 380, 700)],
+          nodes: [
+            node("user","user",690,80,"network","User"),
+            node("https","nginx",690,220,"security","HTTPS/TLS"),
+            node("fw","vmGroup",690,360,"security","VM Firewall"),
+            node("nginx","nginx",690,500,"security","Nginx Limit"),
+            node("app","api",690,640,"app","Auth/Validate"),
+            node("db","primaryDb",690,780,"data","DB Account")
+          ],
+          edges: [["user","https","security"],["https","fw","security"],["fw","nginx","security"],["nginx","app"],["app","db"]]
+        },
+        troubleshooting: {
+          groups: [group("Check From Outside To Inside", 500, 80, 380, 800)],
+          nodes: [
+            node("dns","dns",690,100,"network","DNS OK?"),
+            node("nginx","nginx",690,240,"app","Nginx OK?"),
+            node("app","api",690,380,"app","App OK?"),
+            node("db","primaryDb",690,520,"data","DB OK?"),
+            node("logs","observe",690,660,"observe","Logs"),
+            node("fix","observe",690,800,"observe","Fix / Rollback")
+          ],
+          edges: [["dns","nginx"],["nginx","app"],["app","db"],["db","logs","observe"],["logs","fix","observe"]]
+        },
+        database: {
+          groups: [group("Single DB Mode", 470, 120, 440, 720)],
+          nodes: [
+            node("app","api",690,120,"app","Node.js"),
+            node("pool","dbRouter",690,260,"data","Connection Pool"),
+            node("db","primaryDb",690,420,"data","Single DB"),
+            node("index","primaryDb",500,600,"data","Index"),
+            node("backup","backup",880,600,"data","Backup"),
+            node("slow","observe",690,780,"observe","Slow Query Log")
+          ],
+          edges: [["app","pool"],["pool","db"],["db","index"],["db","backup","replica"],["db","slow","observe"]]
+        }
+      },
+
+      medium: {
+        architecture: {
+          groups: [
+            group("Edge / Entrance", 440, 40, 500, 210),
+            group("VM Group / MIG", 150, 300, 1080, 260),
+            group("Cache + Async", 210, 610, 380, 230),
+            group("DB Replica Set", 660, 610, 520, 260),
+            group("Observability", 1060, 250, 260, 230)
+          ],
+          nodes: [
+            node("user","user",690,70,"network","Users"),
+            node("dns","dns",540,170,"network","DNS"),
+            node("lb","lb",840,170,"network","Cloud LB"),
+            node("vm1","vmGroup",300,380,"compute","VM 1"),
+            node("vm2","vmGroup",520,380,"compute","VM 2"),
+            node("vm3","vmGroup",740,380,"compute","VM 3"),
+            node("nginx1","nginx",300,510,"app","Nginx"),
+            node("nginx2","nginx",520,510,"app","Nginx"),
+            node("nginx3","nginx",740,510,"app","Nginx"),
+            node("app1","api",300,650,"app","API App 1"),
+            node("app2","api",520,650,"app","API App 2"),
+            node("redis","redisNode",360,790,"data","Redis"),
+            node("queue","queue",540,790,"async","Queue"),
+            node("primary","primaryDb",810,690,"data","Primary"),
+            node("secondary1","secondaryDb",1000,690,"data","Secondary 1"),
+            node("secondary2","secondaryDb",900,815,"data","Secondary 2"),
+            node("backup","backup",1120,815,"data","Backup"),
+            node("obs","observe",1190,360,"observe","Metrics/Logs")
+          ],
+          edges: [
+            ["user","dns"],["user","lb"],["dns","lb"],
+            ["lb","vm1"],["lb","vm2"],["lb","vm3"],
+            ["vm1","nginx1"],["vm2","nginx2"],["vm3","nginx3"],
+            ["nginx1","app1"],["nginx2","app2"],["nginx3","app2"],
+            ["app1","redis","cache"],["app2","redis","cache"],["app1","queue"],["app2","queue"],
+            ["app1","primary"],["app2","primary"],
+            ["primary","secondary1","replica"],["primary","secondary2","replica"],["secondary1","backup","replica"],
+            ["app1","obs","observe"],["primary","obs","observe"],["redis","obs","observe"]
+          ]
+        },
+        traffic: {
+          groups: [
+            group("External Traffic", 420, 40, 540, 200),
+            group("VM Distribution", 150, 280, 1080, 190),
+            group("App Internal Traffic", 200, 520, 520, 330),
+            group("DB Traffic", 760, 520, 430, 330)
+          ],
+          nodes: [
+            node("users","user",690,70,"network","50k Requests/day"),
+            node("lb","lb",690,190,"network","LB 分流"),
+            node("vm1","vmGroup",330,360,"compute","VM1 33%"),
+            node("vm2","vmGroup",690,360,"compute","VM2 33%"),
+            node("vm3","vmGroup",1050,360,"compute","VM3 34%"),
+            node("api","api",440,590,"app","API"),
+            node("redis","redisNode",300,750,"data","Redis Hit"),
+            node("queue","queue",590,750,"async","Queue"),
+            node("primary","primaryDb",890,590,"data","Write Primary"),
+            node("read","secondaryDb",1080,720,"data","Read Replica"),
+            node("backup","backup",890,835,"data","Backup"),
+            node("res","user",690,920,"network","Response")
+          ],
+          edges: [
+            ["users","lb"],["lb","vm1"],["lb","vm2"],["lb","vm3"],
+            ["vm1","api"],["vm2","api"],["vm3","api"],
+            ["api","redis","cache"],["redis","res","cache"],
+            ["api","queue"],["queue","primary"],
+            ["api","primary"],["api","read","replica"],
+            ["primary","read","replica"],["read","backup","replica"],
+            ["primary","res"]
+          ]
+        },
+        security: {
+          groups: [
+            group("Entrance Security", 430, 40, 520, 260),
+            group("Private Compute Network", 210, 350, 520, 280),
+            group("Private Data Network", 790, 350, 360, 390)
+          ],
+          nodes: [
+            node("user","user",690,70,"network","User"),
+            node("lb","lb",540,200,"security","TLS / LB"),
+            node("waf","waf",840,200,"security","Cloud Armor"),
+            node("fw","vmGroup",470,430,"security","Only LB → VM"),
+            node("nginx","nginx",470,570,"security","Nginx Limit"),
+            node("app","api",680,570,"app","API Auth"),
+            node("redis","redisNode",900,490,"data","Private Redis"),
+            node("db","primaryDb",900,650,"data","Private DB"),
+            node("backup","backup",1080,650,"data","Encrypted Backup")
+          ],
+          edges: [
+            ["user","lb","security"],["lb","waf","security"],["waf","fw","security"],
+            ["fw","nginx","security"],["nginx","app"],["app","redis","cache"],["app","db"],
+            ["db","backup","replica"]
+          ]
+        },
+        troubleshooting: {
+          groups: [
+            group("Entry", 130, 90, 300, 700),
+            group("Compute", 470, 90, 300, 700),
+            group("Data", 810, 90, 360, 700)
+          ],
+          nodes: [
+            node("dns","dns",280,130,"network","DNS?"),
+            node("lb","lb",280,280,"network","LB Health?"),
+            node("nginx","nginx",280,430,"app","Nginx 502?"),
+            node("vm","vmGroup",620,190,"compute","VM Saturation?"),
+            node("app","api",620,360,"app","App Error?"),
+            node("queue","queue",620,540,"async","Queue Lag?"),
+            node("redis","redisNode",970,190,"data","Redis Hit?"),
+            node("db","primaryDb",970,360,"data","Primary Slow?"),
+            node("replica","secondaryDb",970,540,"data","Replica Lag?"),
+            node("obs","observe",690,850,"observe","Dashboard / Alert")
+          ],
+          edges: [
+            ["dns","lb"],["lb","nginx"],["nginx","vm"],["vm","app"],["app","queue"],["app","redis","cache"],["app","db"],["db","replica","replica"],
+            ["dns","obs","observe"],["app","obs","observe"],["db","obs","observe"]
+          ]
+        },
+        database: {
+          groups: [
+            group("App DB Access Layer", 410, 50, 560, 230),
+            group("Cache / Queue", 180, 340, 370, 270),
+            group("Replica Set", 650, 330, 570, 370),
+            group("Protection / Analytics", 620, 740, 620, 190)
+          ],
+          nodes: [
+            node("app","api",690,90,"app","API Apps"),
+            node("pool","dbRouter",550,220,"data","Connection Pool"),
+            node("router","dbRouter",830,220,"data","Read/Write Router"),
+            node("redis","redisNode",330,430,"data","Redis Cache"),
+            node("queue","queue",330,560,"async","Queue"),
+            node("primary","primaryDb",850,420,"data","Primary"),
+            node("secondary1","secondaryDb",700,600,"data","Secondary A"),
+            node("secondary2","secondaryDb",1000,600,"data","Secondary B"),
+            node("backup","backup",720,840,"data","Backup"),
+            node("slow","observe",970,840,"observe","Slow Query / Metrics")
+          ],
+          edges: [
+            ["app","pool"],["pool","router"],["app","redis","cache"],["app","queue"],
+            ["router","primary"],["router","secondary1","replica"],["router","secondary2","replica"],
+            ["primary","secondary1","replica"],["primary","secondary2","replica"],
+            ["secondary1","backup","replica"],["primary","slow","observe"]
+          ]
+        }
+      },
+
+      large: {
+        architecture: {
+          groups: [
+            group("Edge Layer", 260, 30, 860, 180),
+            group("Security + Entry", 260, 240, 860, 160),
+            group("K8S Cluster", 120, 430, 1140, 250),
+            group("Cache / Async Layer", 140, 710, 470, 220),
+            group("DB Cluster / Replica / Shard", 650, 710, 600, 220),
+            group("Observability", 1120, 210, 220, 250)
+          ],
+          nodes: [
+            node("user","user",690,60,"network","Users"),
+            node("dns","dns",500,160,"network","DNS"),
+            node("cdn","cdn",690,160,"network","CDN"),
+            node("waf","waf",880,160,"security","WAF"),
+            node("lb","lb",500,320,"network","L7 LB"),
+            node("ingress","nginx",690,320,"app","Ingress"),
+            node("mesh","serviceMesh",880,320,"compute","Service Mesh"),
+            node("api","api",260,510,"app","API Pods"),
+            node("auth","auth",480,510,"app","Auth Pods"),
+            node("report","api",700,510,"app","Report Pods"),
+            node("worker","worker",920,510,"async","Worker Pool"),
+            node("hpa","k8sCluster",1140,510,"compute","HPA"),
+            node("redis1","redisCluster",260,790,"data","Redis Cluster"),
+            node("queue","queue",480,790,"async","Kafka / RabbitMQ"),
+            node("primary","primaryDb",760,790,"data","Primary Shard A"),
+            node("read","secondaryDb",960,790,"data","Read Replicas"),
+            node("shard","shard",1140,790,"data","Shard B/C"),
+            node("warehouse","warehouse",760,910,"data","Warehouse"),
+            node("cdc","cdc",960,910,"data","CDC Stream"),
+            node("obs","observe",1230,320,"observe","Obs Stack")
+          ],
+          edges: [
+            ["user","dns"],["dns","cdn"],["cdn","waf","security"],["waf","lb","security"],
+            ["lb","ingress"],["ingress","mesh"],["mesh","api"],["mesh","auth"],["mesh","report"],["mesh","worker"],["hpa","api"],
+            ["api","redis1","cache"],["auth","redis1","cache"],["api","queue"],["report","queue"],["queue","worker"],
+            ["api","primary"],["report","read","replica"],["primary","read","replica"],["primary","shard","replica"],
+            ["primary","cdc","replica"],["cdc","warehouse","replica"],
+            ["api","obs","observe"],["primary","obs","observe"],["queue","obs","observe"],["redis1","obs","observe"]
+          ]
+        },
+        traffic: {
+          groups: [
+            group("Edge Traffic Reduction", 250, 30, 880, 210),
+            group("Service Traffic", 190, 290, 1000, 260),
+            group("Data Traffic Split", 120, 600, 1140, 300)
+          ],
+          nodes: [
+            node("users","user",690,60,"network","1M+ Requests"),
+            node("cdn","cdn",460,180,"network","CDN Cache 70~95%"),
+            node("waf","waf",690,180,"security","WAF Filter"),
+            node("lb","lb",920,180,"network","LB 剩餘流量"),
+            node("ingress","nginx",300,360,"app","Ingress"),
+            node("api","api",520,360,"app","API Service"),
+            node("auth","auth",740,360,"app","Auth Service"),
+            node("worker","worker",960,360,"async","Worker"),
+            node("redis","redisCluster",260,680,"data","Cache Hit"),
+            node("queue","queue",500,680,"async","Queue Buffer"),
+            node("router","dbRouter",740,680,"data","DB Router"),
+            node("primary","primaryDb",960,640,"data","Write Primary"),
+            node("replica","secondaryDb",960,790,"data","Read Replica"),
+            node("shard","shard",1160,720,"data","Shard Cluster"),
+            node("response","user",690,930,"network","Response")
+          ],
+          edges: [
+            ["users","cdn","cache"],["users","waf","security"],["cdn","lb"],["waf","lb"],["lb","ingress"],
+            ["ingress","api"],["ingress","auth"],["api","redis","cache"],["api","queue"],["queue","worker"],
+            ["api","router"],["router","primary"],["router","replica","replica"],["router","shard","replica"],
+            ["primary","replica","replica"],["redis","response","cache"],["replica","response"],["primary","response"]
+          ]
+        },
+        security: {
+          groups: [
+            group("Outer Defense", 280, 30, 820, 260),
+            group("Cluster Defense", 230, 340, 920, 260),
+            group("Data Defense", 420, 660, 560, 250)
+          ],
+          nodes: [
+            node("edge","cdn",420,90,"network","CDN Edge"),
+            node("ddos","waf",690,90,"security","DDoS Shield"),
+            node("waf","waf",960,90,"security","WAF Rules"),
+            node("lb","lb",520,230,"security","TLS / LB"),
+            node("ingress","nginx",840,230,"security","Ingress Policy"),
+            node("rbac","k8sCluster",390,440,"security","K8S RBAC"),
+            node("mesh","serviceMesh",690,440,"security","mTLS Mesh"),
+            node("secret","k8sCluster",990,440,"security","Secret Manager"),
+            node("app","api",520,560,"app","AuthZ"),
+            node("db","primaryDb",580,750,"data","Private DB"),
+            node("audit","observe",820,750,"observe","Audit Log"),
+            node("backup","backup",700,880,"data","Encrypted Backup")
+          ],
+          edges: [
+            ["edge","ddos","security"],["ddos","waf","security"],["waf","lb","security"],["lb","ingress","security"],
+            ["ingress","rbac","security"],["ingress","mesh","security"],["mesh","secret","security"],["mesh","app"],["app","db"],["db","audit","observe"],["db","backup","replica"]
+          ]
+        },
+        troubleshooting: {
+          groups: [
+            group("Golden Signals", 120, 40, 1120, 150),
+            group("Entry Check", 110, 240, 320, 520),
+            group("App / Cluster Check", 500, 240, 340, 520),
+            group("Data Check", 910, 240, 340, 520),
+            group("Decision", 430, 820, 520, 120)
+          ],
+          nodes: [
+            node("golden","observe",690,100,"observe","Latency/Error/Traffic/Saturation"),
+            node("cdn","cdn",270,300,"network","CDN Hit?"),
+            node("waf","waf",270,430,"security","WAF Block?"),
+            node("lb","lb",270,560,"network","LB 5xx?"),
+            node("ingress","nginx",270,690,"app","Ingress 502?"),
+            node("pods","k8sCluster",670,300,"compute","Pod Restart?"),
+            node("api","api",670,430,"app","API Error?"),
+            node("queue","queue",670,560,"async","Queue Lag?"),
+            node("mesh","serviceMesh",670,690,"compute","Retry Storm?"),
+            node("redis","redisCluster",1080,300,"data","Cache Hit?"),
+            node("db","primaryDb",1080,430,"data","DB Slow?"),
+            node("replica","secondaryDb",1080,560,"data","Replica Lag?"),
+            node("shard","shard",1080,690,"data","Hot Shard?"),
+            node("action","observe",690,880,"observe","Rollback / Scale / Fix")
+          ],
+          edges: [
+            ["golden","cdn","observe"],["golden","pods","observe"],["golden","redis","observe"],
+            ["cdn","waf"],["waf","lb"],["lb","ingress"],["ingress","pods"],
+            ["pods","api"],["api","queue"],["api","mesh"],["api","db"],["api","redis","cache"],
+            ["db","replica","replica"],["db","shard","replica"],
+            ["ingress","action","observe"],["mesh","action","observe"],["shard","action","observe"]
+          ]
+        },
+        database: {
+          groups: [
+            group("App DB Access", 90, 50, 360, 830),
+            group("Cache / Async", 500, 50, 300, 830),
+            group("DB Routing", 850, 50, 230, 830),
+            group("Storage Cluster", 1120, 50, 230, 830)
+          ],
+          nodes: [
+            node("api","api",270,110,"app","API Pods"),
+            node("report","api",270,250,"app","Report Pods"),
+            node("worker","worker",270,390,"async","Worker Pods"),
+            node("pool","dbRouter",270,560,"data","DB Pool"),
+            node("redis","redisCluster",650,150,"data","Redis Cluster"),
+            node("queue","queue",650,330,"async","Kafka / RabbitMQ"),
+            node("cdc","cdc",650,510,"data","CDC Stream"),
+            node("warehouse","warehouse",650,720,"data","Data Warehouse"),
+            node("router","dbRouter",965,210,"data","Query Router"),
+            node("rw","dbRouter",965,420,"data","Read/Write Split"),
+            node("shardRouter","dbRouter",965,640,"data","Shard Router"),
+            node("primaryA","primaryDb",1235,150,"data","Primary A"),
+            node("replicaA","secondaryDb",1235,290,"data","Replica A"),
+            node("primaryB","primaryDb",1235,460,"data","Primary B"),
+            node("replicaB","secondaryDb",1235,600,"data","Replica B"),
+            node("backup","backup",1235,780,"data","Backup")
+          ],
+          edges: [
+            ["api","pool"],["report","pool"],["worker","pool"],
+            ["api","redis","cache"],["api","queue"],["queue","worker"],["cdc","warehouse","replica"],
+            ["pool","router"],["router","rw"],["rw","shardRouter"],
+            ["shardRouter","primaryA"],["shardRouter","primaryB"],
+            ["primaryA","replicaA","replica"],["primaryB","replicaB","replica"],
+            ["replicaA","backup","replica"],["replicaB","backup","replica"],
+            ["primaryA","cdc","replica"],["primaryB","cdc","replica"]
+          ]
+        }
+      },
+
+      xlarge: {
+        architecture: {
+          groups: [
+            group("Global Edge", 240, 30, 900, 190),
+            group("Taiwan Region", 100, 270, 330, 420),
+            group("Japan Region", 525, 270, 330, 420),
+            group("US Region", 950, 270, 330, 420),
+            group("Global Data / Observability", 300, 730, 780, 190)
+          ],
+          nodes: [
+            node("users","user",690,70,"network","Global Users"),
+            node("gdns","dns",450,170,"network","Global DNS"),
+            node("gcdn","cdn",690,170,"network","Multi CDN"),
+            node("gwaf","waf",930,170,"security","Global WAF"),
+            node("twlb","lb",265,330,"network","TW LB"),
+            node("twk8s","k8sCluster",265,480,"compute","TW K8S"),
+            node("twredis","redisCluster",265,620,"data","TW Redis"),
+            node("jplb","lb",690,330,"network","JP LB"),
+            node("jpk8s","k8sCluster",690,480,"compute","JP K8S"),
+            node("jpredis","redisCluster",690,620,"data","JP Redis"),
+            node("uslb","lb",1115,330,"network","US LB"),
+            node("usk8s","k8sCluster",1115,480,"compute","US K8S"),
+            node("usredis","redisCluster",1115,620,"data","US Redis"),
+            node("globaldb","region",520,815,"data","Multi-Region DB"),
+            node("cdc","cdc",690,815,"data","Global CDC"),
+            node("obs","observe",860,815,"observe","Global Obs")
+          ],
+          edges: [
+            ["users","gdns"],["users","gcdn"],["gcdn","gwaf","security"],["gdns","twlb"],["gdns","jplb"],["gdns","uslb"],
+            ["gwaf","twlb","security"],["gwaf","jplb","security"],["gwaf","uslb","security"],
+            ["twlb","twk8s"],["twk8s","twredis","cache"],["jplb","jpk8s"],["jpk8s","jpredis","cache"],["uslb","usk8s"],["usk8s","usredis","cache"],
+            ["twredis","globaldb"],["jpredis","globaldb"],["usredis","globaldb"],
+            ["globaldb","cdc","replica"],["cdc","obs","observe"],["twk8s","obs","observe"],["usk8s","obs","observe"]
+          ]
+        },
+        traffic: {
+          groups: [
+            group("Global Routing", 230, 30, 920, 250),
+            group("Regional Processing", 100, 330, 1180, 330),
+            group("Data Sync", 360, 720, 660, 170)
+          ],
+          nodes: [
+            node("users","user",690,70,"network","10M+ Requests"),
+            node("gdns","dns",690,190,"network","Geo / Latency Routing"),
+            node("asia","region",270,410,"network","Asia 45%"),
+            node("us","region",690,410,"network","US 35%"),
+            node("eu","region",1110,410,"network","EU 20%"),
+            node("edge","cdn",270,570,"network","Regional CDN/WAF"),
+            node("k8s","k8sCluster",690,570,"compute","Regional K8S"),
+            node("cache","redisCluster",1110,570,"data","Regional Cache"),
+            node("db","region",520,810,"data","Local Write / Global Sync"),
+            node("cdc","cdc",860,810,"data","CDC / Replication")
+          ],
+          edges: [
+            ["users","gdns"],["gdns","asia"],["gdns","us"],["gdns","eu"],
+            ["asia","edge"],["us","k8s"],["eu","cache"],
+            ["edge","k8s"],["k8s","cache","cache"],["k8s","db"],["cache","db"],["db","cdc","replica"]
+          ]
+        },
+        security: {
+          groups: [
+            group("Global Defense", 300, 40, 780, 310),
+            group("Regional Isolation", 190, 410, 1000, 260),
+            group("Data Governance", 400, 720, 580, 180)
+          ],
+          nodes: [
+            node("edge","cdn",450,110,"network","Global Edge"),
+            node("ddos","waf",690,110,"security","DDoS Protection"),
+            node("waf","waf",930,110,"security","Global WAF"),
+            node("iam","region",450,270,"security","Global IAM"),
+            node("audit","observe",930,270,"observe","SIEM / Audit"),
+            node("tw","region",330,500,"security","TW Isolation"),
+            node("jp","region",690,500,"security","JP Isolation"),
+            node("us","region",1050,500,"security","US Isolation"),
+            node("data","region",550,800,"data","Data Residency"),
+            node("backup","backup",830,800,"data","Cross Region Backup")
+          ],
+          edges: [
+            ["edge","ddos","security"],["ddos","waf","security"],["waf","iam","security"],["waf","audit","observe"],
+            ["iam","tw","security"],["iam","jp","security"],["iam","us","security"],
+            ["tw","data"],["jp","data"],["us","data"],["data","backup","replica"]
+          ]
+        },
+        troubleshooting: {
+          groups: [
+            group("Scope First", 300, 40, 780, 180),
+            group("Region Drill Down", 120, 280, 1140, 360),
+            group("Recovery", 350, 700, 680, 180)
+          ],
+          nodes: [
+            node("scope","observe",690,100,"observe","全球慢 or 單區慢？"),
+            node("dns","dns",420,190,"network","Global DNS"),
+            node("edge","cdn",690,190,"network","Edge/CDN"),
+            node("waf","waf",960,190,"security","WAF"),
+            node("region","region",260,360,"network","Region Health"),
+            node("lb","lb",470,500,"network","Regional LB"),
+            node("k8s","k8sCluster",690,500,"compute","K8S Cluster"),
+            node("db","region",910,500,"data","DB Sync"),
+            node("obs","observe",1120,500,"observe","Global Obs"),
+            node("failover","region",520,790,"security","Failover"),
+            node("post","observe",850,790,"observe","Postmortem")
+          ],
+          edges: [
+            ["scope","dns","observe"],["scope","edge","observe"],["scope","waf","observe"],
+            ["dns","region"],["edge","region"],["waf","region"],
+            ["region","lb"],["lb","k8s"],["k8s","db"],["db","obs","observe"],
+            ["region","failover","security"],["obs","post","observe"],["failover","post","observe"]
+          ]
+        },
+        database: {
+          groups: [
+            group("Regional DB", 90, 50, 1160, 270),
+            group("Global Sync", 260, 380, 860, 220),
+            group("Analytics / Protection", 260, 660, 860, 220)
+          ],
+          nodes: [
+            node("tw","primaryDb",250,150,"data","TW Primary"),
+            node("twrep","secondaryDb",250,270,"data","TW Replica"),
+            node("jp","primaryDb",690,150,"data","JP Primary"),
+            node("jprep","secondaryDb",690,270,"data","JP Replica"),
+            node("us","primaryDb",1130,150,"data","US Primary"),
+            node("usrep","secondaryDb",1130,270,"data","US Replica"),
+            node("cdc","cdc",480,480,"data","CDC Stream"),
+            node("conflict","region",690,480,"data","Conflict Resolve"),
+            node("shard","shard",900,480,"data","Shard by Region/Tenant"),
+            node("warehouse","warehouse",480,760,"data","Global Warehouse"),
+            node("backup","backup",690,760,"data","Cross Region Backup"),
+            node("lag","observe",900,760,"observe","Replication Lag")
+          ],
+          edges: [
+            ["tw","twrep","replica"],["jp","jprep","replica"],["us","usrep","replica"],
+            ["tw","cdc","replica"],["jp","cdc","replica"],["us","cdc","replica"],
+            ["cdc","conflict","replica"],["conflict","shard","replica"],
+            ["cdc","warehouse","replica"],["shard","backup","replica"],["shard","lag","observe"]
+          ]
+        }
+      }
+    };
+
+    const sizeSelect = document.getElementById("sizeSelect");
+    const viewSelect = document.getElementById("viewSelect");
+    const diagram = document.getElementById("diagram");
+    const lineSvg = document.getElementById("lineSvg");
+    const summary = document.getElementById("summary");
+
+    function setList(id, list) {
+      const el = document.getElementById(id);
+      el.innerHTML = "";
+      list.forEach(text => {
+        const li = document.createElement("li");
+        li.textContent = text;
+        el.appendChild(li);
+      });
+    }
+
+    function showDetail(key) {
+      const d = DETAILS[key];
+      document.getElementById("detailTitle").textContent = d.title;
+      document.getElementById("detailRole").textContent = d.role;
+      document.getElementById("detailLayer").textContent = d.layer;
+      setList("detailWhy", d.why);
+      setList("detailCanDo", d.canDo);
+      setList("detailTraffic", d.traffic);
+      setList("detailSecurity", d.security);
+      setList("detailTrouble", d.trouble);
+    }
+
+    function clearDiagram() {
+      diagram.querySelectorAll(".node,.group").forEach(el => el.remove());
+      lineSvg.querySelectorAll(".line").forEach(el => el.remove());
+    }
+
+    function drawGroups(groups) {
+      groups.forEach(g => {
+        const div = document.createElement("div");
+        div.className = "group";
+        div.style.left = `${g.x}px`;
+        div.style.top = `${g.y}px`;
+        div.style.width = `${g.w}px`;
+        div.style.height = `${g.h}px`;
+        div.innerHTML = `<div class="group-title">${g.label}</div>`;
+        diagram.appendChild(div);
+      });
+    }
+
+    function drawNodes(nodes) {
+      nodes.forEach(n => {
+        const detail = DETAILS[n.detail];
+        const div = document.createElement("div");
+        div.className = `node ${n.type}`;
+        div.id = `node-${n.id}`;
+        div.style.left = `${n.x}px`;
+        div.style.top = `${n.y}px`;
+        div.innerHTML = `
+          <div class="node-title">${n.label || detail.title}</div>
+          <div class="node-meta">${detail.layer}</div>
+        `;
+        div.onclick = () => {
+          document.querySelectorAll(".node").forEach(x => x.classList.remove("active"));
+          div.classList.add("active");
+          showDetail(n.detail);
+        };
+        diagram.appendChild(div);
+      });
+    }
+
+    function drawEdges(edges) {
+      const rect = diagram.getBoundingClientRect();
+      edges.forEach(e => {
+        const from = document.getElementById(`node-${e[0]}`);
+        const to = document.getElementById(`node-${e[1]}`);
+        if (!from || !to) return;
+
+        const a = from.getBoundingClientRect();
+        const b = to.getBoundingClientRect();
+
+        const x1 = a.left + a.width / 2 - rect.left;
+        const y1 = a.top + a.height / 2 - rect.top;
+        const x2 = b.left + b.width / 2 - rect.left;
+        const y2 = b.top + b.height / 2 - rect.top;
+
+        const dx = Math.abs(x2 - x1);
+        const dy = Math.abs(y2 - y1);
+        const bend = Math.max(40, Math.min(160, (dx + dy) / 4));
+        const c1x = x1;
+        const c1y = y1 + bend;
+        const c2x = x2;
+        const c2y = y2 - bend;
+
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", `M ${x1} ${y1} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${x2} ${y2}`);
+        path.setAttribute("class", `line ${e[2] || ""}`);
+        lineSvg.appendChild(path);
+      });
+    }
+
+    function render() {
+      const size = sizeSelect.value;
+      const view = viewSelect.value;
+      const data = DIAGRAMS[size][view];
+
+      summary.textContent = SUMMARY[view];
+
+      clearDiagram();
+      drawGroups(data.groups || []);
+      drawNodes(data.nodes || []);
+
+      requestAnimationFrame(() => {
+        drawEdges(data.edges || []);
+        const first = diagram.querySelector(".node");
+        if (first) first.click();
+      });
+    }
+
+    sizeSelect.addEventListener("change", render);
+    viewSelect.addEventListener("change", render);
+    window.addEventListener("resize", render);
+
+    render();
+  </script>
+
+
+</body></html>

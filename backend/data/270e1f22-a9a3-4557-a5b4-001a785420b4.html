@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<!-- saved from url=(1392)https://ff71c8cc54cb47582e0873508620b808b06faaf629db1c4dd93e3e0-apidata.googleusercontent.com/download/storage/v1/b/devops_region/o/gcp_capacity_planning_guide%20(1).html?jk=AbRIizwTCES-Wt8vrU0BNFuszO2MxzESRt0d27DVjcEmOGq1X-RoSmtrnv_WWVbLMnf2OxSFL8jLToguNluc5bUwLcne7kf792N7cHV7cXorc0IYOanOgCy8vlNyo_zR0KsU2Yux-xqO1EhYLVTSGKkvhQ4Ozn0tfdw1l0OrSAVRbJcBPjua1737y9YVNbGSJv7TFcMhG34W5uwPi3i4zmLA1pTMIVrY8yEz506RDCd8ElM7NMHyZK1TPrl3AyNQ02TsbhQCgWD5ntdL_z2qnnFjdes-YrK6H4X9bwSKmyOBFLY4e8RogItlRtWatPb6fR6XRIwU5t2oKJR-vME3UEZuIy6xQosUFj1XGvNRKa1OFZge8mkO9iv5h2nF8On9kXttYD12Y4JWLQFpN68n1kDHnvLTrU51dBN5Pf3WkHwRKD2rg729dUK7bFHVbtZi0qAfbZPcaeWU2ZQZeESfm2CMMPMEI5H6ttcCCGV38lsYTO78FtR9XxBwCmADirISnn7ic7ka_xwEDIrW_yuPuIZ-7F2aj68lJmW1PbaWQu4eZjlbKdglIIyLkYYsg8XU9t9-Yqjl4m_aNiBa3dt77V0te31GBXlPrnUSC4WneH_OKpba4JGgL4qSaVGwcUtR3xco4DKNWPuoA1ICSQHHMCj7mQtv26HwsyiWCod8r76qSI_7b3k3FL4JfoIInuOxmyTkIqKYcn4GNryY121OxEoRv_GiUuB1_OTImZ0pMLpEcfBQNv3cazG-ZOLME49CJP9tAtlk-RUMalXASnbo8cptO6PiiFwkt0ysw-KDu-2yjPBSLzeJaRORBIJqk1gcrQuu82znKxNUCBhVxZKWOkmd2VCPKhMqEKM0LZO2bgrGtiFy0TrYxhMMHhPx-K60g32d32iY_2clHB8FDnErypyohSRg1k-gUXxtieVXyRw6g2iSD_qvWrQ5eo8cbp4Zuc7SRy7BBLXDcSn4Z2CNZhrE5iV1M6wtuyyYLYtLrjBQOdlf4hYct8_3ZPp2VZuCRZCN7QNacfQDkl8dnTumfz5THFX_n7oGTUqil8iY46ksvImYWa-kwMYZ6DA96Am9_xiuzay5maPJfU1f7j3R2KFj6laoib3I35AKUyFq2EbAMvfFu9CJLPEWC8QmKh6xiqfbQbPwcmwymMEMvJo3rUGiiQ9S6ioAqSoPJlInZsrcwc2KxvRb0ni4lNk&isca=1 -->
+<html lang="zh-Hant"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GCP 容量估算與規格判斷流程圖</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", Arial, sans-serif;
+      background: #f5f7fb;
+      color: #1f2937;
+      line-height: 1.65;
+    }
+
+    header {
+      background: #111827;
+      color: #ffffff;
+      padding: 22px 28px;
+    }
+
+    header h1 {
+      margin: 0 0 6px;
+      font-size: 28px;
+    }
+
+    header p {
+      margin: 0;
+      color: #d1d5db;
+    }
+
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: #ffffff;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 14px 24px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+    }
+
+    .toolbar label {
+      font-weight: 700;
+      color: #374151;
+    }
+
+    select,
+    button {
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 15px;
+      background: #ffffff;
+      cursor: pointer;
+    }
+
+    button {
+      background: #2563eb;
+      color: white;
+      border-color: #2563eb;
+      font-weight: 700;
+    }
+
+    main {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.4fr 0.8fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .panel {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+      padding: 20px;
+    }
+
+    .panel h2 {
+      margin-top: 0;
+      font-size: 22px;
+      color: #111827;
+    }
+
+    .hint {
+      background: #eff6ff;
+      border-left: 5px solid #2563eb;
+      padding: 12px 14px;
+      border-radius: 10px;
+      color: #1e3a8a;
+      margin-bottom: 16px;
+    }
+
+    .diagram {
+      min-height: 640px;
+      overflow: auto;
+      padding: 10px;
+    }
+
+    .flow {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+      min-width: 720px;
+    }
+
+    .row {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+
+    .node {
+      border: 2px solid #cbd5e1;
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 12px 14px;
+      min-width: 165px;
+      max-width: 260px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.15s;
+      position: relative;
+    }
+
+    .node:hover,
+    .node.active {
+      border-color: #2563eb;
+      background: #eff6ff;
+      transform: translateY(-2px);
+    }
+
+    .node strong {
+      display: block;
+      font-size: 16px;
+      color: #111827;
+    }
+
+    .node small {
+      display: block;
+      color: #6b7280;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .node .tag {
+      display: inline-block;
+      margin-top: 7px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #e0f2fe;
+      color: #075985;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .arrow {
+      color: #64748b;
+      font-size: 24px;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .branch-label {
+      color: #475569;
+      font-size: 14px;
+      font-weight: 700;
+      margin: 4px 0 -4px;
+    }
+
+    .explain-card {
+      position: sticky;
+      top: 86px;
+    }
+
+    .explain-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: #111827;
+      margin-bottom: 8px;
+    }
+
+    .explain-subtitle {
+      color: #6b7280;
+      margin-bottom: 14px;
+    }
+
+    .explain-card dl {
+      margin: 0;
+    }
+
+    .explain-card dt {
+      font-weight: 900;
+      margin-top: 14px;
+      color: #374151;
+    }
+
+    .explain-card dd {
+      margin: 4px 0 0;
+      color: #4b5563;
+    }
+
+    .section {
+      margin-top: 24px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      background: #ffffff;
+      overflow: hidden;
+      border-radius: 14px;
+    }
+
+    th,
+    td {
+      border: 1px solid #e5e7eb;
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f1f5f9;
+      color: #111827;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .codebox {
+      white-space: pre-wrap;
+      background: #0f172a;
+      color: #e5e7eb;
+      padding: 16px;
+      border-radius: 14px;
+      overflow: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 14px;
+    }
+
+    .note {
+      background: #fffbeb;
+      border-left: 5px solid #f59e0b;
+      padding: 12px 14px;
+      border-radius: 10px;
+      color: #78350f;
+    }
+
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .pill {
+      border-radius: 999px;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      padding: 6px 10px;
+      font-size: 13px;
+      color: #374151;
+    }
+
+    @media (max-width: 1100px) {
+      .layout,
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .explain-card {
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>GCP 容量估算與規格判斷流程圖</h1>
+    <p>用途：當對方給你會員數、DAU、CCU、QPS、資料量時，快速回答需要幾台機器、幾顆 CPU、多少 RAM、費用大概落在哪。</p>
+  </header>
+
+  <div class="toolbar">
+    <label for="scenarioSelect">選擇圖表：</label>
+    <select id="scenarioSelect">
+      <option value="estimate">容量估算主流程</option>
+      <option value="small">小型系統架構</option>
+      <option value="medium">中型系統架構</option>
+      <option value="large">大型系統架構</option>
+      <option value="slow">系統變慢排查流程</option>
+    </select>
+    <button id="resetButton">重置講解</button>
+    <span class="pill">所有英文名詞都有中文備註</span>
+    <span class="pill">點圖中節點看右側說明</span>
+  </div>
+
+  <main>
+    <div class="layout">
+      <section class="panel">
+        <h2 id="diagramTitle">容量估算主流程</h2>
+        <div class="hint" id="diagramHint">從對方丟的數字開始，換算成 QPS，再推 API Server、Database、Redis、Queue 與成本。</div>
+        <div class="diagram" id="diagram"><div class="flow"><div class="row"><div class="node" data-id="registeredUsers">
+            <strong>Registered Users</strong>
+            <small>會員數 / 總帳號數</small>
+            <span class="tag">輸入數據</span>
+          </div></div><div class="arrow">↓</div><div class="row"><div class="node" data-id="dau">
+            <strong>DAU</strong>
+            <small>每日活躍用戶</small>
+            <span class="tag">會員 × 5%~20%</span>
+          </div></div><div class="arrow">↓</div><div class="row"><div class="node" data-id="ccu">
+            <strong>CCU</strong>
+            <small>同時在線人數</small>
+            <span class="tag">DAU ÷ 10</span>
+          </div></div><div class="arrow">↓</div><div class="row"><div class="node" data-id="qps">
+            <strong>QPS / TPS</strong>
+            <small>每秒請求 / 交易</small>
+            <span class="tag">CCU ÷ 30秒</span>
+          </div></div><div class="arrow">↓</div><div class="row"><div class="node" data-id="systemType">
+            <strong>System Type</strong>
+            <small>CRUD / 報表 / 即時 / 影音</small>
+            <span class="tag">先分類</span>
+          </div></div><div class="arrow">↓</div><div class="row"><div class="node" data-id="apiServer">
+            <strong>API Server</strong>
+            <small>Node.js 主機</small>
+            <span class="tag">2C4G~8C16G</span>
+          </div><div class="node" data-id="database">
+            <strong>Database</strong>
+            <small>MongoDB / SQL</small>
+            <span class="tag">看資料量</span>
+          </div><div class="node" data-id="redis">
+            <strong>Redis Cache</strong>
+            <small>記憶體快取</small>
+            <span class="tag">讀多寫少</span>
+          </div></div><div class="arrow">↓</div><div class="row"><div class="node" data-id="ha">
+            <strong>HA</strong>
+            <small>高可用性</small>
+            <span class="tag">至少兩台</span>
+          </div><div class="node" data-id="loadBalancer">
+            <strong>Load Balancer</strong>
+            <small>負載平衡器</small>
+            <span class="tag">分流</span>
+          </div><div class="node" data-id="queue">
+            <strong>Queue / Pub/Sub</strong>
+            <small>佇列 / 排隊</small>
+            <span class="tag">削峰填谷</span>
+          </div></div><div class="arrow">↓</div><div class="row"><div class="node" data-id="cost">
+            <strong>Cost</strong>
+            <small>GCP 月費粗估</small>
+            <span class="tag">加 20~30% buffer</span>
+          </div></div></div></div>
+      </section>
+
+      <aside class="panel explain-card">
+        <div class="explain-title" id="explainTitle">請點左邊任一節點</div>
+        <div class="explain-subtitle" id="explainSubtitle">右側會顯示中文名稱、白話說明、判斷規則與面試回答。</div>
+        <dl>
+          <dt>中文意思</dt>
+          <dd id="meaning">尚未選擇節點。</dd>
+          <dt>白話說明</dt>
+          <dd id="plain">點擊圖中的流程、主機或服務。</dd>
+          <dt>基本判斷法</dt>
+          <dd id="rule">系統會依你點的節點顯示該怎麼估。</dd>
+          <dt>面試講法</dt>
+          <dd id="interview">可以直接拿去回答架構面試或雲端規格估算問題。</dd>
+        </dl>
+      </aside>
+    </div>
+
+    <section class="panel section">
+      <h2>一、最重要的速算公式</h2>
+      <div class="grid-2">
+        <div>
+          <div class="codebox">會員數 Registered Users
+  ↓
+DAU 每日活躍用戶 = 會員數 × 5% ~ 20%
+  ↓
+CCU 同時在線人數 = DAU ÷ 10
+  ↓
+QPS 每秒請求數 = CCU ÷ 30秒
+  ↓
+用 QPS 推 API Server 數量</div>
+        </div>
+        <div>
+          <table>
+            <thead>
+              <tr><th>英文</th><th>中文</th><th>白話</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>DAU</td><td>每日活躍用戶</td><td>一天內真正有使用的人。</td></tr>
+              <tr><td>CCU</td><td>同時在線人數</td><td>同一時間正在使用的人。</td></tr>
+              <tr><td>QPS</td><td>每秒請求數</td><td>每秒打到後端 API 的次數。</td></tr>
+              <tr><td>TPS</td><td>每秒交易數</td><td>每秒完成的交易或業務操作。</td></tr>
+              <tr><td>vCPU</td><td>虛擬 CPU</td><td>雲端主機分配到的 CPU 核心。</td></tr>
+              <tr><td>RAM</td><td>記憶體</td><td>程式執行時暫存資料的空間。</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel section">
+      <h2>二、QPS 對應 GCP 規格與月費粗估</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>規模</th>
+            <th>QPS / TPS</th>
+            <th>API Server 建議</th>
+            <th>Database 建議</th>
+            <th>其他服務</th>
+            <th>月費粗估 NTD</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>個人 / Demo</td>
+            <td>0 ~ 50</td>
+            <td>2C4G × 1，正式環境建議 × 2</td>
+            <td>2C4G</td>
+            <td>可先不放 Redis</td>
+            <td>1,500 ~ 5,000</td>
+          </tr>
+          <tr>
+            <td>小公司</td>
+            <td>50 ~ 300</td>
+            <td>2C4G × 2 或 4C8G × 2</td>
+            <td>4C8G</td>
+            <td>Load Balancer、基礎監控</td>
+            <td>5,000 ~ 15,000</td>
+          </tr>
+          <tr>
+            <td>中型 SaaS</td>
+            <td>300 ~ 1000</td>
+            <td>4C8G × 2 ~ 4</td>
+            <td>4C8G ~ 8C16G</td>
+            <td>Redis、Replica、Monitoring</td>
+            <td>15,000 ~ 50,000</td>
+          </tr>
+          <tr>
+            <td>電商 / 高流量</td>
+            <td>1000 ~ 3000</td>
+            <td>4C8G × 4 ~ 8</td>
+            <td>8C16G 以上</td>
+            <td>Queue、CDN、Auto Scaling</td>
+            <td>50,000 ~ 200,000</td>
+          </tr>
+          <tr>
+            <td>大型平台</td>
+            <td>3000+</td>
+            <td>GKE / Kubernetes Pod 群組</td>
+            <td>Replica / Sharding</td>
+            <td>Redis Cluster、Pub/Sub、BigQuery</td>
+            <td>200,000 以上</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="note">提醒：這是面試與早期規劃用的估算表。實務仍要靠壓力測試、Cloud Monitoring、資料庫 explain、真實延遲與錯誤率調整。</div>
+    </section>
+
+    <section class="panel section">
+      <h2>三、Database / Redis / Queue 判斷表</h2>
+      <div class="grid-2">
+        <table>
+          <thead>
+            <tr><th>資料量</th><th>Database 規格</th><th>說明</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>10GB 以下</td><td>2C4G</td><td>小系統、查詢簡單、資料量少。</td></tr>
+            <tr><td>10 ~ 100GB</td><td>4C8G</td><td>常見中小系統，注意 index。</td></tr>
+            <tr><td>100 ~ 500GB</td><td>8C16G</td><td>查詢開始變重，建議 Replica。</td></tr>
+            <tr><td>1TB 以上</td><td>Sharding / 分片</td><td>單台資料庫壓力過大，要水平拆分。</td></tr>
+          </tbody>
+        </table>
+        <table>
+          <thead>
+            <tr><th>情境</th><th>建議</th><th>中文說明</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>熱門資料重複查詢</td><td>Redis Cache</td><td>把常查資料放記憶體，減少 DB 壓力。</td></tr>
+            <tr><td>瞬間大量請求</td><td>Queue / Pub/Sub</td><td>排隊慢慢處理，避免後端被打爆。</td></tr>
+            <tr><td>圖片 / JS / CSS 很多</td><td>CDN</td><td>靜態檔放邊緣節點，降低延遲。</td></tr>
+            <tr><td>不想手動加機器</td><td>Auto Scaling</td><td>流量大自動加機器，流量小自動縮。</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel section">
+      <h2>四、經典觀念與面試回答</h2>
+      <table>
+        <thead>
+          <tr><th>問題</th><th>回答重點</th><th>漂亮講法</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>100 萬會員要開幾台？</td>
+            <td>不能只看會員數，要換算 DAU、CCU、QPS。</td>
+            <td>我會先推估日活與尖峰 QPS，再用壓測結果決定機器數，正式環境至少兩台避免單點故障。</td>
+          </tr>
+          <tr>
+            <td>CPU 只有 30%，為什麼還是慢？</td>
+            <td>可能是 DB、IO、Network、Lock、外部 API、Memory 不足。</td>
+            <td>CPU 不高代表瓶頸不一定在運算，我會看 DB explain、慢查詢、連線池、磁碟 IO、網路延遲與錯誤率。</td>
+          </tr>
+          <tr>
+            <td>什麼時候加 Redis？</td>
+            <td>熱門資料重複查、DB 壓力大、讀多寫少。</td>
+            <td>如果同一批資料被大量重複讀取，我會先加 Cache，而不是盲目加 DB 規格。</td>
+          </tr>
+          <tr>
+            <td>什麼時候加 Queue？</td>
+            <td>非即時任務、尖峰流量、報表、寄信、批次處理。</td>
+            <td>Queue 的價值是削峰填谷，讓系統先接住請求，再由 Worker 慢慢處理。</td>
+          </tr>
+          <tr>
+            <td>什麼時候用 GKE？</td>
+            <td>服務多、部署頻繁、自動擴縮、需要容器編排。</td>
+            <td>小系統 VM 就夠，大到服務很多、需要自動部署與擴縮時，才導入 Kubernetes / GKE。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    const nodeDetails = {
+      registeredUsers: {
+        title: "Registered Users",
+        subtitle: "會員數 / 註冊帳號總數",
+        meaning: "會員數，代表系統裡總共有多少註冊帳號。",
+        plain: "這不是同時在線人數，也不是每天使用人數。很多人註冊後可能很少登入。",
+        rule: "不能直接用會員數決定機器。要先換算 DAU，再換算 CCU，再換算 QPS。",
+        interview: "我不會只看會員數開機器，會員數只是第一步，還要看活躍率與尖峰流量。"
+      },
+      dau: {
+        title: "DAU",
+        subtitle: "Daily Active User / 每日活躍用戶",
+        meaning: "一天內真正有使用系統的人數。",
+        plain: "例如 100 萬會員，不代表每天 100 萬人用。可能只有 5 萬到 20 萬人會用。",
+        rule: "粗估：DAU = 會員數 × 5% ~ 20%。一般面試可先抓 10%。",
+        interview: "我會先假設 DAU 約會員數的 10%，再依產品類型調整，例如社群可能更高，企業後台可能更低。"
+      },
+      ccu: {
+        title: "CCU",
+        subtitle: "Concurrent User / 同時在線人數",
+        meaning: "同一時間正在使用系統的人數。",
+        plain: "一天有 10 萬人使用，不代表同一秒有 10 萬人在線。通常會分散在一天不同時間。",
+        rule: "粗估：CCU = DAU ÷ 10。尖峰明顯的系統可抓更高。",
+        interview: "我會用 DAU 推尖峰同時在線人數，若是電商大促或報名系統，尖峰係數會再放大。"
+      },
+      qps: {
+        title: "QPS / TPS",
+        subtitle: "Query Per Second / Transaction Per Second",
+        meaning: "QPS 是每秒請求數，TPS 是每秒交易數。",
+        plain: "它才是估機器最重要的數字。後端真正承受的是每秒多少 API 請求。",
+        rule: "粗估：QPS = CCU ÷ 30 秒。意思是假設每個人平均 30 秒打一個 API。",
+        interview: "我會把使用者數轉成 QPS，再用壓測結果推 API Server 數量。"
+      },
+      systemType: {
+        title: "System Type",
+        subtitle: "系統類型",
+        meaning: "不同系統的瓶頸不同，不能全部用同一套規格。",
+        plain: "CRUD API 看 API 與 DB；報表看 CPU 與 Memory；影音看頻寬；AI 看 GPU 或外部模型費用。",
+        rule: "先分類，再估算。一般 CRUD 可用 4C8G 當基準；報表與轉檔要提高 CPU/RAM。",
+        interview: "同樣 300 QPS，查會員資料跟產生 Excel 報表需要的規格完全不同，所以我會先判斷 workload。"
+      },
+      apiServer: {
+        title: "API Server",
+        subtitle: "應用程式伺服器",
+        meaning: "跑 Node.js、Express、NestJS、Java Spring Boot 等後端程式的主機。",
+        plain: "登入、查詢、寫入、權限判斷、商業邏輯大多在這裡處理。",
+        rule: "一般 Node.js CRUD：2C4G 約 100~300 QPS，4C8G 約 300~800 QPS，8C16G 約 800~1500 QPS。",
+        interview: "我會先用 4C8G 當估算單位，正式環境至少兩台，再根據壓測與監控調整。"
+      },
+      ha: {
+        title: "HA",
+        subtitle: "High Availability / 高可用性",
+        meaning: "避免單點故障，讓服務不會因為一台機器掛掉就全部停止。",
+        plain: "即使一台 API Server 掛掉，另一台仍可以接流量。",
+        rule: "正式環境 API Server 通常至少兩台，再搭配 Load Balancer。",
+        interview: "即使流量一台能扛，我仍會建議兩台，因為正式環境要考慮 HA。"
+      },
+      loadBalancer: {
+        title: "Load Balancer",
+        subtitle: "負載平衡器",
+        meaning: "把流量分配到多台後端主機。",
+        plain: "使用者都先打到 Load Balancer，再由它分流給健康的 API Server。",
+        rule: "兩台以上 API Server 時通常需要。它也能做健康檢查與故障切換。",
+        interview: "Load Balancer 可以分散流量，也可以避免單一 API Server 掛掉造成服務中斷。"
+      },
+      database: {
+        title: "Database",
+        subtitle: "資料庫",
+        meaning: "儲存正式業務資料，例如會員、訂單、表單、報表紀錄。",
+        plain: "系統慢很多時候不是 API Server 慢，而是資料庫查詢慢。",
+        rule: "10GB 以下可 2C4G；10~100GB 抓 4C8G；100~500GB 抓 8C16G；1TB 以上考慮分片。",
+        interview: "DB 規格不能只看 QPS，還要看資料量、index、查詢複雜度、讀寫比例與慢查詢。"
+      },
+      redis: {
+        title: "Redis Cache",
+        subtitle: "記憶體快取",
+        meaning: "把熱門資料放在記憶體，讓讀取變快。",
+        plain: "不要每次都查 DB。常查的資料先放 Redis，有命中就直接回傳。",
+        rule: "讀多寫少、熱門資料重複查、DB 壓力大時加 Redis。",
+        interview: "我會先確認是否有高重複讀取，如果有，Redis 比盲目加 DB 規格更有效。"
+      },
+      queue: {
+        title: "Queue / Pub/Sub",
+        subtitle: "佇列 / 訊息排隊系統",
+        meaning: "把工作先排隊，後面由 Worker 慢慢處理。",
+        plain: "寄信、產生報表、圖片處理、批次任務，不一定要讓使用者等它做完。",
+        rule: "尖峰流量、非即時任務、重工作適合用 Queue。GCP 常見是 Pub/Sub。",
+        interview: "Queue 的核心價值是削峰填谷，避免瞬間流量直接打爆後端或 DB。"
+      },
+      cost: {
+        title: "Cost Estimation",
+        subtitle: "費用估算",
+        meaning: "用主機數量、CPU、RAM、磁碟、流量、託管服務推月費。",
+        plain: "GCP 不是只算 VM，還有 Load Balancer、Cloud NAT、磁碟、流量、Cloud SQL、GKE 等費用。",
+        rule: "小型 5千~1.5萬；中型 1.5萬~5萬；高流量 5萬~20萬；大型 20萬以上。",
+        interview: "我會先估 Compute，再加 DB、Redis、LB、Storage、Network，最後保留 20%~30% buffer。"
+      },
+      cloudArmor: {
+        title: "Cloud Armor / WAF",
+        subtitle: "雲端防火牆 / 網頁應用防火牆",
+        meaning: "保護網站和 API，阻擋惡意流量與攻擊。",
+        plain: "例如擋 DDoS、惡意 IP、異常請求、簡單爬蟲。",
+        rule: "公開網站、登入 API、金流、後台管理系統都建議放。",
+        interview: "流量進來後，我會先經過 WAF 與 LB，再進入 API 層，降低攻擊面。"
+      },
+      cdn: {
+        title: "CDN",
+        subtitle: "Content Delivery Network / 內容傳遞網路",
+        meaning: "把圖片、CSS、JS、影片等靜態內容放到離使用者更近的節點。",
+        plain: "使用者不用每次都回源站拿檔案，速度更快，也降低主機壓力。",
+        rule: "圖片多、前端檔案大、跨地區使用者多時使用。",
+        interview: "靜態資源我會交給 CDN，API Server 專心處理動態請求。"
+      },
+      gke: {
+        title: "GKE / Kubernetes",
+        subtitle: "Google Kubernetes Engine / 容器管理平台",
+        meaning: "用來管理大量容器、服務部署、擴容與自動重啟。",
+        plain: "服務多、版本多、流量變動大時，比手動管理 VM 更有彈性。",
+        rule: "小系統不要急著上 GKE；多服務、要自動擴縮、部署頻繁時再用。",
+        interview: "VM 適合簡單系統，GKE 適合微服務、多環境與自動化部署場景。"
+      },
+      pod: {
+        title: "Pod",
+        subtitle: "Kubernetes 最小部署單位",
+        meaning: "在 Kubernetes 裡，一個 Pod 通常包著一個或多個容器。",
+        plain: "你可以把 Pod 當成一個可被自動重啟、複製、擴容的小服務單位。",
+        rule: "流量增加時可以增加 Pod 數量，而不是手動開 VM。",
+        interview: "在 GKE 裡我會用 HPA 依 CPU、Memory 或自訂指標擴 Pod。"
+      },
+      bigquery: {
+        title: "BigQuery",
+        subtitle: "資料倉儲 / 分析查詢服務",
+        meaning: "適合大量資料分析，不是拿來當一般交易資料庫。",
+        plain: "訂單明細、Log、報表分析可以丟 BigQuery 查，不要讓主 DB 扛大型統計。",
+        rule: "大量報表、BI、歷史資料分析時使用。",
+        interview: "交易資料留在 OLTP DB，分析查詢丟到 BigQuery，避免報表拖慢線上系統。"
+      },
+      monitoring: {
+        title: "Monitoring",
+        subtitle: "監控 / 觀測",
+        meaning: "觀察 CPU、Memory、QPS、延遲、錯誤率、DB 慢查詢等指標。",
+        plain: "沒有監控就只能猜；有監控才知道瓶頸在哪。",
+        rule: "正式環境必備。至少看 CPU、RAM、Disk、Network、Latency、Error Rate。",
+        interview: "容量規劃只是初估，正式上線後要靠 Monitoring 與壓測資料持續修正。"
+      },
+      cpu: {
+        title: "CPU",
+        subtitle: "中央處理器 / 運算核心",
+        meaning: "負責執行程式與運算。",
+        plain: "CPU 高通常代表程式運算重、JSON 處理多、報表轉檔重，或流量太大。",
+        rule: "CPU 長時間超過 70% 可考慮加機器、加核心或優化程式。",
+        interview: "CPU 高不一定只靠加機器，也要檢查是否有低效率迴圈、同步阻塞、報表任務混在 API 裡。"
+      },
+      memory: {
+        title: "Memory / RAM",
+        subtitle: "記憶體",
+        meaning: "程式執行時暫存資料的空間。",
+        plain: "Node.js、Redis、DB 都需要記憶體；資料暫存太多會爆 RAM。",
+        rule: "Memory 長期超過 80% 要注意 OOM、Swap、GC 壓力。",
+        interview: "Memory 高時我會檢查是否有快取過大、查詢一次撈太多資料、記憶體洩漏。"
+      },
+      disk: {
+        title: "Disk / IO",
+        subtitle: "磁碟 / 讀寫效能",
+        meaning: "資料寫入硬碟與讀取硬碟的速度。",
+        plain: "DB、Log、檔案上傳、報表輸出都可能吃磁碟 IO。",
+        rule: "CPU 不高但系統慢時，要看 Disk IO、IOPS、磁碟延遲。",
+        interview: "如果 CPU 正常但延遲高，我會檢查 DB 磁碟 IO 與慢查詢。"
+      },
+      network: {
+        title: "Network",
+        subtitle: "網路 / 頻寬 / 延遲",
+        meaning: "主機之間或使用者到系統之間的傳輸能力。",
+        plain: "圖片大、影片多、跨區域、外部 API 慢，都可能是 Network 問題。",
+        rule: "檔案傳輸多時要看頻寬；API 慢時要看 latency。",
+        interview: "系統慢不一定是 CPU，可能是網路延遲、跨區查詢或外部服務回應慢。"
+      }
+    };
+
+    const diagrams = {
+      estimate: {
+        title: "容量估算主流程",
+        hint: "從對方丟的數字開始，換算成 QPS，再推 API Server、Database、Redis、Queue 與成本。",
+        rows: [
+          [{ id: "registeredUsers", title: "Registered Users", sub: "會員數 / 總帳號數", tag: "輸入數據" }],
+          "↓",
+          [{ id: "dau", title: "DAU", sub: "每日活躍用戶", tag: "會員 × 5%~20%" }],
+          "↓",
+          [{ id: "ccu", title: "CCU", sub: "同時在線人數", tag: "DAU ÷ 10" }],
+          "↓",
+          [{ id: "qps", title: "QPS / TPS", sub: "每秒請求 / 交易", tag: "CCU ÷ 30秒" }],
+          "↓",
+          [{ id: "systemType", title: "System Type", sub: "CRUD / 報表 / 即時 / 影音", tag: "先分類" }],
+          "↓",
+          [
+            { id: "apiServer", title: "API Server", sub: "Node.js 主機", tag: "2C4G~8C16G" },
+            { id: "database", title: "Database", sub: "MongoDB / SQL", tag: "看資料量" },
+            { id: "redis", title: "Redis Cache", sub: "記憶體快取", tag: "讀多寫少" }
+          ],
+          "↓",
+          [
+            { id: "ha", title: "HA", sub: "高可用性", tag: "至少兩台" },
+            { id: "loadBalancer", title: "Load Balancer", sub: "負載平衡器", tag: "分流" },
+            { id: "queue", title: "Queue / Pub/Sub", sub: "佇列 / 排隊", tag: "削峰填谷" }
+          ],
+          "↓",
+          [{ id: "cost", title: "Cost", sub: "GCP 月費粗估", tag: "加 20~30% buffer" }]
+        ]
+      },
+      small: {
+        title: "小型系統架構",
+        hint: "適合個人專案、小公司後台、低流量 SaaS。重點是便宜、簡單、正式環境至少兩台 API Server。",
+        rows: [
+          [{ id: "registeredUsers", title: "User", sub: "使用者", tag: "0~300 QPS" }],
+          "↓",
+          [{ id: "loadBalancer", title: "Load Balancer", sub: "負載平衡器", tag: "正式環境建議" }],
+          "↓",
+          [
+            { id: "apiServer", title: "API Server 01", sub: "2C4G 或 4C8G", tag: "Node.js" },
+            { id: "apiServer", title: "API Server 02", sub: "2C4G 或 4C8G", tag: "備援" }
+          ],
+          "↓",
+          [{ id: "database", title: "Database", sub: "2C4G 或 4C8G", tag: "10~100GB" }],
+          "↓",
+          [{ id: "monitoring", title: "Monitoring", sub: "監控 CPU/RAM/錯誤率", tag: "必備" }]
+        ]
+      },
+      medium: {
+        title: "中型系統架構",
+        hint: "適合 300~1000 QPS。開始需要 Redis、Replica、Cloud Armor、比較完整的監控。",
+        rows: [
+          [{ id: "registeredUsers", title: "User", sub: "使用者", tag: "300~1000 QPS" }],
+          "↓",
+          [{ id: "cloudArmor", title: "Cloud Armor", sub: "WAF / 防火牆", tag: "擋攻擊" }],
+          "↓",
+          [{ id: "loadBalancer", title: "Load Balancer", sub: "負載平衡器", tag: "分流 + 健康檢查" }],
+          "↓",
+          [
+            { id: "apiServer", title: "API Server 01", sub: "4C8G", tag: "商業邏輯" },
+            { id: "apiServer", title: "API Server 02", sub: "4C8G", tag: "商業邏輯" },
+            { id: "apiServer", title: "API Server 03", sub: "4C8G", tag: "商業邏輯" }
+          ],
+          "↓",
+          [{ id: "redis", title: "Redis Cache", sub: "記憶體快取", tag: "降低 DB 壓力" }],
+          "↓",
+          [
+            { id: "database", title: "DB Primary", sub: "主資料庫", tag: "主要讀寫" },
+            { id: "database", title: "DB Replica", sub: "副本資料庫", tag: "備援 / 讀取" }
+          ],
+          "↓",
+          [{ id: "monitoring", title: "Monitoring", sub: "監控 / 告警", tag: "SRE 必備" }]
+        ]
+      },
+      large: {
+        title: "大型系統架構",
+        hint: "適合 3000+ QPS 或多服務平台。通常會用 CDN、WAF、GKE、Redis Cluster、Queue、BigQuery。",
+        rows: [
+          [{ id: "registeredUsers", title: "User", sub: "大量使用者", tag: "3000+ QPS" }],
+          "↓",
+          [{ id: "cdn", title: "CDN", sub: "內容傳遞網路", tag: "圖片/JS/CSS" }],
+          "↓",
+          [{ id: "cloudArmor", title: "Cloud Armor", sub: "WAF / 防火牆", tag: "防攻擊" }],
+          "↓",
+          [{ id: "loadBalancer", title: "Load Balancer", sub: "負載平衡器", tag: "全球/區域分流" }],
+          "↓",
+          [{ id: "gke", title: "GKE / Kubernetes", sub: "容器管理平台", tag: "自動擴縮" }],
+          "↓",
+          [
+            { id: "pod", title: "Pod 群組 A", sub: "API 服務", tag: "可水平擴容" },
+            { id: "pod", title: "Pod 群組 B", sub: "報表服務", tag: "拆服務" },
+            { id: "pod", title: "Pod 群組 C", sub: "Worker 服務", tag: "背景任務" }
+          ],
+          "↓",
+          [
+            { id: "redis", title: "Redis Cluster", sub: "快取叢集", tag: "高流量讀取" },
+            { id: "queue", title: "Pub/Sub Queue", sub: "佇列系統", tag: "削峰填谷" },
+            { id: "database", title: "Database Cluster", sub: "資料庫叢集", tag: "Replica/Sharding" },
+            { id: "bigquery", title: "BigQuery", sub: "分析資料倉儲", tag: "報表分析" }
+          ],
+          "↓",
+          [{ id: "monitoring", title: "Monitoring", sub: "監控、Log、Trace", tag: "觀測性" }]
+        ]
+      },
+      slow: {
+        title: "系統變慢排查流程",
+        hint: "面試常問：CPU 不高為什麼系統慢？這張圖讓你從 CPU、RAM、Disk、Network、DB、Cache 一路排查。",
+        rows: [
+          [{ id: "monitoring", title: "系統變慢", sub: "Latency 變高 / Error 增加", tag: "先看監控" }],
+          "↓",
+          [{ id: "cpu", title: "CPU 高嗎？", sub: "中央處理器", tag: ">70% 注意" }],
+          "↓",
+          [{ id: "memory", title: "Memory 高嗎？", sub: "記憶體 / RAM", tag: ">80% 注意" }],
+          "↓",
+          [{ id: "disk", title: "Disk IO 慢嗎？", sub: "磁碟讀寫", tag: "DB/Log/檔案" }],
+          "↓",
+          [{ id: "network", title: "Network 慢嗎？", sub: "網路 / 頻寬 / 延遲", tag: "外部 API / 跨區" }],
+          "↓",
+          [{ id: "database", title: "Database 慢嗎？", sub: "慢查詢 / Index / Lock", tag: "explain" }],
+          "↓",
+          [{ id: "redis", title: "Cache 命中率？", sub: "Redis 是否有效", tag: "Hit Rate" }],
+          "↓",
+          [{ id: "queue", title: "Queue 堆積？", sub: "Worker 處理不完", tag: "Backlog" }]
+        ]
+      }
+    };
+
+    const diagramElement = document.getElementById("diagram");
+    const diagramTitle = document.getElementById("diagramTitle");
+    const diagramHint = document.getElementById("diagramHint");
+    const scenarioSelect = document.getElementById("scenarioSelect");
+    const resetButton = document.getElementById("resetButton");
+
+    function renderDiagram(key) {
+      const diagram = diagrams[key];
+      diagramTitle.textContent = diagram.title;
+      diagramHint.textContent = diagram.hint;
+      diagramElement.innerHTML = "";
+
+      const flow = document.createElement("div");
+      flow.className = "flow";
+
+      diagram.rows.forEach((row) => {
+        if (row === "↓") {
+          const arrow = document.createElement("div");
+          arrow.className = "arrow";
+          arrow.textContent = "↓";
+          flow.appendChild(arrow);
+          return;
+        }
+
+        const rowElement = document.createElement("div");
+        rowElement.className = "row";
+
+        row.forEach((item) => {
+          const node = document.createElement("div");
+          node.className = "node";
+          node.dataset.id = item.id;
+          node.innerHTML = `
+            <strong>${item.title}</strong>
+            <small>${item.sub}</small>
+            <span class="tag">${item.tag}</span>
+          `;
+          node.addEventListener("click", () => selectNode(item.id, node));
+          rowElement.appendChild(node);
+        });
+
+        flow.appendChild(rowElement);
+      });
+
+      diagramElement.appendChild(flow);
+    }
+
+    function selectNode(id, element) {
+      const detail = nodeDetails[id];
+      if (!detail) return;
+
+      document.querySelectorAll(".node").forEach((node) => node.classList.remove("active"));
+      element.classList.add("active");
+
+      document.getElementById("explainTitle").textContent = detail.title;
+      document.getElementById("explainSubtitle").textContent = detail.subtitle;
+      document.getElementById("meaning").textContent = detail.meaning;
+      document.getElementById("plain").textContent = detail.plain;
+      document.getElementById("rule").textContent = detail.rule;
+      document.getElementById("interview").textContent = detail.interview;
+    }
+
+    function resetExplain() {
+      document.querySelectorAll(".node").forEach((node) => node.classList.remove("active"));
+      document.getElementById("explainTitle").textContent = "請點左邊任一節點";
+      document.getElementById("explainSubtitle").textContent = "右側會顯示中文名稱、白話說明、判斷規則與面試回答。";
+      document.getElementById("meaning").textContent = "尚未選擇節點。";
+      document.getElementById("plain").textContent = "點擊圖中的流程、主機或服務。";
+      document.getElementById("rule").textContent = "系統會依你點的節點顯示該怎麼估。";
+      document.getElementById("interview").textContent = "可以直接拿去回答架構面試或雲端規格估算問題。";
+    }
+
+    scenarioSelect.addEventListener("change", (event) => {
+      renderDiagram(event.target.value);
+      resetExplain();
+    });
+
+    resetButton.addEventListener("click", resetExplain);
+
+    renderDiagram("estimate");
+  </script>
+
+
+</body></html>

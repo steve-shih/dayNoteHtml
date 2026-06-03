@@ -1,0 +1,2448 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TOEIC 多益片語例句＋語音練習</title>
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", Arial, sans-serif; margin:0; background:#f6f7fb; color:#1f2937; }
+header { background:linear-gradient(135deg,#243b55,#141e30); color:white; padding:32px 24px; }
+header h1 { margin:0 0 8px; font-size:30px; }
+header p { margin:0; opacity:.88; }
+.toolbar { position:sticky; top:0; z-index:5; background:white; padding:12px 16px; box-shadow:0 2px 10px #0001; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+input, select { padding:10px 12px; border:1px solid #d1d5db; border-radius:10px; font-size:15px; }
+button { border:0; border-radius:999px; padding:8px 12px; cursor:pointer; background:#e5e7eb; }
+button:hover { background:#d1d5db; }
+.primary { background:#2563eb; color:white; }
+.primary:hover { background:#1d4ed8; }
+main { padding:18px; }
+.summary { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-bottom:16px; }
+.card { background:white; border-radius:16px; padding:16px; box-shadow:0 2px 12px #0000000d; }
+table { width:100%; border-collapse:separate; border-spacing:0 8px; }
+th { text-align:left; font-size:14px; color:#4b5563; padding:8px; }
+td { background:white; padding:14px 12px; vertical-align:top; border-top:1px solid #eef2f7; border-bottom:1px solid #eef2f7; }
+td:first-child { border-left:1px solid #eef2f7; border-radius:12px 0 0 12px; }
+td:last-child { border-right:1px solid #eef2f7; border-radius:0 12px 12px 0; }
+.letter { font-weight:700; color:#2563eb; width:48px; }
+.phrase span:first-child { font-weight:700; display:block; margin-bottom:6px; }
+.star { display:inline-block; background:#fef3c7; color:#92400e; font-size:12px; padding:3px 8px; border-radius:999px; margin-right:6px; }
+.example { line-height:1.55; }
+.translation { color:#6b7280; margin-top:8px; font-size:14px; }
+.note { color:#b45309; background:#fffbeb; padding:6px 8px; margin-top:8px; border-radius:8px; font-size:13px; }
+footer { padding:24px; color:#6b7280; font-size:13px; }
+@media(max-width:760px) { table, thead, tbody, tr, th, td { display:block; } thead { display:none; } td { border-radius:0!important; } tr { margin-bottom:12px; display:block; } }
+</style>
+</head>
+<body>
+<header>
+<h1>TOEIC 多益常考片語：例句＋語音練習</h1>
+<p>共整理 335 筆片語。可搜尋、依字母篩選、只看高頻，並使用瀏覽器 SpeechSynthesis 播放英文。</p>
+</header>
+<div class="toolbar">
+<input id="search" placeholder="搜尋片語／中文／例句..." oninput="applyFilter()" />
+<button class="primary" onclick="showAll()">全部</button>
+<button onclick="showStarred()">只看高頻 ✨</button>
+<button onclick="filterLetter('A')">A</button><button onclick="filterLetter('B')">B</button><button onclick="filterLetter('C')">C</button><button onclick="filterLetter('D')">D</button><button onclick="filterLetter('E')">E</button><button onclick="filterLetter('F')">F</button><button onclick="filterLetter('G')">G</button><button onclick="filterLetter('H')">H</button><button onclick="filterLetter('I')">I</button><button onclick="filterLetter('J')">J</button><button onclick="filterLetter('K')">K</button><button onclick="filterLetter('L')">L</button><button onclick="filterLetter('M')">M</button><button onclick="filterLetter('N')">N</button><button onclick="filterLetter('O')">O</button><button onclick="filterLetter('P')">P</button><button onclick="filterLetter('Q')">Q</button><button onclick="filterLetter('R')">R</button><button onclick="filterLetter('S')">S</button><button onclick="filterLetter('T')">T</button><button onclick="filterLetter('U')">U</button><button onclick="filterLetter('V')">V</button><button onclick="filterLetter('W')">W</button>
+<select id="voiceSelect"></select>
+<button onclick="stopSpeak()">停止語音</button>
+</div>
+<main>
+<section class="summary">
+<div class="card"><b>使用方法</b><br>先看中文意思，再按「片語」聽發音，最後按「例句」練聽力。</div>
+<div class="card"><b>TOEIC 建議</b><br>優先背高頻標記，再用搜尋欄複習同類介系詞片語。</div>
+<div class="card"><b>語音提醒</b><br>語音使用瀏覽器內建功能，Chrome / Edge 支援較佳。</div>
+</section>
+<table id="phraseTable">
+<thead><tr><th>字母</th><th>片語</th><th>中文意思</th><th>英文例句 / 中文翻譯</th></tr></thead>
+<tbody>
+<tr data-letter="A" data-star="1">
+<td class="letter">A</td>
+<td class="phrase"><span>Across the board</span><span class="star">高頻</span><button onclick="speak('Across the board')">🔊 片語</button></td>
+<td>全盤的、全面的</td>
+<td class="example">The company raised salaries across the board after a strong quarter.<button onclick="speak('The company raised salaries across the board after a strong quarter.')">🔊 例句</button><div class="translation">公司在強勁季度後全面調薪。</div></td>
+</tr>
+
+<tr data-letter="A" data-star="1">
+<td class="letter">A</td>
+<td class="phrase"><span>At any rate、At all costs</span><span class="star">高頻</span><button onclick="speak('At any rate、At all costs')">🔊 片語</button></td>
+<td>無論如何</td>
+<td class="example">At any rate, we need to submit the report by Friday.<button onclick="speak('At any rate, we need to submit the report by Friday.')">🔊 例句</button><div class="translation">無論如何，我們週五前必須提交報告。</div></td>
+</tr>
+
+<tr data-letter="A" data-star="0">
+<td class="letter">A</td>
+<td class="phrase"><span>Adhere to</span><button onclick="speak('Adhere to')">🔊 片語</button></td>
+<td>堅持、遵守</td>
+<td class="example">All employees must adhere to the safety guidelines.<button onclick="speak('All employees must adhere to the safety guidelines.')">🔊 例句</button><div class="translation">所有員工都必須遵守安全準則。</div></td>
+</tr>
+
+<tr data-letter="A" data-star="0">
+<td class="letter">A</td>
+<td class="phrase"><span>Aside from</span><button onclick="speak('Aside from')">🔊 片語</button></td>
+<td>除了...之外</td>
+<td class="example">Aside from the price, the proposal looks reasonable.<button onclick="speak('Aside from the price, the proposal looks reasonable.')">🔊 例句</button><div class="translation">除了價格之外，這份提案看起來合理。</div></td>
+</tr>
+
+<tr data-letter="A" data-star="1">
+<td class="letter">A</td>
+<td class="phrase"><span>Attribute to</span><span class="star">高頻</span><button onclick="speak('Attribute to')">🔊 片語</button></td>
+<td>把...歸因於...</td>
+<td class="example">The delay was attributed to heavy traffic.<button onclick="speak('The delay was attributed to heavy traffic.')">🔊 例句</button><div class="translation">延誤被歸因於交通壅塞。</div></td>
+</tr>
+
+<tr data-letter="A" data-star="0">
+<td class="letter">A</td>
+<td class="phrase"><span>Assist with</span><button onclick="speak('Assist with')">🔊 片語</button></td>
+<td>協助</td>
+<td class="example">The assistant will assist with the registration process.<button onclick="speak('The assistant will assist with the registration process.')">🔊 例句</button><div class="translation">助理會協助報名流程。</div></td>
+</tr>
+
+<tr data-letter="A" data-star="0">
+<td class="letter">A</td>
+<td class="phrase"><span>Appeal to</span><button onclick="speak('Appeal to')">🔊 片語</button></td>
+<td>吸引</td>
+<td class="example">The new design will appeal to younger customers.<button onclick="speak('The new design will appeal to younger customers.')">🔊 例句</button><div class="translation">新設計會吸引年輕顧客。</div></td>
+</tr>
+
+<tr data-letter="A" data-star="0">
+<td class="letter">A</td>
+<td class="phrase"><span>Aspire to be</span><button onclick="speak('Aspire to be')">🔊 片語</button></td>
+<td>渴望</td>
+<td class="example">This phrase is often used in business English: the clientspire to be.<button onclick="speak('This phrase is often used in business English: the clientspire to be.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：渴望。</div></td>
+</tr>
+
+<tr data-letter="A" data-star="1">
+<td class="letter">A</td>
+<td class="phrase"><span>As for</span><span class="star">高頻</span><button onclick="speak('As for')">🔊 片語</button></td>
+<td>至於</td>
+<td class="example">As for the budget, we will discuss it tomorrow.<button onclick="speak('As for the budget, we will discuss it tomorrow.')">🔊 例句</button><div class="translation">至於預算，我們明天會討論。</div></td>
+</tr>
+
+<tr data-letter="A" data-star="1">
+<td class="letter">A</td>
+<td class="phrase"><span>As yet、As of</span><span class="star">高頻</span><button onclick="speak('As yet、As of')">🔊 片語</button></td>
+<td>到目前為止 =  So far</td>
+<td class="example">This phrase is often used in business English: the clients yet.<button onclick="speak('This phrase is often used in business English: the clients yet.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：到目前為止 =  So far。</div></td>
+</tr>
+
+<tr data-letter="A" data-star="1">
+<td class="letter">A</td>
+<td class="phrase"><span>Account for</span><span class="star">高頻</span><button onclick="speak('Account for')">🔊 片語</button></td>
+<td>解釋</td>
+<td class="example">Online sales account for 40 percent of our revenue.<button onclick="speak('Online sales account for 40 percent of our revenue.')">🔊 例句</button><div class="translation">線上銷售占我們營收的百分之四十。</div></td>
+</tr>
+
+<tr data-letter="A" data-star="0">
+<td class="letter">A</td>
+<td class="phrase"><span>Abstain from</span><button onclick="speak('Abstain from')">🔊 片語</button></td>
+<td>戒除</td>
+<td class="example">This phrase is often used in business English: the clientbstain from.<button onclick="speak('This phrase is often used in business English: the clientbstain from.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：戒除。</div></td>
+</tr>
+
+<tr data-letter="A" data-star="1">
+<td class="letter">A</td>
+<td class="phrase"><span>At once、At a glance</span><span class="star">高頻</span><button onclick="speak('At once、At a glance')">🔊 片語</button></td>
+<td>立刻  =  In no time</td>
+<td class="example">This phrase is often used in business English: the clientt once.<button onclick="speak('This phrase is often used in business English: the clientt once.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：立刻  =  In no time。</div></td>
+</tr>
+
+<tr data-letter="A" data-star="1">
+<td class="letter">A</td>
+<td class="phrase"><span>All the way</span><span class="star">高頻</span><button onclick="speak('All the way')">🔊 片語</button></td>
+<td>自始至終</td>
+<td class="example">This phrase is often used in business English: the clientll the way.<button onclick="speak('This phrase is often used in business English: the clientll the way.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：自始至終。</div></td>
+</tr>
+
+<tr data-letter="A" data-star="1">
+<td class="letter">A</td>
+<td class="phrase"><span>As opposed to</span><span class="star">高頻</span><button onclick="speak('As opposed to')">🔊 片語</button></td>
+<td>而不是...</td>
+<td class="example">This phrase is often used in business English: the clients opposed to.<button onclick="speak('This phrase is often used in business English: the clients opposed to.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：而不是...。</div></td>
+</tr>
+
+<tr data-letter="A" data-star="0">
+<td class="letter">A</td>
+<td class="phrase"><span>At the discretion of</span><button onclick="speak('At the discretion of')">🔊 片語</button></td>
+<td>由...裁定</td>
+<td class="example">This phrase is often used in business English: the clientt the discretion of.<button onclick="speak('This phrase is often used in business English: the clientt the discretion of.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：由...裁定。</div></td>
+</tr>
+
+<tr data-letter="A" data-star="0">
+<td class="letter">A</td>
+<td class="phrase"><span>At large</span><button onclick="speak('At large')">🔊 片語</button></td>
+<td>大致上</td>
+<td class="example">This phrase is often used in business English: the clientt large.<button onclick="speak('This phrase is often used in business English: the clientt large.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：大致上。</div></td>
+</tr>
+
+<tr data-letter="A" data-star="0">
+<td class="letter">A</td>
+<td class="phrase"><span>As per</span><button onclick="speak('As per')">🔊 片語</button></td>
+<td>依照</td>
+<td class="example">This phrase is often used in business English: the clients per.<button onclick="speak('This phrase is often used in business English: the clients per.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：依照。</div></td>
+</tr>
+
+<tr data-letter="A" data-star="0">
+<td class="letter">A</td>
+<td class="phrase"><span>A great deal</span><button onclick="speak('A great deal')">🔊 片語</button></td>
+<td>很多</td>
+<td class="example">This phrase is often used in business English: the client great deal.<button onclick="speak('This phrase is often used in business English: the client great deal.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：很多。</div></td>
+</tr>
+
+<tr data-letter="A" data-star="0">
+<td class="letter">A</td>
+<td class="phrase"><span>At a stretch</span><button onclick="speak('At a stretch')">🔊 片語</button></td>
+<td>連續地</td>
+<td class="example">This phrase is often used in business English: the clientt a stretch.<button onclick="speak('This phrase is often used in business English: the clientt a stretch.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：連續地。</div></td>
+</tr>
+
+<tr data-letter="A" data-star="0">
+<td class="letter">A</td>
+<td class="phrase"><span>All-out</span><button onclick="speak('All-out')">🔊 片語</button></td>
+<td>用盡全力的</td>
+<td class="example">This phrase is often used in business English: the clientll-out.<button onclick="speak('This phrase is often used in business English: the clientll-out.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：用盡全力的。</div></td>
+</tr>
+
+<tr data-letter="A" data-star="0">
+<td class="letter">A</td>
+<td class="phrase"><span>Assortment of</span><button onclick="speak('Assortment of')">🔊 片語</button></td>
+<td>各式各樣的</td>
+<td class="example">This phrase is often used in business English: the clientssortment of.<button onclick="speak('This phrase is often used in business English: the clientssortment of.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：各式各樣的。</div></td>
+</tr>
+
+<tr data-letter="A" data-star="0">
+<td class="letter">A</td>
+<td class="phrase"><span>Add up</span><button onclick="speak('Add up')">🔊 片語</button></td>
+<td>合計</td>
+<td class="example">This phrase is often used in business English: the clientdd up.<button onclick="speak('This phrase is often used in business English: the clientdd up.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：合計。</div></td>
+</tr>
+
+<tr data-letter="A" data-star="0">
+<td class="letter">A</td>
+<td class="phrase"><span>Academic credential</span><button onclick="speak('Academic credential')">🔊 片語</button></td>
+<td>學歷</td>
+<td class="example">This phrase is often used in business English: the clientcademic credential.<button onclick="speak('This phrase is often used in business English: the clientcademic credential.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：學歷。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="1">
+<td class="letter">B</td>
+<td class="phrase"><span>Be supposed to</span><span class="star">高頻</span><button onclick="speak('Be supposed to')">🔊 片語</button></td>
+<td>應該</td>
+<td class="example">The meeting is supposed to start at nine.<button onclick="speak('The meeting is supposed to start at nine.')">🔊 例句</button><div class="translation">會議應該九點開始。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="0">
+<td class="letter">B</td>
+<td class="phrase"><span>Be fond of</span><button onclick="speak('Be fond of')">🔊 片語</button></td>
+<td>喜歡</td>
+<td class="example">This phrase is often used in business English: the managere fond of.<button onclick="speak('This phrase is often used in business English: the managere fond of.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：喜歡。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="0">
+<td class="letter">B</td>
+<td class="phrase"><span>Be set to</span><button onclick="speak('Be set to')">🔊 片語</button></td>
+<td>預定做...</td>
+<td class="example">This phrase is often used in business English: the managere set to.<button onclick="speak('This phrase is often used in business English: the managere set to.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：預定做...。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="0">
+<td class="letter">B</td>
+<td class="phrase"><span>Be based on</span><button onclick="speak('Be based on')">🔊 片語</button></td>
+<td>根據</td>
+<td class="example">The decision was based on customer feedback.<button onclick="speak('The decision was based on customer feedback.')">🔊 例句</button><div class="translation">這項決定是根據客戶回饋。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="0">
+<td class="letter">B</td>
+<td class="phrase"><span>Be geared to</span><button onclick="speak('Be geared to')">🔊 片語</button></td>
+<td>適合</td>
+<td class="example">This phrase is often used in business English: the managere geared to.<button onclick="speak('This phrase is often used in business English: the managere geared to.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：適合。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="0">
+<td class="letter">B</td>
+<td class="phrase"><span>Be irrelevant to</span><button onclick="speak('Be irrelevant to')">🔊 片語</button></td>
+<td>與...無關</td>
+<td class="example">This phrase is often used in business English: the managere irrelevant to.<button onclick="speak('This phrase is often used in business English: the managere irrelevant to.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：與...無關。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="0">
+<td class="letter">B</td>
+<td class="phrase"><span>Be critical if</span><button onclick="speak('Be critical if')">🔊 片語</button></td>
+<td>對...不滿<div class="note">修正提醒：be critical of</div></td>
+<td class="example">This phrase is often used in business English: the managere critical if.<button onclick="speak('This phrase is often used in business English: the managere critical if.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：對...不滿。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="1">
+<td class="letter">B</td>
+<td class="phrase"><span>Be addicted to</span><span class="star">高頻</span><button onclick="speak('Be addicted to')">🔊 片語</button></td>
+<td>沈迷於... =  Indulge in</td>
+<td class="example">This phrase is often used in business English: the managere addicted to.<button onclick="speak('This phrase is often used in business English: the managere addicted to.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：沈迷於... =  Indulge in。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="1">
+<td class="letter">B</td>
+<td class="phrase"><span>Be anxious to do</span><span class="star">高頻</span><button onclick="speak('Be anxious to do')">🔊 片語</button></td>
+<td>很渴望做...</td>
+<td class="example">This phrase is often used in business English: the managere anxious to do.<button onclick="speak('This phrase is often used in business English: the managere anxious to do.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：很渴望做...。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="0">
+<td class="letter">B</td>
+<td class="phrase"><span>Be capable of Ving</span><button onclick="speak('Be capable of Ving')">🔊 片語</button></td>
+<td>能夠</td>
+<td class="example">This phrase is often used in business English: the managere capable of reviewing the report.<button onclick="speak('This phrase is often used in business English: the managere capable of reviewing the report.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：能夠。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="0">
+<td class="letter">B</td>
+<td class="phrase"><span>Be on track</span><button onclick="speak('Be on track')">🔊 片語</button></td>
+<td>在朝著目標的路上</td>
+<td class="example">The project is on track for completion next month.<button onclick="speak('The project is on track for completion next month.')">🔊 例句</button><div class="translation">這個專案正按進度於下個月完成。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="0">
+<td class="letter">B</td>
+<td class="phrase"><span>Be open to</span><button onclick="speak('Be open to')">🔊 片語</button></td>
+<td>歡迎、接受</td>
+<td class="example">This phrase is often used in business English: the managere open to.<button onclick="speak('This phrase is often used in business English: the managere open to.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：歡迎、接受。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="0">
+<td class="letter">B</td>
+<td class="phrase"><span>Be bound to</span><button onclick="speak('Be bound to')">🔊 片語</button></td>
+<td>一定</td>
+<td class="example">This discount is bound to attract more shoppers.<button onclick="speak('This discount is bound to attract more shoppers.')">🔊 例句</button><div class="translation">這項折扣一定會吸引更多顧客。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="1">
+<td class="letter">B</td>
+<td class="phrase"><span>Be about to</span><span class="star">高頻</span><button onclick="speak('Be about to')">🔊 片語</button></td>
+<td>正要...</td>
+<td class="example">The train is about to leave.<button onclick="speak('The train is about to leave.')">🔊 例句</button><div class="translation">火車正要離開。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="0">
+<td class="letter">B</td>
+<td class="phrase"><span>Be involved in</span><button onclick="speak('Be involved in')">🔊 片語</button></td>
+<td>牽涉、參與</td>
+<td class="example">This phrase is often used in business English: the managere involved in.<button onclick="speak('This phrase is often used in business English: the managere involved in.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：牽涉、參與。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="0">
+<td class="letter">B</td>
+<td class="phrase"><span>Be up for</span><button onclick="speak('Be up for')">🔊 片語</button></td>
+<td>欣然去做...</td>
+<td class="example">This phrase is often used in business English: the managere up for.<button onclick="speak('This phrase is often used in business English: the managere up for.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：欣然去做...。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="0">
+<td class="letter">B</td>
+<td class="phrase"><span>Be affiliated with</span><button onclick="speak('Be affiliated with')">🔊 片語</button></td>
+<td>隸屬於...</td>
+<td class="example">This phrase is often used in business English: the managere affiliated with.<button onclick="speak('This phrase is often used in business English: the managere affiliated with.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：隸屬於...。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="0">
+<td class="letter">B</td>
+<td class="phrase"><span>Be familiar with</span><button onclick="speak('Be familiar with')">🔊 片語</button></td>
+<td>對...熟悉</td>
+<td class="example">This phrase is often used in business English: the managere familiar with.<button onclick="speak('This phrase is often used in business English: the managere familiar with.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：對...熟悉。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="0">
+<td class="letter">B</td>
+<td class="phrase"><span>Be aware of</span><button onclick="speak('Be aware of')">🔊 片語</button></td>
+<td>知道</td>
+<td class="example">This phrase is often used in business English: the managere aware of.<button onclick="speak('This phrase is often used in business English: the managere aware of.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：知道。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="0">
+<td class="letter">B</td>
+<td class="phrase"><span>Be up late</span><button onclick="speak('Be up late')">🔊 片語</button></td>
+<td>熬夜  =  stay up</td>
+<td class="example">This phrase is often used in business English: the managere up late.<button onclick="speak('This phrase is often used in business English: the managere up late.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：熬夜  =  stay up。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="0">
+<td class="letter">B</td>
+<td class="phrase"><span>Be concerned about</span><button onclick="speak('Be concerned about')">🔊 片語</button></td>
+<td>擔心</td>
+<td class="example">This phrase is often used in business English: the managere concerned about.<button onclick="speak('This phrase is often used in business English: the managere concerned about.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：擔心。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="0">
+<td class="letter">B</td>
+<td class="phrase"><span>Be concerned with</span><button onclick="speak('Be concerned with')">🔊 片語</button></td>
+<td>和...有關</td>
+<td class="example">This phrase is often used in business English: the managere concerned with.<button onclick="speak('This phrase is often used in business English: the managere concerned with.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：和...有關。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="0">
+<td class="letter">B</td>
+<td class="phrase"><span>Be associated with</span><button onclick="speak('Be associated with')">🔊 片語</button></td>
+<td>和...有關聯  /  In association with  :  和...聯合</td>
+<td class="example">This phrase is often used in business English: the managere associated with.<button onclick="speak('This phrase is often used in business English: the managere associated with.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：和...有關聯  。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="0">
+<td class="letter">B</td>
+<td class="phrase"><span>Be inferior to</span><button onclick="speak('Be inferior to')">🔊 片語</button></td>
+<td>比...差</td>
+<td class="example">This phrase is often used in business English: the managere inferior to.<button onclick="speak('This phrase is often used in business English: the managere inferior to.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：比...差。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="1">
+<td class="letter">B</td>
+<td class="phrase"><span>Be opposed to Ving</span><span class="star">高頻</span><button onclick="speak('Be opposed to Ving')">🔊 片語</button></td>
+<td>反對  = object to Ving</td>
+<td class="example">This phrase is often used in business English: the managere opposed to reviewing the report.<button onclick="speak('This phrase is often used in business English: the managere opposed to reviewing the report.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：反對  = object to Ving。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="1">
+<td class="letter">B</td>
+<td class="phrase"><span>Be entitled to、Be eligible for、Be qualified for</span><span class="star">高頻</span><button onclick="speak('Be entitled to、Be eligible for、Be qualified for')">🔊 片語</button></td>
+<td>有資格 、 合適</td>
+<td class="example">This phrase is often used in business English: the managere entitled to.<button onclick="speak('This phrase is often used in business English: the managere entitled to.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：有資格 、 合適。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="0">
+<td class="letter">B</td>
+<td class="phrase"><span>Be obliged to V</span><button onclick="speak('Be obliged to V')">🔊 片語</button></td>
+<td>被迫做...  /  Obliged A to V  :  強迫A 做...</td>
+<td class="example">This phrase is often used in business English: the managere obliged to V.<button onclick="speak('This phrase is often used in business English: the managere obliged to V.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：被迫做...  。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="1">
+<td class="letter">B</td>
+<td class="phrase"><span>Bear with</span><span class="star">高頻</span><button onclick="speak('Bear with')">🔊 片語</button></td>
+<td>忍受</td>
+<td class="example">This phrase is often used in business English: the managerear with.<button onclick="speak('This phrase is often used in business English: the managerear with.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：忍受。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="1">
+<td class="letter">B</td>
+<td class="phrase"><span>Break around</span><span class="star">高頻</span><button onclick="speak('Break around')">🔊 片語</button></td>
+<td>開始<div class="note">修正提醒：break ground / break out（原文可能有誤）</div></td>
+<td class="example">This phrase is often used in business English: the managerreak around.<button onclick="speak('This phrase is often used in business English: the managerreak around.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：開始。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="1">
+<td class="letter">B</td>
+<td class="phrase"><span>Break down</span><span class="star">高頻</span><button onclick="speak('Break down')">🔊 片語</button></td>
+<td>故障  = out of order</td>
+<td class="example">The printer broke down during the training session.<button onclick="speak('The printer broke down during the training session.')">🔊 例句</button><div class="translation">印表機在訓練課程中故障了。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="1">
+<td class="letter">B</td>
+<td class="phrase"><span>Blow A away</span><span class="star">高頻</span><button onclick="speak('Blow A away')">🔊 片語</button></td>
+<td>給A留下印象</td>
+<td class="example">This phrase is often used in business English: the managerlow the client away.<button onclick="speak('This phrase is often used in business English: the managerlow the client away.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：給A留下印象。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="1">
+<td class="letter">B</td>
+<td class="phrase"><span>Back up</span><span class="star">高頻</span><button onclick="speak('Back up')">🔊 片語</button></td>
+<td>支持、倒退、堵塞</td>
+<td class="example">Please back up your files before updating the software.<button onclick="speak('Please back up your files before updating the software.')">🔊 例句</button><div class="translation">更新軟體前請備份你的檔案。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="1">
+<td class="letter">B</td>
+<td class="phrase"><span>Back out</span><span class="star">高頻</span><button onclick="speak('Back out')">🔊 片語</button></td>
+<td>退出、反悔</td>
+<td class="example">This phrase is often used in business English: the managerack out.<button onclick="speak('This phrase is often used in business English: the managerack out.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：退出、反悔。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="0">
+<td class="letter">B</td>
+<td class="phrase"><span>Bring about、Bring on</span><button onclick="speak('Bring about、Bring on')">🔊 片語</button></td>
+<td>引起</td>
+<td class="example">The new policy brought about several changes.<button onclick="speak('The new policy brought about several changes.')">🔊 例句</button><div class="translation">新政策引起了幾項改變。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="0">
+<td class="letter">B</td>
+<td class="phrase"><span>Bring along</span><button onclick="speak('Bring along')">🔊 片語</button></td>
+<td>帶來</td>
+<td class="example">This phrase is often used in business English: the managerring along.<button onclick="speak('This phrase is often used in business English: the managerring along.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：帶來。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="1">
+<td class="letter">B</td>
+<td class="phrase"><span>By all means</span><span class="star">高頻</span><button onclick="speak('By all means')">🔊 片語</button></td>
+<td>當然可以、務必</td>
+<td class="example">By all means, contact me if you need help.<button onclick="speak('By all means, contact me if you need help.')">🔊 例句</button><div class="translation">當然可以，如果需要協助請聯絡我。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="1">
+<td class="letter">B</td>
+<td class="phrase"><span>By no means</span><span class="star">高頻</span><button onclick="speak('By no means')">🔊 片語</button></td>
+<td>一點也不</td>
+<td class="example">This result is by no means final.<button onclick="speak('This result is by no means final.')">🔊 例句</button><div class="translation">這個結果絕不是最終結果。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="1">
+<td class="letter">B</td>
+<td class="phrase"><span>By any means</span><span class="star">高頻</span><button onclick="speak('By any means')">🔊 片語</button></td>
+<td>無論如何</td>
+<td class="example">This phrase is often used in business English: the managery any means.<button onclick="speak('This phrase is often used in business English: the managery any means.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：無論如何。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="1">
+<td class="letter">B</td>
+<td class="phrase"><span>By means of、By way of</span><span class="star">高頻</span><button onclick="speak('By means of、By way of')">🔊 片語</button></td>
+<td>藉由</td>
+<td class="example">This phrase is often used in business English: the managery means of.<button onclick="speak('This phrase is often used in business English: the managery means of.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：藉由。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="0">
+<td class="letter">B</td>
+<td class="phrase"><span>By chance</span><button onclick="speak('By chance')">🔊 片語</button></td>
+<td>碰巧、偶然</td>
+<td class="example">This phrase is often used in business English: the managery chance.<button onclick="speak('This phrase is often used in business English: the managery chance.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：碰巧、偶然。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="0">
+<td class="letter">B</td>
+<td class="phrase"><span>Bend over</span><button onclick="speak('Bend over')">🔊 片語</button></td>
+<td>彎腰</td>
+<td class="example">This phrase is often used in business English: the managerend over.<button onclick="speak('This phrase is often used in business English: the managerend over.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：彎腰。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="0">
+<td class="letter">B</td>
+<td class="phrase"><span>Budget line</span><button onclick="speak('Budget line')">🔊 片語</button></td>
+<td>廉航</td>
+<td class="example">This phrase is often used in business English: the managerudget line.<button onclick="speak('This phrase is often used in business English: the managerudget line.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：廉航。</div></td>
+</tr>
+
+<tr data-letter="B" data-star="0">
+<td class="letter">B</td>
+<td class="phrase"><span>Boast about</span><button onclick="speak('Boast about')">🔊 片語</button></td>
+<td>自誇</td>
+<td class="example">This phrase is often used in business English: the manageroast about.<button onclick="speak('This phrase is often used in business English: the manageroast about.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：自誇。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="1">
+<td class="letter">C</td>
+<td class="phrase"><span>Come around</span><span class="star">高頻</span><button onclick="speak('Come around')">🔊 片語</button></td>
+<td>讓步、改變立場</td>
+<td class="example">We need to come around before the client arrives.<button onclick="speak('We need to come around before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要讓步、改變立場。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="1">
+<td class="letter">C</td>
+<td class="phrase"><span>Come along</span><span class="star">高頻</span><button onclick="speak('Come along')">🔊 片語</button></td>
+<td>發展、進行、跟隨</td>
+<td class="example">We need to come along before the client arrives.<button onclick="speak('We need to come along before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要發展、進行、跟隨。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="0">
+<td class="letter">C</td>
+<td class="phrase"><span>Come over</span><button onclick="speak('Come over')">🔊 片語</button></td>
+<td>突然感到...</td>
+<td class="example">We need to come over before the client arrives.<button onclick="speak('We need to come over before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要突然感到...。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="1">
+<td class="letter">C</td>
+<td class="phrase"><span>Come across</span><span class="star">高頻</span><button onclick="speak('Come across')">🔊 片語</button></td>
+<td>偶然發現  /  Run into  : 偶然遇見</td>
+<td class="example">We need to come across before the client arrives.<button onclick="speak('We need to come across before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要偶然發現  。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="0">
+<td class="letter">C</td>
+<td class="phrase"><span>Come apart</span><button onclick="speak('Come apart')">🔊 片語</button></td>
+<td>破碎</td>
+<td class="example">We need to come apart before the client arrives.<button onclick="speak('We need to come apart before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要破碎。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="1">
+<td class="letter">C</td>
+<td class="phrase"><span>Come up with</span><span class="star">高頻</span><button onclick="speak('Come up with')">🔊 片語</button></td>
+<td>提出</td>
+<td class="example">She came up with a practical solution.<button onclick="speak('She came up with a practical solution.')">🔊 例句</button><div class="translation">她提出了一個實用的解決方案。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="0">
+<td class="letter">C</td>
+<td class="phrase"><span>Come down with</span><button onclick="speak('Come down with')">🔊 片語</button></td>
+<td>罹患</td>
+<td class="example">We need to come down with before the client arrives.<button onclick="speak('We need to come down with before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要罹患。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="0">
+<td class="letter">C</td>
+<td class="phrase"><span>Come into effect</span><button onclick="speak('Come into effect')">🔊 片語</button></td>
+<td>生效</td>
+<td class="example">We need to come into effect before the client arrives.<button onclick="speak('We need to come into effect before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要生效。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="0">
+<td class="letter">C</td>
+<td class="phrase"><span>Check up on</span><button onclick="speak('Check up on')">🔊 片語</button></td>
+<td>督促</td>
+<td class="example">This phrase is often used in business English: Check up on.<button onclick="speak('This phrase is often used in business English: Check up on.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：督促。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="0">
+<td class="letter">C</td>
+<td class="phrase"><span>Cut back</span><button onclick="speak('Cut back')">🔊 片語</button></td>
+<td>削減、減少</td>
+<td class="example">This phrase is often used in business English: Cut back.<button onclick="speak('This phrase is often used in business English: Cut back.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：削減、減少。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="0">
+<td class="letter">C</td>
+<td class="phrase"><span>Cut into</span><button onclick="speak('Cut into')">🔊 片語</button></td>
+<td>切入、侵入</td>
+<td class="example">This phrase is often used in business English: Cut into.<button onclick="speak('This phrase is often used in business English: Cut into.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：切入、侵入。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="0">
+<td class="letter">C</td>
+<td class="phrase"><span>Cut in</span><button onclick="speak('Cut in')">🔊 片語</button></td>
+<td>插嘴</td>
+<td class="example">This phrase is often used in business English: Cut in.<button onclick="speak('This phrase is often used in business English: Cut in.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：插嘴。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="0">
+<td class="letter">C</td>
+<td class="phrase"><span>Cutting-edge</span><button onclick="speak('Cutting-edge')">🔊 片語</button></td>
+<td>先進的</td>
+<td class="example">This phrase is often used in business English: Cutting-edge.<button onclick="speak('This phrase is often used in business English: Cutting-edge.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：先進的。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="0">
+<td class="letter">C</td>
+<td class="phrase"><span>Cut to the chase</span><button onclick="speak('Cut to the chase')">🔊 片語</button></td>
+<td>開門見山</td>
+<td class="example">This phrase is often used in business English: Cut to the chase.<button onclick="speak('This phrase is often used in business English: Cut to the chase.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：開門見山。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="1">
+<td class="letter">C</td>
+<td class="phrase"><span>Call off</span><span class="star">高頻</span><button onclick="speak('Call off')">🔊 片語</button></td>
+<td>取消</td>
+<td class="example">The outdoor event was called off because of rain.<button onclick="speak('The outdoor event was called off because of rain.')">🔊 例句</button><div class="translation">戶外活動因下雨而取消。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="0">
+<td class="letter">C</td>
+<td class="phrase"><span>Call on</span><button onclick="speak('Call on')">🔊 片語</button></td>
+<td>號召</td>
+<td class="example">We need to call on before the client arrives.<button onclick="speak('We need to call on before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要號召。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="1">
+<td class="letter">C</td>
+<td class="phrase"><span>Call for</span><span class="star">高頻</span><button onclick="speak('Call for')">🔊 片語</button></td>
+<td>需要</td>
+<td class="example">We need to call for before the client arrives.<button onclick="speak('We need to call for before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要需要。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="1">
+<td class="letter">C</td>
+<td class="phrase"><span>Carve out</span><span class="star">高頻</span><button onclick="speak('Carve out')">🔊 片語</button></td>
+<td>獲得</td>
+<td class="example">This phrase is often used in business English: Carve out.<button onclick="speak('This phrase is often used in business English: Carve out.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：獲得。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="0">
+<td class="letter">C</td>
+<td class="phrase"><span>Carry on</span><button onclick="speak('Carry on')">🔊 片語</button></td>
+<td>繼續</td>
+<td class="example">We need to carry on before the client arrives.<button onclick="speak('We need to carry on before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要繼續。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="0">
+<td class="letter">C</td>
+<td class="phrase"><span>Carry out</span><button onclick="speak('Carry out')">🔊 片語</button></td>
+<td>執行</td>
+<td class="example">The technician carried out the inspection this morning.<button onclick="speak('The technician carried out the inspection this morning.')">🔊 例句</button><div class="translation">技術人員今天早上執行了檢查。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="1">
+<td class="letter">C</td>
+<td class="phrase"><span>Count on</span><span class="star">高頻</span><button onclick="speak('Count on')">🔊 片語</button></td>
+<td>依靠</td>
+<td class="example">You can count on our support.<button onclick="speak('You can count on our support.')">🔊 例句</button><div class="translation">你可以依靠我們的支援。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="0">
+<td class="letter">C</td>
+<td class="phrase"><span>Cover letter</span><button onclick="speak('Cover letter')">🔊 片語</button></td>
+<td>求職信</td>
+<td class="example">This phrase is often used in business English: Cover letter.<button onclick="speak('This phrase is often used in business English: Cover letter.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：求職信。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="0">
+<td class="letter">C</td>
+<td class="phrase"><span>Cross one’s leg</span><button onclick="speak('Cross one’s leg')">🔊 片語</button></td>
+<td>翹腳</td>
+<td class="example">This phrase is often used in business English: Cross her leg.<button onclick="speak('This phrase is often used in business English: Cross her leg.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：翹腳。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="0">
+<td class="letter">C</td>
+<td class="phrase"><span>Coincide with</span><button onclick="speak('Coincide with')">🔊 片語</button></td>
+<td>和...同時發生</td>
+<td class="example">This phrase is often used in business English: Coincide with.<button onclick="speak('This phrase is often used in business English: Coincide with.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：和...同時發生。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="0">
+<td class="letter">C</td>
+<td class="phrase"><span>Catch up</span><button onclick="speak('Catch up')">🔊 片語</button></td>
+<td>趕上</td>
+<td class="example">This phrase is often used in business English: Catch up.<button onclick="speak('This phrase is often used in business English: Catch up.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：趕上。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="0">
+<td class="letter">C</td>
+<td class="phrase"><span>Curve ball</span><button onclick="speak('Curve ball')">🔊 片語</button></td>
+<td>騙局、意料之外</td>
+<td class="example">This phrase is often used in business English: Curve ball.<button onclick="speak('This phrase is often used in business English: Curve ball.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：騙局、意料之外。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="0">
+<td class="letter">C</td>
+<td class="phrase"><span>Contend with</span><button onclick="speak('Contend with')">🔊 片語</button></td>
+<td>對付</td>
+<td class="example">This phrase is often used in business English: Contend with.<button onclick="speak('This phrase is often used in business English: Contend with.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：對付。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="1">
+<td class="letter">C</td>
+<td class="phrase"><span>Compatible with</span><span class="star">高頻</span><button onclick="speak('Compatible with')">🔊 片語</button></td>
+<td>和...相容</td>
+<td class="example">This phrase is often used in business English: Compatible with.<button onclick="speak('This phrase is often used in business English: Compatible with.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：和...相容。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="1">
+<td class="letter">C</td>
+<td class="phrase"><span>Complete with</span><span class="star">高頻</span><button onclick="speak('Complete with')">🔊 片語</button></td>
+<td>包含</td>
+<td class="example">This phrase is often used in business English: Complete with.<button onclick="speak('This phrase is often used in business English: Complete with.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：包含。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="0">
+<td class="letter">C</td>
+<td class="phrase"><span>Correspond with</span><button onclick="speak('Correspond with')">🔊 片語</button></td>
+<td>相稱</td>
+<td class="example">This phrase is often used in business English: Correspond with.<button onclick="speak('This phrase is often used in business English: Correspond with.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：相稱。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="0">
+<td class="letter">C</td>
+<td class="phrase"><span>Caution against</span><button onclick="speak('Caution against')">🔊 片語</button></td>
+<td>告誡、提醒</td>
+<td class="example">This phrase is often used in business English: Caution against.<button onclick="speak('This phrase is often used in business English: Caution against.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：告誡、提醒。</div></td>
+</tr>
+
+<tr data-letter="C" data-star="1">
+<td class="letter">C</td>
+<td class="phrase"><span>Culminate in</span><span class="star">高頻</span><button onclick="speak('Culminate in')">🔊 片語</button></td>
+<td>以...告終</td>
+<td class="example">This phrase is often used in business English: Culminate in.<button onclick="speak('This phrase is often used in business English: Culminate in.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：以...告終。</div></td>
+</tr>
+
+<tr data-letter="D" data-star="0">
+<td class="letter">D</td>
+<td class="phrase"><span>Drop in</span><button onclick="speak('Drop in')">🔊 片語</button></td>
+<td>看望</td>
+<td class="example">We need to drop in before the client arrives.<button onclick="speak('We need to drop in before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要看望。</div></td>
+</tr>
+
+<tr data-letter="D" data-star="1">
+<td class="letter">D</td>
+<td class="phrase"><span>Drop by</span><span class="star">高頻</span><button onclick="speak('Drop by')">🔊 片語</button></td>
+<td>順道拜訪  =  Stop by</td>
+<td class="example">I will drop by the office after lunch.<button onclick="speak('I will drop by the office after lunch.')">🔊 例句</button><div class="translation">我午餐後會順道拜訪辦公室。</div></td>
+</tr>
+
+<tr data-letter="D" data-star="1">
+<td class="letter">D</td>
+<td class="phrase"><span>Dispute over</span><span class="star">高頻</span><button onclick="speak('Dispute over')">🔊 片語</button></td>
+<td>爭論</td>
+<td class="example">This phrase is often used in business English: Dispute over.<button onclick="speak('This phrase is often used in business English: Dispute over.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：爭論。</div></td>
+</tr>
+
+<tr data-letter="D" data-star="0">
+<td class="letter">D</td>
+<td class="phrase"><span>Deprive on</span><button onclick="speak('Deprive on')">🔊 片語</button></td>
+<td>剝奪  /  Be deprived of  :被剝奪<div class="note">修正提醒：deprive someone of / be deprived of</div></td>
+<td class="example">This phrase is often used in business English: Deprive on.<button onclick="speak('This phrase is often used in business English: Deprive on.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：剝奪  。</div></td>
+</tr>
+
+<tr data-letter="D" data-star="0">
+<td class="letter">D</td>
+<td class="phrase"><span>Divided into</span><button onclick="speak('Divided into')">🔊 片語</button></td>
+<td>把...分開</td>
+<td class="example">This phrase is often used in business English: Divided into.<button onclick="speak('This phrase is often used in business English: Divided into.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：把...分開。</div></td>
+</tr>
+
+<tr data-letter="D" data-star="0">
+<td class="letter">D</td>
+<td class="phrase"><span>Draw up</span><button onclick="speak('Draw up')">🔊 片語</button></td>
+<td>制定</td>
+<td class="example">We need to draw up before the client arrives.<button onclick="speak('We need to draw up before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要制定。</div></td>
+</tr>
+
+<tr data-letter="D" data-star="1">
+<td class="letter">D</td>
+<td class="phrase"><span>Draw on</span><span class="star">高頻</span><button onclick="speak('Draw on')">🔊 片語</button></td>
+<td>利用、依靠</td>
+<td class="example">We need to draw on before the client arrives.<button onclick="speak('We need to draw on before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要利用、依靠。</div></td>
+</tr>
+
+<tr data-letter="D" data-star="0">
+<td class="letter">D</td>
+<td class="phrase"><span>Draw near</span><button onclick="speak('Draw near')">🔊 片語</button></td>
+<td>接近</td>
+<td class="example">We need to draw near before the client arrives.<button onclick="speak('We need to draw near before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要接近。</div></td>
+</tr>
+
+<tr data-letter="D" data-star="0">
+<td class="letter">D</td>
+<td class="phrase"><span>Dotted line</span><button onclick="speak('Dotted line')">🔊 片語</button></td>
+<td>虛線</td>
+<td class="example">This phrase is often used in business English: Dotted line.<button onclick="speak('This phrase is often used in business English: Dotted line.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：虛線。</div></td>
+</tr>
+
+<tr data-letter="D" data-star="0">
+<td class="letter">D</td>
+<td class="phrase"><span>Do one’s utmost</span><button onclick="speak('Do one’s utmost')">🔊 片語</button></td>
+<td>盡全力</td>
+<td class="example">This phrase is often used in business English: Do her utmost.<button onclick="speak('This phrase is often used in business English: Do her utmost.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：盡全力。</div></td>
+</tr>
+
+<tr data-letter="E" data-star="1">
+<td class="letter">E</td>
+<td class="phrase"><span>Engage in</span><span class="star">高頻</span><button onclick="speak('Engage in')">🔊 片語</button></td>
+<td>從事</td>
+<td class="example">The company engaged in several community projects.<button onclick="speak('The company engaged in several community projects.')">🔊 例句</button><div class="translation">公司參與了幾個社區專案。</div></td>
+</tr>
+
+<tr data-letter="E" data-star="0">
+<td class="letter">E</td>
+<td class="phrase"><span>Entrust with</span><button onclick="speak('Entrust with')">🔊 片語</button></td>
+<td>委託...處理</td>
+<td class="example">This phrase is often used in business English: Entrust with.<button onclick="speak('This phrase is often used in business English: Entrust with.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：委託...處理。</div></td>
+</tr>
+
+<tr data-letter="E" data-star="0">
+<td class="letter">E</td>
+<td class="phrase"><span>Excel in</span><button onclick="speak('Excel in')">🔊 片語</button></td>
+<td>擅長</td>
+<td class="example">This phrase is often used in business English: Excel in.<button onclick="speak('This phrase is often used in business English: Excel in.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：擅長。</div></td>
+</tr>
+
+<tr data-letter="E" data-star="0">
+<td class="letter">E</td>
+<td class="phrase"><span>Excuse from</span><button onclick="speak('Excuse from')">🔊 片語</button></td>
+<td>允許離開</td>
+<td class="example">This phrase is often used in business English: Excuse from.<button onclick="speak('This phrase is often used in business English: Excuse from.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：允許離開。</div></td>
+</tr>
+
+<tr data-letter="E" data-star="1">
+<td class="letter">E</td>
+<td class="phrase"><span>Emerged as</span><span class="star">高頻</span><button onclick="speak('Emerged as')">🔊 片語</button></td>
+<td>出現</td>
+<td class="example">This phrase is often used in business English: Emerged as.<button onclick="speak('This phrase is often used in business English: Emerged as.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：出現。</div></td>
+</tr>
+
+<tr data-letter="E" data-star="1">
+<td class="letter">E</td>
+<td class="phrase"><span>Exchange rate</span><span class="star">高頻</span><button onclick="speak('Exchange rate')">🔊 片語</button></td>
+<td>匯率</td>
+<td class="example">This phrase is often used in business English: Exchange rate.<button onclick="speak('This phrase is often used in business English: Exchange rate.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：匯率。</div></td>
+</tr>
+
+<tr data-letter="F" data-star="0">
+<td class="letter">F</td>
+<td class="phrase"><span>Fall behind</span><button onclick="speak('Fall behind')">🔊 片語</button></td>
+<td>無法配合、跟不上  /  Keep up with  :  跟得上</td>
+<td class="example">Production fell behind because of a parts shortage.<button onclick="speak('Production fell behind because of a parts shortage.')">🔊 例句</button><div class="translation">生產因零件短缺而落後。</div></td>
+</tr>
+
+<tr data-letter="F" data-star="1">
+<td class="letter">F</td>
+<td class="phrase"><span>Fall within、Fall under</span><span class="star">高頻</span><button onclick="speak('Fall within、Fall under')">🔊 片語</button></td>
+<td>屬於...的範圍</td>
+<td class="example">We need to fall within before the client arrives.<button onclick="speak('We need to fall within before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要屬於...的範圍。</div></td>
+</tr>
+
+<tr data-letter="F" data-star="1">
+<td class="letter">F</td>
+<td class="phrase"><span>Furnish with</span><span class="star">高頻</span><button onclick="speak('Furnish with')">🔊 片語</button></td>
+<td>向...提供</td>
+<td class="example">This phrase is often used in business English: Furnish with.<button onclick="speak('This phrase is often used in business English: Furnish with.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：向...提供。</div></td>
+</tr>
+
+<tr data-letter="F" data-star="0">
+<td class="letter">F</td>
+<td class="phrase"><span>Factor in</span><button onclick="speak('Factor in')">🔊 片語</button></td>
+<td>考慮</td>
+<td class="example">This phrase is often used in business English: Factor in.<button onclick="speak('This phrase is often used in business English: Factor in.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：考慮。</div></td>
+</tr>
+
+<tr data-letter="F" data-star="1">
+<td class="letter">F</td>
+<td class="phrase"><span>Fill in</span><span class="star">高頻</span><button onclick="speak('Fill in')">🔊 片語</button></td>
+<td>填寫、代班</td>
+<td class="example">Please fill in the application form.<button onclick="speak('Please fill in the application form.')">🔊 例句</button><div class="translation">請填寫申請表。</div></td>
+</tr>
+
+<tr data-letter="F" data-star="1">
+<td class="letter">F</td>
+<td class="phrase"><span>Fill in on</span><span class="star">高頻</span><button onclick="speak('Fill in on')">🔊 片語</button></td>
+<td>提供詳情給...</td>
+<td class="example">We need to fill in on before the client arrives.<button onclick="speak('We need to fill in on before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要提供詳情給...。</div></td>
+</tr>
+
+<tr data-letter="G" data-star="0">
+<td class="letter">G</td>
+<td class="phrase"><span>Get into</span><button onclick="speak('Get into')">🔊 片語</button></td>
+<td>加入、參與、對...感興趣</td>
+<td class="example">We need to get into before the client arrives.<button onclick="speak('We need to get into before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要加入、參與、對...感興趣。</div></td>
+</tr>
+
+<tr data-letter="G" data-star="1">
+<td class="letter">G</td>
+<td class="phrase"><span>Get back to</span><span class="star">高頻</span><button onclick="speak('Get back to')">🔊 片語</button></td>
+<td>接著做...、回電</td>
+<td class="example">I will get back to you by the end of the day.<button onclick="speak('I will get back to you by the end of the day.')">🔊 例句</button><div class="translation">我會在今天結束前回覆你。</div></td>
+</tr>
+
+<tr data-letter="G" data-star="1">
+<td class="letter">G</td>
+<td class="phrase"><span>Get in the way of</span><span class="star">高頻</span><button onclick="speak('Get in the way of')">🔊 片語</button></td>
+<td>妨礙、介入</td>
+<td class="example">We need to get in the way of before the client arrives.<button onclick="speak('We need to get in the way of before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要妨礙、介入。</div></td>
+</tr>
+
+<tr data-letter="G" data-star="0">
+<td class="letter">G</td>
+<td class="phrase"><span>Get out of one’s way</span><button onclick="speak('Get out of one’s way')">🔊 片語</button></td>
+<td>努力、費心</td>
+<td class="example">We need to get out of her way before the client arrives.<button onclick="speak('We need to get out of her way before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要努力、費心。</div></td>
+</tr>
+
+<tr data-letter="G" data-star="1">
+<td class="letter">G</td>
+<td class="phrase"><span>Get rid of</span><span class="star">高頻</span><button onclick="speak('Get rid of')">🔊 片語</button></td>
+<td>擺脫、丟掉</td>
+<td class="example">We need to get rid of outdated equipment.<button onclick="speak('We need to get rid of outdated equipment.')">🔊 例句</button><div class="translation">我們需要淘汰過時設備。</div></td>
+</tr>
+
+<tr data-letter="G" data-star="0">
+<td class="letter">G</td>
+<td class="phrase"><span>Get word</span><button onclick="speak('Get word')">🔊 片語</button></td>
+<td>收到通知</td>
+<td class="example">We need to get word before the client arrives.<button onclick="speak('We need to get word before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要收到通知。</div></td>
+</tr>
+
+<tr data-letter="G" data-star="1">
+<td class="letter">G</td>
+<td class="phrase"><span>Get over</span><span class="star">高頻</span><button onclick="speak('Get over')">🔊 片語</button></td>
+<td>克服</td>
+<td class="example">We need to get over before the client arrives.<button onclick="speak('We need to get over before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要克服。</div></td>
+</tr>
+
+<tr data-letter="G" data-star="1">
+<td class="letter">G</td>
+<td class="phrase"><span>Go over</span><span class="star">高頻</span><button onclick="speak('Go over')">🔊 片語</button></td>
+<td>檢討、檢查</td>
+<td class="example">Let us go over the contract together.<button onclick="speak('Let us go over the contract together.')">🔊 例句</button><div class="translation">讓我們一起檢查合約。</div></td>
+</tr>
+
+<tr data-letter="G" data-star="0">
+<td class="letter">G</td>
+<td class="phrase"><span>Go toward</span><button onclick="speak('Go toward')">🔊 片語</button></td>
+<td>有助於...</td>
+<td class="example">We need to go toward before the client arrives.<button onclick="speak('We need to go toward before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要有助於...。</div></td>
+</tr>
+
+<tr data-letter="G" data-star="0">
+<td class="letter">G</td>
+<td class="phrase"><span>Go forward with</span><button onclick="speak('Go forward with')">🔊 片語</button></td>
+<td>進行</td>
+<td class="example">We need to go forward with before the client arrives.<button onclick="speak('We need to go forward with before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要進行。</div></td>
+</tr>
+
+<tr data-letter="G" data-star="0">
+<td class="letter">G</td>
+<td class="phrase"><span>Go live</span><button onclick="speak('Go live')">🔊 片語</button></td>
+<td>順利運作<div class="note">修正提醒：go live</div></td>
+<td class="example">We need to go live before the client arrives.<button onclick="speak('We need to go live before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要順利運作。</div></td>
+</tr>
+
+<tr data-letter="G" data-star="0">
+<td class="letter">G</td>
+<td class="phrase"><span>Go back and forth</span><button onclick="speak('Go back and forth')">🔊 片語</button></td>
+<td>來來回回</td>
+<td class="example">We need to go back and forth before the client arrives.<button onclick="speak('We need to go back and forth before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要來來回回。</div></td>
+</tr>
+
+<tr data-letter="G" data-star="0">
+<td class="letter">G</td>
+<td class="phrase"><span>Glance at</span><button onclick="speak('Glance at')">🔊 片語</button></td>
+<td>快速閱讀</td>
+<td class="example">This phrase is often used in business English: Glance at.<button onclick="speak('This phrase is often used in business English: Glance at.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：快速閱讀。</div></td>
+</tr>
+
+<tr data-letter="G" data-star="0">
+<td class="letter">G</td>
+<td class="phrase"><span>Gaze into</span><button onclick="speak('Gaze into')">🔊 片語</button></td>
+<td>凝視</td>
+<td class="example">This phrase is often used in business English: Gaze into.<button onclick="speak('This phrase is often used in business English: Gaze into.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：凝視。</div></td>
+</tr>
+
+<tr data-letter="G" data-star="1">
+<td class="letter">G</td>
+<td class="phrase"><span>Gather up</span><span class="star">高頻</span><button onclick="speak('Gather up')">🔊 片語</button></td>
+<td>收拾</td>
+<td class="example">This phrase is often used in business English: Gather up.<button onclick="speak('This phrase is often used in business English: Gather up.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：收拾。</div></td>
+</tr>
+
+<tr data-letter="G" data-star="0">
+<td class="letter">G</td>
+<td class="phrase"><span>Gear up for</span><button onclick="speak('Gear up for')">🔊 片語</button></td>
+<td>為...做準備</td>
+<td class="example">This phrase is often used in business English: Gear up for.<button onclick="speak('This phrase is often used in business English: Gear up for.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：為...做準備。</div></td>
+</tr>
+
+<tr data-letter="G" data-star="1">
+<td class="letter">G</td>
+<td class="phrase"><span>Give away</span><span class="star">高頻</span><button onclick="speak('Give away')">🔊 片語</button></td>
+<td>贈送、洩漏</td>
+<td class="example">This phrase is often used in business English: Give away.<button onclick="speak('This phrase is often used in business English: Give away.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：贈送、洩漏。</div></td>
+</tr>
+
+<tr data-letter="G" data-star="1">
+<td class="letter">G</td>
+<td class="phrase"><span>Give way to</span><span class="star">高頻</span><button onclick="speak('Give way to')">🔊 片語</button></td>
+<td>對...讓步</td>
+<td class="example">This phrase is often used in business English: Give way to.<button onclick="speak('This phrase is often used in business English: Give way to.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：對...讓步。</div></td>
+</tr>
+
+<tr data-letter="H" data-star="0">
+<td class="letter">H</td>
+<td class="phrase"><span>Hit shelves</span><button onclick="speak('Hit shelves')">🔊 片語</button></td>
+<td>上市</td>
+<td class="example">This phrase is often used in business English: Hit shelves.<button onclick="speak('This phrase is often used in business English: Hit shelves.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：上市。</div></td>
+</tr>
+
+<tr data-letter="H" data-star="0">
+<td class="letter">H</td>
+<td class="phrase"><span>Hit the road</span><button onclick="speak('Hit the road')">🔊 片語</button></td>
+<td>出發</td>
+<td class="example">This phrase is often used in business English: Hit the road.<button onclick="speak('This phrase is often used in business English: Hit the road.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：出發。</div></td>
+</tr>
+
+<tr data-letter="H" data-star="1">
+<td class="letter">H</td>
+<td class="phrase"><span>Hit the store</span><span class="star">高頻</span><button onclick="speak('Hit the store')">🔊 片語</button></td>
+<td>發售</td>
+<td class="example">This phrase is often used in business English: Hit the store.<button onclick="speak('This phrase is often used in business English: Hit the store.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：發售。</div></td>
+</tr>
+
+<tr data-letter="H" data-star="0">
+<td class="letter">H</td>
+<td class="phrase"><span>Hint at</span><button onclick="speak('Hint at')">🔊 片語</button></td>
+<td>暗示</td>
+<td class="example">This phrase is often used in business English: Hint at.<button onclick="speak('This phrase is often used in business English: Hint at.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：暗示。</div></td>
+</tr>
+
+<tr data-letter="H" data-star="1">
+<td class="letter">H</td>
+<td class="phrase"><span>Hold off on</span><span class="star">高頻</span><button onclick="speak('Hold off on')">🔊 片語</button></td>
+<td>推遲、延期</td>
+<td class="example">This phrase is often used in business English: Hold off on.<button onclick="speak('This phrase is often used in business English: Hold off on.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：推遲、延期。</div></td>
+</tr>
+
+<tr data-letter="H" data-star="0">
+<td class="letter">H</td>
+<td class="phrase"><span>Hold on</span><button onclick="speak('Hold on')">🔊 片語</button></td>
+<td>堅持、維持</td>
+<td class="example">This phrase is often used in business English: Hold on.<button onclick="speak('This phrase is often used in business English: Hold on.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：堅持、維持。</div></td>
+</tr>
+
+<tr data-letter="I" data-star="0">
+<td class="letter">I</td>
+<td class="phrase"><span>In a bind</span><button onclick="speak('In a bind')">🔊 片語</button></td>
+<td>為難、處於困境</td>
+<td class="example">In a bind, the manager approved the request.<button onclick="speak('In a bind, the manager approved the request.')">🔊 例句</button><div class="translation">為難、處於困境，經理批准了請求。</div></td>
+</tr>
+
+<tr data-letter="I" data-star="0">
+<td class="letter">I</td>
+<td class="phrase"><span>In a rush</span><button onclick="speak('In a rush')">🔊 片語</button></td>
+<td>匆忙</td>
+<td class="example">In a rush, the manager approved the request.<button onclick="speak('In a rush, the manager approved the request.')">🔊 例句</button><div class="translation">匆忙，經理批准了請求。</div></td>
+</tr>
+
+<tr data-letter="I" data-star="1">
+<td class="letter">I</td>
+<td class="phrase"><span>In no time</span><span class="star">高頻</span><button onclick="speak('In no time')">🔊 片語</button></td>
+<td>立刻</td>
+<td class="example">In no time, the manager approved the request.<button onclick="speak('In no time, the manager approved the request.')">🔊 例句</button><div class="translation">立刻，經理批准了請求。</div></td>
+</tr>
+
+<tr data-letter="I" data-star="1">
+<td class="letter">I</td>
+<td class="phrase"><span>In due time</span><span class="star">高頻</span><button onclick="speak('In due time')">🔊 片語</button></td>
+<td>不久後、到時候</td>
+<td class="example">In due time, the manager approved the request.<button onclick="speak('In due time, the manager approved the request.')">🔊 例句</button><div class="translation">不久後、到時候，經理批准了請求。</div></td>
+</tr>
+
+<tr data-letter="I" data-star="0">
+<td class="letter">I</td>
+<td class="phrase"><span>In shape</span><button onclick="speak('In shape')">🔊 片語</button></td>
+<td>健康</td>
+<td class="example">In shape, the manager approved the request.<button onclick="speak('In shape, the manager approved the request.')">🔊 例句</button><div class="translation">健康，經理批准了請求。</div></td>
+</tr>
+
+<tr data-letter="I" data-star="0">
+<td class="letter">I</td>
+<td class="phrase"><span>In talk with</span><button onclick="speak('In talk with')">🔊 片語</button></td>
+<td>協議中的<div class="note">修正提醒：in talks with</div></td>
+<td class="example">In talk with, the manager approved the request.<button onclick="speak('In talk with, the manager approved the request.')">🔊 例句</button><div class="translation">協議中的，經理批准了請求。</div></td>
+</tr>
+
+<tr data-letter="I" data-star="0">
+<td class="letter">I</td>
+<td class="phrase"><span>In the works</span><button onclick="speak('In the works')">🔊 片語</button></td>
+<td>正在討論的</td>
+<td class="example">In the works, the manager approved the request.<button onclick="speak('In the works, the manager approved the request.')">🔊 例句</button><div class="translation">正在討論的，經理批准了請求。</div></td>
+</tr>
+
+<tr data-letter="I" data-star="1">
+<td class="letter">I</td>
+<td class="phrase"><span>In case</span><span class="star">高頻</span><button onclick="speak('In case')">🔊 片語</button></td>
+<td>萬一</td>
+<td class="example">Bring an umbrella in case it rains.<button onclick="speak('Bring an umbrella in case it rains.')">🔊 例句</button><div class="translation">帶把傘以防下雨。</div></td>
+</tr>
+
+<tr data-letter="I" data-star="0">
+<td class="letter">I</td>
+<td class="phrase"><span>In case of 、 In the event that</span><button onclick="speak('In case of 、 In the event that')">🔊 片語</button></td>
+<td>如果、在...的情況下</td>
+<td class="example">In case of, the manager approved the request.<button onclick="speak('In case of, the manager approved the request.')">🔊 例句</button><div class="translation">如果、在...的情況下，經理批准了請求。</div></td>
+</tr>
+
+<tr data-letter="I" data-star="0">
+<td class="letter">I</td>
+<td class="phrase"><span>In spite of</span><button onclick="speak('In spite of')">🔊 片語</button></td>
+<td>儘管</td>
+<td class="example">In spite of, the manager approved the request.<button onclick="speak('In spite of, the manager approved the request.')">🔊 例句</button><div class="translation">儘管，經理批准了請求。</div></td>
+</tr>
+
+<tr data-letter="I" data-star="1">
+<td class="letter">I</td>
+<td class="phrase"><span>In terms of</span><span class="star">高頻</span><button onclick="speak('In terms of')">🔊 片語</button></td>
+<td>就...來說</td>
+<td class="example">In terms of cost, this plan is better.<button onclick="speak('In terms of cost, this plan is better.')">🔊 例句</button><div class="translation">就成本而言，這個方案比較好。</div></td>
+</tr>
+
+<tr data-letter="I" data-star="1">
+<td class="letter">I</td>
+<td class="phrase"><span>In light of 、 in view of</span><span class="star">高頻</span><button onclick="speak('In light of 、 in view of')">🔊 片語</button></td>
+<td>考慮到...</td>
+<td class="example">In light of, the manager approved the request.<button onclick="speak('In light of, the manager approved the request.')">🔊 例句</button><div class="translation">考慮到...，經理批准了請求。</div></td>
+</tr>
+
+<tr data-letter="I" data-star="0">
+<td class="letter">I</td>
+<td class="phrase"><span>In this regard</span><button onclick="speak('In this regard')">🔊 片語</button></td>
+<td>在這方面</td>
+<td class="example">In this regard, the manager approved the request.<button onclick="speak('In this regard, the manager approved the request.')">🔊 例句</button><div class="translation">在這方面，經理批准了請求。</div></td>
+</tr>
+
+<tr data-letter="I" data-star="1">
+<td class="letter">I</td>
+<td class="phrase"><span>In regards to、In reference to</span><span class="star">高頻</span><button onclick="speak('In regards to、In reference to')">🔊 片語</button></td>
+<td>關於</td>
+<td class="example">In regards to, the manager approved the request.<button onclick="speak('In regards to, the manager approved the request.')">🔊 例句</button><div class="translation">關於，經理批准了請求。</div></td>
+</tr>
+
+<tr data-letter="I" data-star="0">
+<td class="letter">I</td>
+<td class="phrase"><span>In debt</span><button onclick="speak('In debt')">🔊 片語</button></td>
+<td>負債</td>
+<td class="example">In debt, the manager approved the request.<button onclick="speak('In debt, the manager approved the request.')">🔊 例句</button><div class="translation">負債，經理批准了請求。</div></td>
+</tr>
+
+<tr data-letter="I" data-star="0">
+<td class="letter">I</td>
+<td class="phrase"><span>In depth</span><button onclick="speak('In depth')">🔊 片語</button></td>
+<td>徹底地、深深地</td>
+<td class="example">In depth, the manager approved the request.<button onclick="speak('In depth, the manager approved the request.')">🔊 例句</button><div class="translation">徹底地、深深地，經理批准了請求。</div></td>
+</tr>
+
+<tr data-letter="I" data-star="0">
+<td class="letter">I</td>
+<td class="phrase"><span>In observance of</span><button onclick="speak('In observance of')">🔊 片語</button></td>
+<td>紀念</td>
+<td class="example">In observance of, the manager approved the request.<button onclick="speak('In observance of, the manager approved the request.')">🔊 例句</button><div class="translation">紀念，經理批准了請求。</div></td>
+</tr>
+
+<tr data-letter="I" data-star="1">
+<td class="letter">I</td>
+<td class="phrase"><span>In turn</span><span class="star">高頻</span><button onclick="speak('In turn')">🔊 片語</button></td>
+<td>輪流</td>
+<td class="example">In turn, the manager approved the request.<button onclick="speak('In turn, the manager approved the request.')">🔊 例句</button><div class="translation">輪流，經理批准了請求。</div></td>
+</tr>
+
+<tr data-letter="I" data-star="0">
+<td class="letter">I</td>
+<td class="phrase"><span>In relation to</span><button onclick="speak('In relation to')">🔊 片語</button></td>
+<td>關於、和...相關</td>
+<td class="example">In relation to, the manager approved the request.<button onclick="speak('In relation to, the manager approved the request.')">🔊 例句</button><div class="translation">關於、和...相關，經理批准了請求。</div></td>
+</tr>
+
+<tr data-letter="I" data-star="0">
+<td class="letter">I</td>
+<td class="phrase"><span>In response to</span><button onclick="speak('In response to')">🔊 片語</button></td>
+<td>回應</td>
+<td class="example">In response to, the manager approved the request.<button onclick="speak('In response to, the manager approved the request.')">🔊 例句</button><div class="translation">回應，經理批准了請求。</div></td>
+</tr>
+
+<tr data-letter="I" data-star="1">
+<td class="letter">I</td>
+<td class="phrase"><span>In favor of</span><span class="star">高頻</span><button onclick="speak('In favor of')">🔊 片語</button></td>
+<td>支持、 有利於...  /  Be favor of  :  喜歡</td>
+<td class="example">In favor of, the manager approved the request.<button onclick="speak('In favor of, the manager approved the request.')">🔊 例句</button><div class="translation">支持、 有利於...  ，經理批准了請求。</div></td>
+</tr>
+
+<tr data-letter="I" data-star="1">
+<td class="letter">I</td>
+<td class="phrase"><span>In comparison with</span><span class="star">高頻</span><button onclick="speak('In comparison with')">🔊 片語</button></td>
+<td>和...相比</td>
+<td class="example">In comparison with, the manager approved the request.<button onclick="speak('In comparison with, the manager approved the request.')">🔊 例句</button><div class="translation">和...相比，經理批准了請求。</div></td>
+</tr>
+
+<tr data-letter="I" data-star="0">
+<td class="letter">I</td>
+<td class="phrase"><span>In line with 、 In keeping with 、 in accordance with</span><button onclick="speak('In line with 、 In keeping with 、 in accordance with')">🔊 片語</button></td>
+<td>與...一致、符合</td>
+<td class="example">In line with, the manager approved the request.<button onclick="speak('In line with, the manager approved the request.')">🔊 例句</button><div class="translation">與...一致、符合，經理批准了請求。</div></td>
+</tr>
+
+<tr data-letter="I" data-star="1">
+<td class="letter">I</td>
+<td class="phrase"><span>Iron out</span><span class="star">高頻</span><button onclick="speak('Iron out')">🔊 片語</button></td>
+<td>解決、消除</td>
+<td class="example">This phrase is often used in business English: Iron out.<button onclick="speak('This phrase is often used in business English: Iron out.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：解決、消除。</div></td>
+</tr>
+
+<tr data-letter="I" data-star="0">
+<td class="letter">I</td>
+<td class="phrase"><span>Impose on</span><button onclick="speak('Impose on')">🔊 片語</button></td>
+<td>強加於...</td>
+<td class="example">This phrase is often used in business English: Impose on.<button onclick="speak('This phrase is often used in business English: Impose on.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：強加於...。</div></td>
+</tr>
+
+<tr data-letter="I" data-star="0">
+<td class="letter">I</td>
+<td class="phrase"><span>Inflict on</span><button onclick="speak('Inflict on')">🔊 片語</button></td>
+<td>使...遭受</td>
+<td class="example">This phrase is often used in business English: Inflict on.<button onclick="speak('This phrase is often used in business English: Inflict on.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：使...遭受。</div></td>
+</tr>
+
+<tr data-letter="I" data-star="1">
+<td class="letter">I</td>
+<td class="phrase"><span>indulge in</span><span class="star">高頻</span><button onclick="speak('indulge in')">🔊 片語</button></td>
+<td>沈迷於…</td>
+<td class="example">This phrase is often used in business English: indulge in.<button onclick="speak('This phrase is often used in business English: indulge in.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：沈迷於…。</div></td>
+</tr>
+
+<tr data-letter="J" data-star="1">
+<td class="letter">J</td>
+<td class="phrase"><span>Jet leg</span><span class="star">高頻</span><button onclick="speak('Jet leg')">🔊 片語</button></td>
+<td>時差<div class="note">修正提醒：jet lag</div></td>
+<td class="example">This phrase is often used in business English: Jet leg.<button onclick="speak('This phrase is often used in business English: Jet leg.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：時差。</div></td>
+</tr>
+
+<tr data-letter="J" data-star="0">
+<td class="letter">J</td>
+<td class="phrase"><span>Jot down</span><button onclick="speak('Jot down')">🔊 片語</button></td>
+<td>匆忙記下</td>
+<td class="example">This phrase is often used in business English: Jot down.<button onclick="speak('This phrase is often used in business English: Jot down.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：匆忙記下。</div></td>
+</tr>
+
+<tr data-letter="J" data-star="1">
+<td class="letter">J</td>
+<td class="phrase"><span>Jump the gum</span><span class="star">高頻</span><button onclick="speak('Jump the gum')">🔊 片語</button></td>
+<td>冒險做...、輕率的行動<div class="note">修正提醒：jump the gun</div></td>
+<td class="example">This phrase is often used in business English: Jump the gum.<button onclick="speak('This phrase is often used in business English: Jump the gum.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：冒險做...、輕率的行動。</div></td>
+</tr>
+
+<tr data-letter="J" data-star="1">
+<td class="letter">J</td>
+<td class="phrase"><span>Just as</span><span class="star">高頻</span><button onclick="speak('Just as')">🔊 片語</button></td>
+<td>正如..</td>
+<td class="example">This phrase is often used in business English: Just as.<button onclick="speak('This phrase is often used in business English: Just as.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：正如..。</div></td>
+</tr>
+
+<tr data-letter="K" data-star="0">
+<td class="letter">K</td>
+<td class="phrase"><span>Knock down</span><button onclick="speak('Knock down')">🔊 片語</button></td>
+<td>撞倒</td>
+<td class="example">This phrase is often used in business English: Knock down.<button onclick="speak('This phrase is often used in business English: Knock down.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：撞倒。</div></td>
+</tr>
+
+<tr data-letter="K" data-star="1">
+<td class="letter">K</td>
+<td class="phrase"><span>Keep up with</span><span class="star">高頻</span><button onclick="speak('Keep up with')">🔊 片語</button></td>
+<td>跟得上</td>
+<td class="example">We need to keep up with before the client arrives.<button onclick="speak('We need to keep up with before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要跟得上。</div></td>
+</tr>
+
+<tr data-letter="K" data-star="1">
+<td class="letter">K</td>
+<td class="phrase"><span>Keep A in the top 、 Keep A posted</span><span class="star">高頻</span><button onclick="speak('Keep A in the top 、 Keep A posted')">🔊 片語</button></td>
+<td>持續告知A最新消息<div class="note">修正提醒：keep A in the loop / keep A posted</div></td>
+<td class="example">We need to keep the client in the top before the client arrives.<button onclick="speak('We need to keep the client in the top before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要持續告知A最新消息。</div></td>
+</tr>
+
+<tr data-letter="L" data-star="0">
+<td class="letter">L</td>
+<td class="phrase"><span>Live with</span><button onclick="speak('Live with')">🔊 片語</button></td>
+<td>承受、忍耐</td>
+<td class="example">This phrase is often used in business English: Live with.<button onclick="speak('This phrase is often used in business English: Live with.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：承受、忍耐。</div></td>
+</tr>
+
+<tr data-letter="L" data-star="0">
+<td class="letter">L</td>
+<td class="phrase"><span>Lecture on</span><button onclick="speak('Lecture on')">🔊 片語</button></td>
+<td>教訓</td>
+<td class="example">This phrase is often used in business English: Lecture on.<button onclick="speak('This phrase is often used in business English: Lecture on.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：教訓。</div></td>
+</tr>
+
+<tr data-letter="L" data-star="0">
+<td class="letter">L</td>
+<td class="phrase"><span>Leave A up to B、Leave A with B</span><button onclick="speak('Leave A up to B、Leave A with B')">🔊 片語</button></td>
+<td>把A交給B處理</td>
+<td class="example">This phrase is often used in business English: Leave the client up to the manager.<button onclick="speak('This phrase is often used in business English: Leave the client up to the manager.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：把A交給B處理。</div></td>
+</tr>
+
+<tr data-letter="L" data-star="1">
+<td class="letter">L</td>
+<td class="phrase"><span>Lose ground</span><span class="star">高頻</span><button onclick="speak('Lose ground')">🔊 片語</button></td>
+<td>落後、失去地位</td>
+<td class="example">This phrase is often used in business English: Lose ground.<button onclick="speak('This phrase is often used in business English: Lose ground.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：落後、失去地位。</div></td>
+</tr>
+
+<tr data-letter="L" data-star="0">
+<td class="letter">L</td>
+<td class="phrase"><span>Line up with</span><button onclick="speak('Line up with')">🔊 片語</button></td>
+<td>安排</td>
+<td class="example">This phrase is often used in business English: Line up with.<button onclick="speak('This phrase is often used in business English: Line up with.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：安排。</div></td>
+</tr>
+
+<tr data-letter="L" data-star="1">
+<td class="letter">L</td>
+<td class="phrase"><span>Low on</span><span class="star">高頻</span><button onclick="speak('Low on')">🔊 片語</button></td>
+<td>缺乏</td>
+<td class="example">This phrase is often used in business English: Low on.<button onclick="speak('This phrase is often used in business English: Low on.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：缺乏。</div></td>
+</tr>
+
+<tr data-letter="L" data-star="1">
+<td class="letter">L</td>
+<td class="phrase"><span>Lay the foundation</span><span class="star">高頻</span><button onclick="speak('Lay the foundation')">🔊 片語</button></td>
+<td>奠定基礎</td>
+<td class="example">This phrase is often used in business English: Lay the foundation.<button onclick="speak('This phrase is often used in business English: Lay the foundation.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：奠定基礎。</div></td>
+</tr>
+
+<tr data-letter="L" data-star="0">
+<td class="letter">L</td>
+<td class="phrase"><span>Live up to</span><button onclick="speak('Live up to')">🔊 片語</button></td>
+<td>實踐、符合</td>
+<td class="example">This phrase is often used in business English: Live up to.<button onclick="speak('This phrase is often used in business English: Live up to.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：實踐、符合。</div></td>
+</tr>
+
+<tr data-letter="L" data-star="1">
+<td class="letter">L</td>
+<td class="phrase"><span>Look up to</span><span class="star">高頻</span><button onclick="speak('Look up to')">🔊 片語</button></td>
+<td>尊敬</td>
+<td class="example">We need to look up to before the client arrives.<button onclick="speak('We need to look up to before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要尊敬。</div></td>
+</tr>
+
+<tr data-letter="L" data-star="1">
+<td class="letter">L</td>
+<td class="phrase"><span>Look up</span><span class="star">高頻</span><button onclick="speak('Look up')">🔊 片語</button></td>
+<td>查詢</td>
+<td class="example">We need to look up before the client arrives.<button onclick="speak('We need to look up before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要查詢。</div></td>
+</tr>
+
+<tr data-letter="L" data-star="1">
+<td class="letter">L</td>
+<td class="phrase"><span>Look over</span><span class="star">高頻</span><button onclick="speak('Look over')">🔊 片語</button></td>
+<td>檢查</td>
+<td class="example">We need to look over before the client arrives.<button onclick="speak('We need to look over before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要檢查。</div></td>
+</tr>
+
+<tr data-letter="L" data-star="1">
+<td class="letter">L</td>
+<td class="phrase"><span>Look into</span><span class="star">高頻</span><button onclick="speak('Look into')">🔊 片語</button></td>
+<td>調查</td>
+<td class="example">We need to look into before the client arrives.<button onclick="speak('We need to look into before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要調查。</div></td>
+</tr>
+
+<tr data-letter="L" data-star="1">
+<td class="letter">L</td>
+<td class="phrase"><span>Look after</span><span class="star">高頻</span><button onclick="speak('Look after')">🔊 片語</button></td>
+<td>照顧</td>
+<td class="example">We need to look after before the client arrives.<button onclick="speak('We need to look after before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要照顧。</div></td>
+</tr>
+
+<tr data-letter="L" data-star="1">
+<td class="letter">L</td>
+<td class="phrase"><span>Look for</span><span class="star">高頻</span><button onclick="speak('Look for')">🔊 片語</button></td>
+<td>尋找</td>
+<td class="example">We need to look for before the client arrives.<button onclick="speak('We need to look for before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要尋找。</div></td>
+</tr>
+
+<tr data-letter="L" data-star="0">
+<td class="letter">L</td>
+<td class="phrase"><span>Look forward to Ving</span><button onclick="speak('Look forward to Ving')">🔊 片語</button></td>
+<td>期待</td>
+<td class="example">We need to look forward to reviewing the report before the client arrives.<button onclick="speak('We need to look forward to reviewing the report before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要期待。</div></td>
+</tr>
+
+<tr data-letter="L" data-star="0">
+<td class="letter">L</td>
+<td class="phrase"><span>Life span</span><button onclick="speak('Life span')">🔊 片語</button></td>
+<td>壽命</td>
+<td class="example">This phrase is often used in business English: Life span.<button onclick="speak('This phrase is often used in business English: Life span.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：壽命。</div></td>
+</tr>
+
+<tr data-letter="M" data-star="1">
+<td class="letter">M</td>
+<td class="phrase"><span>Make up for</span><span class="star">高頻</span><button onclick="speak('Make up for')">🔊 片語</button></td>
+<td>彌補、補償</td>
+<td class="example">The coupon will make up for the inconvenience.<button onclick="speak('The coupon will make up for the inconvenience.')">🔊 例句</button><div class="translation">這張優惠券會彌補造成的不便。</div></td>
+</tr>
+
+<tr data-letter="M" data-star="1">
+<td class="letter">M</td>
+<td class="phrase"><span>Mark down</span><span class="star">高頻</span><button onclick="speak('Mark down')">🔊 片語</button></td>
+<td>降價</td>
+<td class="example">This phrase is often used in business English: Mark down.<button onclick="speak('This phrase is often used in business English: Mark down.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：降價。</div></td>
+</tr>
+
+<tr data-letter="M" data-star="1">
+<td class="letter">M</td>
+<td class="phrase"><span>Make provision</span><span class="star">高頻</span><button onclick="speak('Make provision')">🔊 片語</button></td>
+<td>準備</td>
+<td class="example">We need to make provision before the client arrives.<button onclick="speak('We need to make provision before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要準備。</div></td>
+</tr>
+
+<tr data-letter="M" data-star="0">
+<td class="letter">M</td>
+<td class="phrase"><span>Make clear</span><button onclick="speak('Make clear')">🔊 片語</button></td>
+<td>解釋清楚</td>
+<td class="example">We need to make clear before the client arrives.<button onclick="speak('We need to make clear before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要解釋清楚。</div></td>
+</tr>
+
+<tr data-letter="M" data-star="0">
+<td class="letter">M</td>
+<td class="phrase"><span>Mess with</span><button onclick="speak('Mess with')">🔊 片語</button></td>
+<td>招惹</td>
+<td class="example">This phrase is often used in business English: Mess with.<button onclick="speak('This phrase is often used in business English: Mess with.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：招惹。</div></td>
+</tr>
+
+<tr data-letter="M" data-star="0">
+<td class="letter">M</td>
+<td class="phrase"><span>Mess up</span><button onclick="speak('Mess up')">🔊 片語</button></td>
+<td>搞砸</td>
+<td class="example">This phrase is often used in business English: Mess up.<button onclick="speak('This phrase is often used in business English: Mess up.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：搞砸。</div></td>
+</tr>
+
+<tr data-letter="M" data-star="0">
+<td class="letter">M</td>
+<td class="phrase"><span>Make a point of Ving</span><button onclick="speak('Make a point of Ving')">🔊 片語</button></td>
+<td>特意做...</td>
+<td class="example">We need to make a point of reviewing the report before the client arrives.<button onclick="speak('We need to make a point of reviewing the report before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要特意做...。</div></td>
+</tr>
+
+<tr data-letter="N" data-star="1">
+<td class="letter">N</td>
+<td class="phrase"><span>Not to mention</span><span class="star">高頻</span><button onclick="speak('Not to mention')">🔊 片語</button></td>
+<td>更不用說</td>
+<td class="example">The hotel is clean, not to mention affordable.<button onclick="speak('The hotel is clean, not to mention affordable.')">🔊 例句</button><div class="translation">這間飯店很乾淨，更不用說價格也實惠。</div></td>
+</tr>
+
+<tr data-letter="N" data-star="0">
+<td class="letter">N</td>
+<td class="phrase"><span>Not for the world</span><button onclick="speak('Not for the world')">🔊 片語</button></td>
+<td>無論如何都不</td>
+<td class="example">This phrase is often used in business English: Not for the world.<button onclick="speak('This phrase is often used in business English: Not for the world.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：無論如何都不。</div></td>
+</tr>
+
+<tr data-letter="N" data-star="0">
+<td class="letter">N</td>
+<td class="phrase"><span>Net income</span><button onclick="speak('Net income')">🔊 片語</button></td>
+<td>淨收入</td>
+<td class="example">This phrase is often used in business English: Net income.<button onclick="speak('This phrase is often used in business English: Net income.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：淨收入。</div></td>
+</tr>
+
+<tr data-letter="N" data-star="1">
+<td class="letter">N</td>
+<td class="phrase"><span>No wonder</span><span class="star">高頻</span><button onclick="speak('No wonder')">🔊 片語</button></td>
+<td>難怪、怪不得</td>
+<td class="example">This phrase is often used in business English: No wonder.<button onclick="speak('This phrase is often used in business English: No wonder.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：難怪、怪不得。</div></td>
+</tr>
+
+<tr data-letter="N" data-star="1">
+<td class="letter">N</td>
+<td class="phrase"><span>No big deal</span><span class="star">高頻</span><button onclick="speak('No big deal')">🔊 片語</button></td>
+<td>沒什麼大不了的</td>
+<td class="example">This phrase is often used in business English: No big deal.<button onclick="speak('This phrase is often used in business English: No big deal.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：沒什麼大不了的。</div></td>
+</tr>
+
+<tr data-letter="N" data-star="0">
+<td class="letter">N</td>
+<td class="phrase"><span>Narrow A down to B</span><button onclick="speak('Narrow A down to B')">🔊 片語</button></td>
+<td>把A縮減成B</td>
+<td class="example">This phrase is often used in business English: Narrow the client down to the manager.<button onclick="speak('This phrase is often used in business English: Narrow the client down to the manager.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：把A縮減成B。</div></td>
+</tr>
+
+<tr data-letter="O" data-star="1">
+<td class="letter">O</td>
+<td class="phrase"><span>Once in a while、on occasion</span><span class="star">高頻</span><button onclick="speak('Once in a while、on occasion')">🔊 片語</button></td>
+<td>偶爾</td>
+<td class="example">This phrase is often used in business English: Once in a while.<button onclick="speak('This phrase is often used in business English: Once in a while.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：偶爾。</div></td>
+</tr>
+
+<tr data-letter="O" data-star="0">
+<td class="letter">O</td>
+<td class="phrase"><span>One’s hands are tied</span><button onclick="speak('One’s hands are tied')">🔊 片語</button></td>
+<td>無法幫忙、受到限制</td>
+<td class="example">This phrase is often used in business English: Her hands are tied.<button onclick="speak('This phrase is often used in business English: Her hands are tied.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：無法幫忙、受到限制。</div></td>
+</tr>
+
+<tr data-letter="O" data-star="0">
+<td class="letter">O</td>
+<td class="phrase"><span>Off the top of one’s head</span><button onclick="speak('Off the top of one’s head')">🔊 片語</button></td>
+<td>不假思索地</td>
+<td class="example">This phrase is often used in business English: Off the top of her head.<button onclick="speak('This phrase is often used in business English: Off the top of her head.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：不假思索地。</div></td>
+</tr>
+
+<tr data-letter="O" data-star="1">
+<td class="letter">O</td>
+<td class="phrase"><span>Out of the question</span><span class="star">高頻</span><button onclick="speak('Out of the question')">🔊 片語</button></td>
+<td>不可能的</td>
+<td class="example">This phrase is often used in business English: Out of the question.<button onclick="speak('This phrase is often used in business English: Out of the question.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：不可能的。</div></td>
+</tr>
+
+<tr data-letter="O" data-star="0">
+<td class="letter">O</td>
+<td class="phrase"><span>On a walk-in basis</span><button onclick="speak('On a walk-in basis')">🔊 片語</button></td>
+<td>不用事先預約</td>
+<td class="example">The service is available on a walk-in basis this week.<button onclick="speak('The service is available on a walk-in basis this week.')">🔊 例句</button><div class="translation">本週服務以「不用事先預約」的方式提供。</div></td>
+</tr>
+
+<tr data-letter="O" data-star="1">
+<td class="letter">O</td>
+<td class="phrase"><span>On behalf of</span><span class="star">高頻</span><button onclick="speak('On behalf of')">🔊 片語</button></td>
+<td>代表</td>
+<td class="example">I am writing on behalf of the sales department.<button onclick="speak('I am writing on behalf of the sales department.')">🔊 例句</button><div class="translation">我代表業務部門寫信。</div></td>
+</tr>
+
+<tr data-letter="O" data-star="0">
+<td class="letter">O</td>
+<td class="phrase"><span>On the spot</span><button onclick="speak('On the spot')">🔊 片語</button></td>
+<td>當場、立刻</td>
+<td class="example">The service is available on the spot this week.<button onclick="speak('The service is available on the spot this week.')">🔊 例句</button><div class="translation">本週服務以「當場、立刻」的方式提供。</div></td>
+</tr>
+
+<tr data-letter="O" data-star="0">
+<td class="letter">O</td>
+<td class="phrase"><span>On duty</span><button onclick="speak('On duty')">🔊 片語</button></td>
+<td>值班</td>
+<td class="example">The service is available on duty this week.<button onclick="speak('The service is available on duty this week.')">🔊 例句</button><div class="translation">本週服務以「值班」的方式提供。</div></td>
+</tr>
+
+<tr data-letter="O" data-star="0">
+<td class="letter">O</td>
+<td class="phrase"><span>Obsess about</span><button onclick="speak('Obsess about')">🔊 片語</button></td>
+<td>對...念念不忘</td>
+<td class="example">This phrase is often used in business English: Obsess about.<button onclick="speak('This phrase is often used in business English: Obsess about.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：對...念念不忘。</div></td>
+</tr>
+
+<tr data-letter="O" data-star="0">
+<td class="letter">O</td>
+<td class="phrase"><span>Of late</span><button onclick="speak('Of late')">🔊 片語</button></td>
+<td>最近</td>
+<td class="example">This phrase is often used in business English: Of late.<button onclick="speak('This phrase is often used in business English: Of late.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：最近。</div></td>
+</tr>
+
+<tr data-letter="O" data-star="1">
+<td class="letter">O</td>
+<td class="phrase"><span>Out of order</span><span class="star">高頻</span><button onclick="speak('Out of order')">🔊 片語</button></td>
+<td>故障</td>
+<td class="example">The elevator is out of order today.<button onclick="speak('The elevator is out of order today.')">🔊 例句</button><div class="translation">電梯今天故障。</div></td>
+</tr>
+
+<tr data-letter="P" data-star="1">
+<td class="letter">P</td>
+<td class="phrase"><span>Point taken</span><span class="star">高頻</span><button onclick="speak('Point taken')">🔊 片語</button></td>
+<td>知道了</td>
+<td class="example">This phrase is often used in business English: Point taken.<button onclick="speak('This phrase is often used in business English: Point taken.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：知道了。</div></td>
+</tr>
+
+<tr data-letter="P" data-star="1">
+<td class="letter">P</td>
+<td class="phrase"><span>Prohibit from</span><span class="star">高頻</span><button onclick="speak('Prohibit from')">🔊 片語</button></td>
+<td>禁止</td>
+<td class="example">This phrase is often used in business English: Prohibit from.<button onclick="speak('This phrase is often used in business English: Prohibit from.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：禁止。</div></td>
+</tr>
+
+<tr data-letter="P" data-star="1">
+<td class="letter">P</td>
+<td class="phrase"><span>Pull out</span><span class="star">高頻</span><button onclick="speak('Pull out')">🔊 片語</button></td>
+<td>拔出、停車</td>
+<td class="example">We need to pull out before the client arrives.<button onclick="speak('We need to pull out before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要拔出、停車。</div></td>
+</tr>
+
+<tr data-letter="P" data-star="0">
+<td class="letter">P</td>
+<td class="phrase"><span>Pull into</span><button onclick="speak('Pull into')">🔊 片語</button></td>
+<td>停車</td>
+<td class="example">We need to pull into before the client arrives.<button onclick="speak('We need to pull into before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要停車。</div></td>
+</tr>
+
+<tr data-letter="P" data-star="0">
+<td class="letter">P</td>
+<td class="phrase"><span>Perk up</span><button onclick="speak('Perk up')">🔊 片語</button></td>
+<td>打起精神</td>
+<td class="example">This phrase is often used in business English: Perk up.<button onclick="speak('This phrase is often used in business English: Perk up.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：打起精神。</div></td>
+</tr>
+
+<tr data-letter="P" data-star="1">
+<td class="letter">P</td>
+<td class="phrase"><span>Pack away</span><span class="star">高頻</span><button onclick="speak('Pack away')">🔊 片語</button></td>
+<td>收拾、保存</td>
+<td class="example">This phrase is often used in business English: Pack away.<button onclick="speak('This phrase is often used in business English: Pack away.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：收拾、保存。</div></td>
+</tr>
+
+<tr data-letter="P" data-star="0">
+<td class="letter">P</td>
+<td class="phrase"><span>Put away</span><button onclick="speak('Put away')">🔊 片語</button></td>
+<td>拋棄、歸位</td>
+<td class="example">We need to put away before the client arrives.<button onclick="speak('We need to put away before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要拋棄、歸位。</div></td>
+</tr>
+
+<tr data-letter="P" data-star="1">
+<td class="letter">P</td>
+<td class="phrase"><span>Put up</span><span class="star">高頻</span><button onclick="speak('Put up')">🔊 片語</button></td>
+<td>展示、提出</td>
+<td class="example">We need to put up before the client arrives.<button onclick="speak('We need to put up before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要展示、提出。</div></td>
+</tr>
+
+<tr data-letter="P" data-star="1">
+<td class="letter">P</td>
+<td class="phrase"><span>Put off</span><span class="star">高頻</span><button onclick="speak('Put off')">🔊 片語</button></td>
+<td>延期</td>
+<td class="example">The launch was put off until next month.<button onclick="speak('The launch was put off until next month.')">🔊 例句</button><div class="translation">上市被延期到下個月。</div></td>
+</tr>
+
+<tr data-letter="P" data-star="1">
+<td class="letter">P</td>
+<td class="phrase"><span>Put down</span><span class="star">高頻</span><button onclick="speak('Put down')">🔊 片語</button></td>
+<td>批評</td>
+<td class="example">We need to put down before the client arrives.<button onclick="speak('We need to put down before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要批評。</div></td>
+</tr>
+
+<tr data-letter="P" data-star="1">
+<td class="letter">P</td>
+<td class="phrase"><span>Put about</span><span class="star">高頻</span><button onclick="speak('Put about')">🔊 片語</button></td>
+<td>散播</td>
+<td class="example">We need to put about before the client arrives.<button onclick="speak('We need to put about before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要散播。</div></td>
+</tr>
+
+<tr data-letter="P" data-star="1">
+<td class="letter">P</td>
+<td class="phrase"><span>Put out</span><span class="star">高頻</span><button onclick="speak('Put out')">🔊 片語</button></td>
+<td>撲滅、外包</td>
+<td class="example">We need to put out before the client arrives.<button onclick="speak('We need to put out before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要撲滅、外包。</div></td>
+</tr>
+
+<tr data-letter="P" data-star="0">
+<td class="letter">P</td>
+<td class="phrase"><span>Put forth</span><button onclick="speak('Put forth')">🔊 片語</button></td>
+<td>提出、發表</td>
+<td class="example">We need to put forth before the client arrives.<button onclick="speak('We need to put forth before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要提出、發表。</div></td>
+</tr>
+
+<tr data-letter="P" data-star="0">
+<td class="letter">P</td>
+<td class="phrase"><span>Put effort</span><button onclick="speak('Put effort')">🔊 片語</button></td>
+<td>付出努力</td>
+<td class="example">We need to put effort before the client arrives.<button onclick="speak('We need to put effort before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要付出努力。</div></td>
+</tr>
+
+<tr data-letter="P" data-star="1">
+<td class="letter">P</td>
+<td class="phrase"><span>Put together</span><span class="star">高頻</span><button onclick="speak('Put together')">🔊 片語</button></td>
+<td>製作、編寫</td>
+<td class="example">We need to put together before the client arrives.<button onclick="speak('We need to put together before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要製作、編寫。</div></td>
+</tr>
+
+<tr data-letter="P" data-star="0">
+<td class="letter">P</td>
+<td class="phrase"><span>Put on hold</span><button onclick="speak('Put on hold')">🔊 片語</button></td>
+<td>暫停、保留</td>
+<td class="example">We need to put on hold before the client arrives.<button onclick="speak('We need to put on hold before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要暫停、保留。</div></td>
+</tr>
+
+<tr data-letter="P" data-star="1">
+<td class="letter">P</td>
+<td class="phrase"><span>Put up with</span><span class="star">高頻</span><button onclick="speak('Put up with')">🔊 片語</button></td>
+<td>忍受</td>
+<td class="example">Customers should not have to put up with poor service.<button onclick="speak('Customers should not have to put up with poor service.')">🔊 例句</button><div class="translation">顧客不應該忍受糟糕的服務。</div></td>
+</tr>
+
+<tr data-letter="P" data-star="0">
+<td class="letter">P</td>
+<td class="phrase"><span>Put into effect</span><button onclick="speak('Put into effect')">🔊 片語</button></td>
+<td>實施</td>
+<td class="example">We need to put into effect before the client arrives.<button onclick="speak('We need to put into effect before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要實施。</div></td>
+</tr>
+
+<tr data-letter="P" data-star="0">
+<td class="letter">P</td>
+<td class="phrase"><span>Pile up</span><button onclick="speak('Pile up')">🔊 片語</button></td>
+<td>堆積、累積</td>
+<td class="example">This phrase is often used in business English: Pile up.<button onclick="speak('This phrase is often used in business English: Pile up.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：堆積、累積。</div></td>
+</tr>
+
+<tr data-letter="P" data-star="0">
+<td class="letter">P</td>
+<td class="phrase"><span>Pick out</span><button onclick="speak('Pick out')">🔊 片語</button></td>
+<td>選擇</td>
+<td class="example">This phrase is often used in business English: Pick out.<button onclick="speak('This phrase is often used in business English: Pick out.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：選擇。</div></td>
+</tr>
+
+<tr data-letter="P" data-star="1">
+<td class="letter">P</td>
+<td class="phrase"><span>Pass on</span><span class="star">高頻</span><button onclick="speak('Pass on')">🔊 片語</button></td>
+<td>傳達</td>
+<td class="example">We need to pass on before the client arrives.<button onclick="speak('We need to pass on before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要傳達。</div></td>
+</tr>
+
+<tr data-letter="P" data-star="1">
+<td class="letter">P</td>
+<td class="phrase"><span>Pass up</span><span class="star">高頻</span><button onclick="speak('Pass up')">🔊 片語</button></td>
+<td>放棄</td>
+<td class="example">We need to pass up before the client arrives.<button onclick="speak('We need to pass up before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要放棄。</div></td>
+</tr>
+
+<tr data-letter="P" data-star="0">
+<td class="letter">P</td>
+<td class="phrase"><span>Prone to</span><button onclick="speak('Prone to')">🔊 片語</button></td>
+<td>易於...</td>
+<td class="example">This phrase is often used in business English: Prone to.<button onclick="speak('This phrase is often used in business English: Prone to.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：易於...。</div></td>
+</tr>
+
+<tr data-letter="P" data-star="0">
+<td class="letter">P</td>
+<td class="phrase"><span>Profit margin</span><button onclick="speak('Profit margin')">🔊 片語</button></td>
+<td>利潤</td>
+<td class="example">This phrase is often used in business English: Profit margin.<button onclick="speak('This phrase is often used in business English: Profit margin.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：利潤。</div></td>
+</tr>
+
+<tr data-letter="Q" data-star="0">
+<td class="letter">Q</td>
+<td class="phrase"><span>Quote from</span><button onclick="speak('Quote from')">🔊 片語</button></td>
+<td>引用</td>
+<td class="example">This phrase is often used in business English: Quote from.<button onclick="speak('This phrase is often used in business English: Quote from.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：引用。</div></td>
+</tr>
+
+<tr data-letter="R" data-star="1">
+<td class="letter">R</td>
+<td class="phrase"><span>Run out</span><span class="star">高頻</span><button onclick="speak('Run out')">🔊 片語</button></td>
+<td>用盡</td>
+<td class="example">We ran out of printer paper.<button onclick="speak('We ran out of printer paper.')">🔊 例句</button><div class="translation">我們的列印紙用完了。</div></td>
+</tr>
+
+<tr data-letter="R" data-star="0">
+<td class="letter">R</td>
+<td class="phrase"><span>Run long</span><button onclick="speak('Run long')">🔊 片語</button></td>
+<td>長期</td>
+<td class="example">We need to run long before the client arrives.<button onclick="speak('We need to run long before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要長期。</div></td>
+</tr>
+
+<tr data-letter="R" data-star="1">
+<td class="letter">R</td>
+<td class="phrase"><span>Run for</span><span class="star">高頻</span><button onclick="speak('Run for')">🔊 片語</button></td>
+<td>競選</td>
+<td class="example">We need to run for before the client arrives.<button onclick="speak('We need to run for before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要競選。</div></td>
+</tr>
+
+<tr data-letter="R" data-star="1">
+<td class="letter">R</td>
+<td class="phrase"><span>Run into</span><span class="star">高頻</span><button onclick="speak('Run into')">🔊 片語</button></td>
+<td>偶然遇見  /  Come across  :  偶然發現</td>
+<td class="example">We need to run into before the client arrives.<button onclick="speak('We need to run into before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要偶然遇見  。</div></td>
+</tr>
+
+<tr data-letter="R" data-star="0">
+<td class="letter">R</td>
+<td class="phrase"><span>Ring up</span><button onclick="speak('Ring up')">🔊 片語</button></td>
+<td>結帳</td>
+<td class="example">This phrase is often used in business English: Ring up.<button onclick="speak('This phrase is often used in business English: Ring up.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：結帳。</div></td>
+</tr>
+
+<tr data-letter="R" data-star="1">
+<td class="letter">R</td>
+<td class="phrase"><span>Rely on</span><span class="star">高頻</span><button onclick="speak('Rely on')">🔊 片語</button></td>
+<td>依靠</td>
+<td class="example">Many employees rely on public transportation.<button onclick="speak('Many employees rely on public transportation.')">🔊 例句</button><div class="translation">許多員工依靠大眾運輸。</div></td>
+</tr>
+
+<tr data-letter="R" data-star="0">
+<td class="letter">R</td>
+<td class="phrase"><span>Refrain from</span><button onclick="speak('Refrain from')">🔊 片語</button></td>
+<td>克制</td>
+<td class="example">This phrase is often used in business English: Refrain from.<button onclick="speak('This phrase is often used in business English: Refrain from.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：克制。</div></td>
+</tr>
+
+<tr data-letter="R" data-star="0">
+<td class="letter">R</td>
+<td class="phrase"><span>Remove from</span><button onclick="speak('Remove from')">🔊 片語</button></td>
+<td>把…免職</td>
+<td class="example">This phrase is often used in business English: Remove from.<button onclick="speak('This phrase is often used in business English: Remove from.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：把…免職。</div></td>
+</tr>
+
+<tr data-letter="R" data-star="0">
+<td class="letter">R</td>
+<td class="phrase"><span>Reason with</span><button onclick="speak('Reason with')">🔊 片語</button></td>
+<td>與…講道理</td>
+<td class="example">This phrase is often used in business English: Reason with.<button onclick="speak('This phrase is often used in business English: Reason with.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：與…講道理。</div></td>
+</tr>
+
+<tr data-letter="R" data-star="1">
+<td class="letter">R</td>
+<td class="phrase"><span>Refer to</span><span class="star">高頻</span><button onclick="speak('Refer to')">🔊 片語</button></td>
+<td>談到</td>
+<td class="example">This phrase is often used in business English: Refer to.<button onclick="speak('This phrase is often used in business English: Refer to.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：談到。</div></td>
+</tr>
+
+<tr data-letter="R" data-star="0">
+<td class="letter">R</td>
+<td class="phrase"><span>Regard as</span><button onclick="speak('Regard as')">🔊 片語</button></td>
+<td>將…視為</td>
+<td class="example">This phrase is often used in business English: Regard as.<button onclick="speak('This phrase is often used in business English: Regard as.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：將…視為。</div></td>
+</tr>
+
+<tr data-letter="R" data-star="1">
+<td class="letter">R</td>
+<td class="phrase"><span>Regardless of</span><span class="star">高頻</span><button onclick="speak('Regardless of')">🔊 片語</button></td>
+<td>不論、不顧</td>
+<td class="example">The policy applies to everyone regardless of position.<button onclick="speak('The policy applies to everyone regardless of position.')">🔊 例句</button><div class="translation">這項政策不論職位適用於每個人。</div></td>
+</tr>
+
+<tr data-letter="R" data-star="1">
+<td class="letter">R</td>
+<td class="phrase"><span>Reflect on</span><span class="star">高頻</span><button onclick="speak('Reflect on')">🔊 片語</button></td>
+<td>思考</td>
+<td class="example">This phrase is often used in business English: Reflect on.<button onclick="speak('This phrase is often used in business English: Reflect on.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：思考。</div></td>
+</tr>
+
+<tr data-letter="R" data-star="0">
+<td class="letter">R</td>
+<td class="phrase"><span>Rebel against</span><button onclick="speak('Rebel against')">🔊 片語</button></td>
+<td>反抗</td>
+<td class="example">This phrase is often used in business English: Rebel against.<button onclick="speak('This phrase is often used in business English: Rebel against.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：反抗。</div></td>
+</tr>
+
+<tr data-letter="R" data-star="0">
+<td class="letter">R</td>
+<td class="phrase"><span>Runner-up</span><button onclick="speak('Runner-up')">🔊 片語</button></td>
+<td>亞軍</td>
+<td class="example">This phrase is often used in business English: Runner-up.<button onclick="speak('This phrase is often used in business English: Runner-up.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：亞軍。</div></td>
+</tr>
+
+<tr data-letter="R" data-star="1">
+<td class="letter">R</td>
+<td class="phrase"><span>Reach a consensus</span><span class="star">高頻</span><button onclick="speak('Reach a consensus')">🔊 片語</button></td>
+<td>達成共識</td>
+<td class="example">This phrase is often used in business English: Reach a consensus.<button onclick="speak('This phrase is often used in business English: Reach a consensus.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：達成共識。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="0">
+<td class="letter">S</td>
+<td class="phrase"><span>Sewing machine</span><button onclick="speak('Sewing machine')">🔊 片語</button></td>
+<td>縫紉機</td>
+<td class="example">This phrase is often used in business English: Sewing machine.<button onclick="speak('This phrase is often used in business English: Sewing machine.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：縫紉機。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="0">
+<td class="letter">S</td>
+<td class="phrase"><span>Say the word</span><button onclick="speak('Say the word')">🔊 片語</button></td>
+<td>命令、要求</td>
+<td class="example">This phrase is often used in business English: Say the word.<button onclick="speak('This phrase is often used in business English: Say the word.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：命令、要求。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="1">
+<td class="letter">S</td>
+<td class="phrase"><span>Sort out</span><span class="star">高頻</span><button onclick="speak('Sort out')">🔊 片語</button></td>
+<td>整理</td>
+<td class="example">We need to sort out the billing issue.<button onclick="speak('We need to sort out the billing issue.')">🔊 例句</button><div class="translation">我們需要解決帳單問題。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="1">
+<td class="letter">S</td>
+<td class="phrase"><span>Succumb to</span><span class="star">高頻</span><button onclick="speak('Succumb to')">🔊 片語</button></td>
+<td>屈服於…</td>
+<td class="example">This phrase is often used in business English: Succumb to.<button onclick="speak('This phrase is often used in business English: Succumb to.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：屈服於…。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="0">
+<td class="letter">S</td>
+<td class="phrase"><span>Settle on</span><button onclick="speak('Settle on')">🔊 片語</button></td>
+<td>決定</td>
+<td class="example">This phrase is often used in business English: Settle on.<button onclick="speak('This phrase is often used in business English: Settle on.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：決定。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="1">
+<td class="letter">S</td>
+<td class="phrase"><span>Slip one’s mind</span><span class="star">高頻</span><button onclick="speak('Slip one’s mind')">🔊 片語</button></td>
+<td>忘記</td>
+<td class="example">This phrase is often used in business English: Slip her mind.<button onclick="speak('This phrase is often used in business English: Slip her mind.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：忘記。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="0">
+<td class="letter">S</td>
+<td class="phrase"><span>Segregate A from B</span><button onclick="speak('Segregate A from B')">🔊 片語</button></td>
+<td>把A從B隔離</td>
+<td class="example">This phrase is often used in business English: Segregate the client from the manager.<button onclick="speak('This phrase is often used in business English: Segregate the client from the manager.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：把A從B隔離。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="1">
+<td class="letter">S</td>
+<td class="phrase"><span>Stick with</span><span class="star">高頻</span><button onclick="speak('Stick with')">🔊 片語</button></td>
+<td>保持</td>
+<td class="example">We need to stick with before the client arrives.<button onclick="speak('We need to stick with before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要保持。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="1">
+<td class="letter">S</td>
+<td class="phrase"><span>Stick around</span><span class="star">高頻</span><button onclick="speak('Stick around')">🔊 片語</button></td>
+<td>逗留</td>
+<td class="example">We need to stick around before the client arrives.<button onclick="speak('We need to stick around before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要逗留。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="1">
+<td class="letter">S</td>
+<td class="phrase"><span>Stand over</span><span class="star">高頻</span><button onclick="speak('Stand over')">🔊 片語</button></td>
+<td>監督</td>
+<td class="example">We need to stand over before the client arrives.<button onclick="speak('We need to stand over before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要監督。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="1">
+<td class="letter">S</td>
+<td class="phrase"><span>Stand out</span><span class="star">高頻</span><button onclick="speak('Stand out')">🔊 片語</button></td>
+<td>醒目</td>
+<td class="example">Her presentation stood out among all candidates.<button onclick="speak('Her presentation stood out among all candidates.')">🔊 例句</button><div class="translation">她的簡報在所有候選人中很突出。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="1">
+<td class="letter">S</td>
+<td class="phrase"><span>Stand for</span><span class="star">高頻</span><button onclick="speak('Stand for')">🔊 片語</button></td>
+<td>代表</td>
+<td class="example">We need to stand for before the client arrives.<button onclick="speak('We need to stand for before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要代表。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="0">
+<td class="letter">S</td>
+<td class="phrase"><span>Substitute for</span><button onclick="speak('Substitute for')">🔊 片語</button></td>
+<td>用…代表</td>
+<td class="example">This phrase is often used in business English: Substitute for.<button onclick="speak('This phrase is often used in business English: Substitute for.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：用…代表。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="1">
+<td class="letter">S</td>
+<td class="phrase"><span>Soak up</span><span class="star">高頻</span><button onclick="speak('Soak up')">🔊 片語</button></td>
+<td>吸收</td>
+<td class="example">This phrase is often used in business English: Soak up.<button onclick="speak('This phrase is often used in business English: Soak up.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：吸收。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="0">
+<td class="letter">S</td>
+<td class="phrase"><span>Sentence to</span><button onclick="speak('Sentence to')">🔊 片語</button></td>
+<td>宣判</td>
+<td class="example">This phrase is often used in business English: Sentence to.<button onclick="speak('This phrase is often used in business English: Sentence to.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：宣判。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="1">
+<td class="letter">S</td>
+<td class="phrase"><span>Succeed in</span><span class="star">高頻</span><button onclick="speak('Succeed in')">🔊 片語</button></td>
+<td>成功</td>
+<td class="example">This phrase is often used in business English: Succeed in.<button onclick="speak('This phrase is often used in business English: Succeed in.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：成功。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="0">
+<td class="letter">S</td>
+<td class="phrase"><span>Succeed to</span><button onclick="speak('Succeed to')">🔊 片語</button></td>
+<td>繼承<div class="note">修正提醒：succeed to（繼承職位/王位）</div></td>
+<td class="example">This phrase is often used in business English: Succeed to.<button onclick="speak('This phrase is often used in business English: Succeed to.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：繼承。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="0">
+<td class="letter">S</td>
+<td class="phrase"><span>Stare at</span><button onclick="speak('Stare at')">🔊 片語</button></td>
+<td>注視</td>
+<td class="example">This phrase is often used in business English: Stare at.<button onclick="speak('This phrase is often used in business English: Stare at.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：注視。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="1">
+<td class="letter">S</td>
+<td class="phrase"><span>Step down</span><span class="star">高頻</span><button onclick="speak('Step down')">🔊 片語</button></td>
+<td>辭職</td>
+<td class="example">This phrase is often used in business English: Step down.<button onclick="speak('This phrase is often used in business English: Step down.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：辭職。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="0">
+<td class="letter">S</td>
+<td class="phrase"><span>Step in</span><button onclick="speak('Step in')">🔊 片語</button></td>
+<td>介入</td>
+<td class="example">This phrase is often used in business English: Step in.<button onclick="speak('This phrase is often used in business English: Step in.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：介入。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="0">
+<td class="letter">S</td>
+<td class="phrase"><span>Set in</span><button onclick="speak('Set in')">🔊 片語</button></td>
+<td>入侵</td>
+<td class="example">We need to set in before the client arrives.<button onclick="speak('We need to set in before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要入侵。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="0">
+<td class="letter">S</td>
+<td class="phrase"><span>Set aside</span><button onclick="speak('Set aside')">🔊 片語</button></td>
+<td>空出</td>
+<td class="example">We need to set aside before the client arrives.<button onclick="speak('We need to set aside before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要空出。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="1">
+<td class="letter">S</td>
+<td class="phrase"><span>Set about 、Set out</span><span class="star">高頻</span><button onclick="speak('Set about 、Set out')">🔊 片語</button></td>
+<td>出發 開始</td>
+<td class="example">We need to set about before the client arrives.<button onclick="speak('We need to set about before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要出發 開始。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="0">
+<td class="letter">S</td>
+<td class="phrase"><span>Set forth</span><button onclick="speak('Set forth')">🔊 片語</button></td>
+<td>啟程、說明</td>
+<td class="example">We need to set forth before the client arrives.<button onclick="speak('We need to set forth before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要啟程、說明。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="1">
+<td class="letter">S</td>
+<td class="phrase"><span>Struck someone</span><span class="star">高頻</span><button onclick="speak('Struck someone')">🔊 片語</button></td>
+<td>令某人印象深刻</td>
+<td class="example">This phrase is often used in business English: Struck the interviewer.<button onclick="speak('This phrase is often used in business English: Struck the interviewer.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：令某人印象深刻。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="0">
+<td class="letter">S</td>
+<td class="phrase"><span>Serves as</span><button onclick="speak('Serves as')">🔊 片語</button></td>
+<td>擔任</td>
+<td class="example">This phrase is often used in business English: Serves as.<button onclick="speak('This phrase is often used in business English: Serves as.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：擔任。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="0">
+<td class="letter">S</td>
+<td class="phrase"><span>Strike a deal with</span><button onclick="speak('Strike a deal with')">🔊 片語</button></td>
+<td>與…達成協議（strike 可以換成 close、cut、reach)</td>
+<td class="example">This phrase is often used in business English: Strike a deal with.<button onclick="speak('This phrase is often used in business English: Strike a deal with.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：與…達成協議（strike 可以換成 close、cut、reach)。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="0">
+<td class="letter">S</td>
+<td class="phrase"><span>State-of-the-art</span><button onclick="speak('State-of-the-art')">🔊 片語</button></td>
+<td>高級的、先進的</td>
+<td class="example">This phrase is often used in business English: State-of-the-art.<button onclick="speak('This phrase is often used in business English: State-of-the-art.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：高級的、先進的。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="1">
+<td class="letter">S</td>
+<td class="phrase"><span>Stop by</span><span class="star">高頻</span><button onclick="speak('Stop by')">🔊 片語</button></td>
+<td>順道拜訪  =  Drop by</td>
+<td class="example">This phrase is often used in business English: Stop by.<button onclick="speak('This phrase is often used in business English: Stop by.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：順道拜訪  =  Drop by。</div></td>
+</tr>
+
+<tr data-letter="S" data-star="1">
+<td class="letter">S</td>
+<td class="phrase"><span>Side effect</span><span class="star">高頻</span><button onclick="speak('Side effect')">🔊 片語</button></td>
+<td>副作用</td>
+<td class="example">This phrase is often used in business English: Side effect.<button onclick="speak('This phrase is often used in business English: Side effect.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：副作用。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="1">
+<td class="letter">T</td>
+<td class="phrase"><span>Tons of</span><span class="star">高頻</span><button onclick="speak('Tons of')">🔊 片語</button></td>
+<td>很多的</td>
+<td class="example">This phrase is often used in business English: Tons of.<button onclick="speak('This phrase is often used in business English: Tons of.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：很多的。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="0">
+<td class="letter">T</td>
+<td class="phrase"><span>Tidy up</span><button onclick="speak('Tidy up')">🔊 片語</button></td>
+<td>整理</td>
+<td class="example">This phrase is often used in business English: Tidy up.<button onclick="speak('This phrase is often used in business English: Tidy up.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：整理。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="0">
+<td class="letter">T</td>
+<td class="phrase"><span>Term paper</span><button onclick="speak('Term paper')">🔊 片語</button></td>
+<td>期末報告</td>
+<td class="example">This phrase is often used in business English: Term paper.<button onclick="speak('This phrase is often used in business English: Term paper.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：期末報告。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="0">
+<td class="letter">T</td>
+<td class="phrase"><span>Toss-up</span><button onclick="speak('Toss-up')">🔊 片語</button></td>
+<td>勝負各半</td>
+<td class="example">This phrase is often used in business English: Toss-up.<button onclick="speak('This phrase is often used in business English: Toss-up.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：勝負各半。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="0">
+<td class="letter">T</td>
+<td class="phrase"><span>Throw out</span><button onclick="speak('Throw out')">🔊 片語</button></td>
+<td>丟掉</td>
+<td class="example">We need to throw out before the client arrives.<button onclick="speak('We need to throw out before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要丟掉。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="0">
+<td class="letter">T</td>
+<td class="phrase"><span>Throw one’s effort into</span><button onclick="speak('Throw one’s effort into')">🔊 片語</button></td>
+<td>為…盡力</td>
+<td class="example">We need to throw her effort into before the client arrives.<button onclick="speak('We need to throw her effort into before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要為…盡力。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="0">
+<td class="letter">T</td>
+<td class="phrase"><span>Try out</span><button onclick="speak('Try out')">🔊 片語</button></td>
+<td>試用、試驗</td>
+<td class="example">We need to try out before the client arrives.<button onclick="speak('We need to try out before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要試用、試驗。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="1">
+<td class="letter">T</td>
+<td class="phrase"><span>Tear down</span><span class="star">高頻</span><button onclick="speak('Tear down')">🔊 片語</button></td>
+<td>拆掉</td>
+<td class="example">This phrase is often used in business English: Tear down.<button onclick="speak('This phrase is often used in business English: Tear down.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：拆掉。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="1">
+<td class="letter">T</td>
+<td class="phrase"><span>Tear away、Tear apart</span><span class="star">高頻</span><button onclick="speak('Tear away、Tear apart')">🔊 片語</button></td>
+<td>撕裂</td>
+<td class="example">This phrase is often used in business English: Tear away.<button onclick="speak('This phrase is often used in business English: Tear away.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：撕裂。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="0">
+<td class="letter">T</td>
+<td class="phrase"><span>Turn on</span><button onclick="speak('Turn on')">🔊 片語</button></td>
+<td>出現</td>
+<td class="example">We need to turn on before the client arrives.<button onclick="speak('We need to turn on before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要出現。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="1">
+<td class="letter">T</td>
+<td class="phrase"><span>Turn in</span><span class="star">高頻</span><button onclick="speak('Turn in')">🔊 片語</button></td>
+<td>遞交、調整（收音機）</td>
+<td class="example">We need to turn in before the client arrives.<button onclick="speak('We need to turn in before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要遞交、調整（收音機）。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="0">
+<td class="letter">T</td>
+<td class="phrase"><span>Turn to</span><button onclick="speak('Turn to')">🔊 片語</button></td>
+<td>尋求協助</td>
+<td class="example">We need to turn to before the client arrives.<button onclick="speak('We need to turn to before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要尋求協助。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="1">
+<td class="letter">T</td>
+<td class="phrase"><span>Turn out</span><span class="star">高頻</span><button onclick="speak('Turn out')">🔊 片語</button></td>
+<td>生產、結果是…</td>
+<td class="example">We need to turn out before the client arrives.<button onclick="speak('We need to turn out before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要生產、結果是…。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="1">
+<td class="letter">T</td>
+<td class="phrase"><span>Turn down</span><span class="star">高頻</span><button onclick="speak('Turn down')">🔊 片語</button></td>
+<td>拒絕</td>
+<td class="example">We need to turn down before the client arrives.<button onclick="speak('We need to turn down before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要拒絕。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="1">
+<td class="letter">T</td>
+<td class="phrase"><span>Turn away</span><span class="star">高頻</span><button onclick="speak('Turn away')">🔊 片語</button></td>
+<td>驅逐、解僱</td>
+<td class="example">We need to turn away before the client arrives.<button onclick="speak('We need to turn away before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要驅逐、解僱。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="1">
+<td class="letter">T</td>
+<td class="phrase"><span>Take off</span><span class="star">高頻</span><button onclick="speak('Take off')">🔊 片語</button></td>
+<td>起飛  /  Touch down  :  著陸</td>
+<td class="example">Please take off before making a final decision.<button onclick="speak('Please take off before making a final decision.')">🔊 例句</button><div class="translation">做最後決定前，請起飛  。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="1">
+<td class="letter">T</td>
+<td class="phrase"><span>Take on</span><span class="star">高頻</span><button onclick="speak('Take on')">🔊 片語</button></td>
+<td>承擔、接受</td>
+<td class="example">Please take on before making a final decision.<button onclick="speak('Please take on before making a final decision.')">🔊 例句</button><div class="translation">做最後決定前，請承擔、接受。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="1">
+<td class="letter">T</td>
+<td class="phrase"><span>Take up</span><span class="star">高頻</span><button onclick="speak('Take up')">🔊 片語</button></td>
+<td>佔用</td>
+<td class="example">Please take up before making a final decision.<button onclick="speak('Please take up before making a final decision.')">🔊 例句</button><div class="translation">做最後決定前，請佔用。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="1">
+<td class="letter">T</td>
+<td class="phrase"><span>Take over</span><span class="star">高頻</span><button onclick="speak('Take over')">🔊 片語</button></td>
+<td>接管</td>
+<td class="example">Please take over before making a final decision.<button onclick="speak('Please take over before making a final decision.')">🔊 例句</button><div class="translation">做最後決定前，請接管。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="1">
+<td class="letter">T</td>
+<td class="phrase"><span>Take apart</span><span class="star">高頻</span><button onclick="speak('Take apart')">🔊 片語</button></td>
+<td>拆開、仔細檢查</td>
+<td class="example">Please take apart before making a final decision.<button onclick="speak('Please take apart before making a final decision.')">🔊 例句</button><div class="translation">做最後決定前，請拆開、仔細檢查。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="1">
+<td class="letter">T</td>
+<td class="phrase"><span>Take place</span><span class="star">高頻</span><button onclick="speak('Take place')">🔊 片語</button></td>
+<td>舉行</td>
+<td class="example">Please take place before making a final decision.<button onclick="speak('Please take place before making a final decision.')">🔊 例句</button><div class="translation">做最後決定前，請舉行。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="0">
+<td class="letter">T</td>
+<td class="phrase"><span>Take initiative</span><button onclick="speak('Take initiative')">🔊 片語</button></td>
+<td>帶頭發起</td>
+<td class="example">Please take initiative before making a final decision.<button onclick="speak('Please take initiative before making a final decision.')">🔊 例句</button><div class="translation">做最後決定前，請帶頭發起。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="1">
+<td class="letter">T</td>
+<td class="phrase"><span>Take after</span><span class="star">高頻</span><button onclick="speak('Take after')">🔊 片語</button></td>
+<td>與…相似</td>
+<td class="example">Please take after before making a final decision.<button onclick="speak('Please take after before making a final decision.')">🔊 例句</button><div class="translation">做最後決定前，請與…相似。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="1">
+<td class="letter">T</td>
+<td class="phrase"><span>Take steps</span><span class="star">高頻</span><button onclick="speak('Take steps')">🔊 片語</button></td>
+<td>採取措施</td>
+<td class="example">Please take steps before making a final decision.<button onclick="speak('Please take steps before making a final decision.')">🔊 例句</button><div class="translation">做最後決定前，請採取措施。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="1">
+<td class="letter">T</td>
+<td class="phrase"><span>Take into account</span><span class="star">高頻</span><button onclick="speak('Take into account')">🔊 片語</button></td>
+<td>考慮到…</td>
+<td class="example">We must take shipping costs into account.<button onclick="speak('We must take shipping costs into account.')">🔊 例句</button><div class="translation">我們必須將運費考慮進去。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="1">
+<td class="letter">T</td>
+<td class="phrase"><span>Take note of</span><span class="star">高頻</span><button onclick="speak('Take note of')">🔊 片語</button></td>
+<td>注意</td>
+<td class="example">Please take note of before making a final decision.<button onclick="speak('Please take note of before making a final decision.')">🔊 例句</button><div class="translation">做最後決定前，請注意。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="1">
+<td class="letter">T</td>
+<td class="phrase"><span>Take advantage of</span><span class="star">高頻</span><button onclick="speak('Take advantage of')">🔊 片語</button></td>
+<td>利用、佔…便宜</td>
+<td class="example">Please take advantage of before making a final decision.<button onclick="speak('Please take advantage of before making a final decision.')">🔊 例句</button><div class="translation">做最後決定前，請利用、佔…便宜。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="1">
+<td class="letter">T</td>
+<td class="phrase"><span>Take charge of</span><span class="star">高頻</span><button onclick="speak('Take charge of')">🔊 片語</button></td>
+<td>負責</td>
+<td class="example">Please take charge of before making a final decision.<button onclick="speak('Please take charge of before making a final decision.')">🔊 例句</button><div class="translation">做最後決定前，請負責。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="0">
+<td class="letter">T</td>
+<td class="phrase"><span>Take one’s chances</span><button onclick="speak('Take one’s chances')">🔊 片語</button></td>
+<td>碰運氣</td>
+<td class="example">Please take her chances before making a final decision.<button onclick="speak('Please take her chances before making a final decision.')">🔊 例句</button><div class="translation">做最後決定前，請碰運氣。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="0">
+<td class="letter">T</td>
+<td class="phrase"><span>Take one’s word</span><button onclick="speak('Take one’s word')">🔊 片語</button></td>
+<td>相信某人的話</td>
+<td class="example">Please take her word before making a final decision.<button onclick="speak('Please take her word before making a final decision.')">🔊 例句</button><div class="translation">做最後決定前，請相信某人的話。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="0">
+<td class="letter">T</td>
+<td class="phrase"><span>Take one’s time</span><button onclick="speak('Take one’s time')">🔊 片語</button></td>
+<td>慢慢來</td>
+<td class="example">Please take her time before making a final decision.<button onclick="speak('Please take her time before making a final decision.')">🔊 例句</button><div class="translation">做最後決定前，請慢慢來。</div></td>
+</tr>
+
+<tr data-letter="T" data-star="0">
+<td class="letter">T</td>
+<td class="phrase"><span>Top-of-the-line</span><button onclick="speak('Top-of-the-line')">🔊 片語</button></td>
+<td>高級的、先進的</td>
+<td class="example">This phrase is often used in business English: Top-of-the-line.<button onclick="speak('This phrase is often used in business English: Top-of-the-line.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：高級的、先進的。</div></td>
+</tr>
+
+<tr data-letter="U" data-star="1">
+<td class="letter">U</td>
+<td class="phrase"><span>Up in the air</span><span class="star">高頻</span><button onclick="speak('Up in the air')">🔊 片語</button></td>
+<td>不確定的</td>
+<td class="example">This phrase is often used in business English: Up in the air.<button onclick="speak('This phrase is often used in business English: Up in the air.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：不確定的。</div></td>
+</tr>
+
+<tr data-letter="U" data-star="0">
+<td class="letter">U</td>
+<td class="phrase"><span>Up-and-coming</span><button onclick="speak('Up-and-coming')">🔊 片語</button></td>
+<td>有前途的、引人注目的</td>
+<td class="example">This phrase is often used in business English: Up-and-coming.<button onclick="speak('This phrase is often used in business English: Up-and-coming.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：有前途的、引人注目的。</div></td>
+</tr>
+
+<tr data-letter="U" data-star="0">
+<td class="letter">U</td>
+<td class="phrase"><span>Up-and-running</span><button onclick="speak('Up-and-running')">🔊 片語</button></td>
+<td>運作中的</td>
+<td class="example">This phrase is often used in business English: Up-and-running.<button onclick="speak('This phrase is often used in business English: Up-and-running.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：運作中的。</div></td>
+</tr>
+
+<tr data-letter="U" data-star="0">
+<td class="letter">U</td>
+<td class="phrase"><span>Up and down</span><button onclick="speak('Up and down')">🔊 片語</button></td>
+<td>起伏的</td>
+<td class="example">This phrase is often used in business English: Up and down.<button onclick="speak('This phrase is often used in business English: Up and down.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：起伏的。</div></td>
+</tr>
+
+<tr data-letter="V" data-star="0">
+<td class="letter">V</td>
+<td class="phrase"><span>Vulnerable to</span><button onclick="speak('Vulnerable to')">🔊 片語</button></td>
+<td>容易遭受…</td>
+<td class="example">This phrase is often used in business English: Vulnerable to.<button onclick="speak('This phrase is often used in business English: Vulnerable to.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：容易遭受…。</div></td>
+</tr>
+
+<tr data-letter="W" data-star="1">
+<td class="letter">W</td>
+<td class="phrase"><span>Without further ado</span><span class="star">高頻</span><button onclick="speak('Without further ado')">🔊 片語</button></td>
+<td>話不多說</td>
+<td class="example">This phrase is often used in business English: Without further ado.<button onclick="speak('This phrase is often used in business English: Without further ado.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：話不多說。</div></td>
+</tr>
+
+<tr data-letter="W" data-star="0">
+<td class="letter">W</td>
+<td class="phrase"><span>Wave down</span><button onclick="speak('Wave down')">🔊 片語</button></td>
+<td>招手停車</td>
+<td class="example">This phrase is often used in business English: Wave down.<button onclick="speak('This phrase is often used in business English: Wave down.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：招手停車。</div></td>
+</tr>
+
+<tr data-letter="W" data-star="1">
+<td class="letter">W</td>
+<td class="phrase"><span>Wrap up</span><span class="star">高頻</span><button onclick="speak('Wrap up')">🔊 片語</button></td>
+<td>完成、收尾</td>
+<td class="example">Let us wrap up the meeting by five.<button onclick="speak('Let us wrap up the meeting by five.')">🔊 例句</button><div class="translation">讓我們在五點前結束會議。</div></td>
+</tr>
+
+<tr data-letter="W" data-star="0">
+<td class="letter">W</td>
+<td class="phrase"><span>Work around</span><button onclick="speak('Work around')">🔊 片語</button></td>
+<td>避開…來做</td>
+<td class="example">We need to work around before the client arrives.<button onclick="speak('We need to work around before the client arrives.')">🔊 例句</button><div class="translation">客戶抵達前，我們需要避開…來做。</div></td>
+</tr>
+
+<tr data-letter="W" data-star="1">
+<td class="letter">W</td>
+<td class="phrase"><span>Wear out、Wear and tear</span><span class="star">高頻</span><button onclick="speak('Wear out、Wear and tear')">🔊 片語</button></td>
+<td>磨耗、磨損</td>
+<td class="example">This phrase is often used in business English: Wear out.<button onclick="speak('This phrase is often used in business English: Wear out.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：磨耗、磨損。</div></td>
+</tr>
+
+<tr data-letter="W" data-star="0">
+<td class="letter">W</td>
+<td class="phrase"><span>Within reach</span><button onclick="speak('Within reach')">🔊 片語</button></td>
+<td>觸手可及的</td>
+<td class="example">This phrase is often used in business English: Within reach.<button onclick="speak('This phrase is often used in business English: Within reach.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：觸手可及的。</div></td>
+</tr>
+
+<tr data-letter="W" data-star="1">
+<td class="letter">W</td>
+<td class="phrase"><span>Wire money to</span><span class="star">高頻</span><button onclick="speak('Wire money to')">🔊 片語</button></td>
+<td>匯款到…</td>
+<td class="example">This phrase is often used in business English: Wire money to.<button onclick="speak('This phrase is often used in business English: Wire money to.')">🔊 例句</button><div class="translation">這個片語常用於商務英文，意思是：匯款到…。</div></td>
+</tr>
+
+<tr data-letter="W" data-star="1">
+<td class="letter">W</td>
+<td class="phrase"><span>When it comes to</span><span class="star">高頻</span><button onclick="speak('When it comes to')">🔊 片語</button></td>
+<td>說到…</td>
+<td class="example">When it comes to customer service, speed matters.<button onclick="speak('When it comes to customer service, speed matters.')">🔊 例句</button><div class="translation">說到客戶服務，速度很重要。</div></td>
+</tr></tbody>
+</table>
+</main>
+<footer>整理自使用者提供內容；部分疑似拼字或用法錯誤已在表格中標註修正提醒。</footer>
+<script>
+let onlyStarred = false;
+let currentLetter = '';
+const rows = Array.from(document.querySelectorAll('#phraseTable tbody tr'));
+function applyFilter() {
+  const keyword = document.getElementById('search').value.toLowerCase().trim();
+  rows.forEach(row => {
+    const matchKeyword = !keyword || row.innerText.toLowerCase().includes(keyword);
+    const matchStar = !onlyStarred || row.dataset.star === '1';
+    const matchLetter = !currentLetter || row.dataset.letter === currentLetter;
+    row.style.display = (matchKeyword && matchStar && matchLetter) ? '' : 'none';
+  });
+}
+function showAll() { onlyStarred=false; currentLetter=''; document.getElementById('search').value=''; applyFilter(); }
+function showStarred() { onlyStarred=true; currentLetter=''; applyFilter(); }
+function filterLetter(letter) { currentLetter=letter; onlyStarred=false; applyFilter(); }
+let voices=[];
+function loadVoices() {
+  voices = speechSynthesis.getVoices();
+  const select = document.getElementById('voiceSelect');
+  select.innerHTML = '';
+  voices.filter(v => v.lang.startsWith('en')).forEach((voice, index) => {
+    const option = document.createElement('option');
+    option.value = voice.name;
+    option.textContent = `${voice.name} (${voice.lang})`;
+    select.appendChild(option);
+  });
+}
+loadVoices();
+speechSynthesis.onvoiceschanged = loadVoices;
+function speak(text) {
+  speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text.replace(/[、]/g, ', '));
+  utterance.lang = 'en-US';
+  utterance.rate = 0.82;
+  const selectedName = document.getElementById('voiceSelect').value;
+  const selectedVoice = voices.find(v => v.name === selectedName);
+  if (selectedVoice) utterance.voice = selectedVoice;
+  speechSynthesis.speak(utterance);
+}
+function stopSpeak() { speechSynthesis.cancel(); }
+</script>
+</body>
+</html>
