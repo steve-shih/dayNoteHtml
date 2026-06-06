@@ -53,6 +53,23 @@ def add_category():
             save_metadata(data)
     return jsonify({"message": "Category added successfully", "categories": data['categories']})
 
+@app.route('/api/categories/<category>', methods=['DELETE'])
+def delete_category(category):
+    if category in ["未分類", "AI筆記", "WEB URL NOTE"]:
+        return jsonify({"error": "Cannot delete protected categories"}), 400
+        
+    with file_lock:
+        data = load_metadata()
+        if category in data['categories']:
+            data['categories'].remove(category)
+            
+        for note in data['notes']:
+            if note.get('category') == category:
+                note['category'] = "未分類"
+                
+        save_metadata(data)
+    return jsonify({"message": "Category deleted successfully"})
+
 @app.route('/api/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
@@ -102,6 +119,43 @@ def upload_file():
         return jsonify({"message": "File uploaded successfully", "note": note}), 201
     else:
         return jsonify({"error": "File type not allowed or invalid file"}), 400
+
+@app.route('/api/notes/url', methods=['POST'])
+def add_url_note():
+    req = request.get_json()
+    url = req.get('url')
+    name = req.get('name')
+    
+    # 網址類強制歸類為 WEB URL NOTE
+    category = "WEB URL NOTE"
+    
+    if not url:
+        return jsonify({"error": "URL is required"}), 400
+        
+    if not name:
+        name = url
+        
+    file_id = str(uuid.uuid4())
+    
+    with file_lock:
+        data = load_metadata()
+        
+        if category not in data['categories']:
+            data['categories'].append(category)
+            
+        note = {
+            "id": file_id,
+            "original_filename": name,
+            "stored_filename": "URL",
+            "category": category,
+            "upload_time": datetime.now().isoformat(),
+            "is_url": True,
+            "url": url
+        }
+        data['notes'].append(note)
+        save_metadata(data)
+        
+    return jsonify({"message": "URL added successfully", "note": note}), 201
 
 @app.route('/api/notes', methods=['GET'])
 def get_notes():

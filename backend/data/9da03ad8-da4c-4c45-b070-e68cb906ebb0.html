@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GKE + ArgoCD 架構圖產生器</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel2: #1f2937;
+      --card: #0b1220;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --green: #22c55e;
+      --yellow: #f59e0b;
+      --red: #ef4444;
+      --purple: #a78bfa;
+      --line: #475569;
+      --border: #334155;
+      --white: #ffffff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", Arial, sans-serif;
+      background: radial-gradient(circle at top left, #1e3a8a 0, #0f172a 38%, #020617 100%);
+      color: var(--text);
+    }
+    header {
+      padding: 24px 32px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(15, 23, 42, .88);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(10px);
+    }
+    h1 { margin: 0 0 8px; font-size: 28px; }
+    .subtitle { color: var(--muted); font-size: 15px; line-height: 1.6; }
+    .layout {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 20px;
+      padding: 20px;
+    }
+    .control-panel, .output-panel {
+      background: rgba(17, 24, 39, .92);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+    }
+    .control-panel {
+      padding: 18px;
+      height: calc(100vh - 118px);
+      overflow: auto;
+      position: sticky;
+      top: 100px;
+    }
+    .output-panel { padding: 18px; min-height: calc(100vh - 118px); }
+    .section {
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      margin-bottom: 14px;
+      background: rgba(15, 23, 42, .72);
+    }
+    .section h2 {
+      font-size: 16px;
+      margin: 0 0 12px;
+      color: var(--accent);
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin: 11px 0 5px;
+    }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      padding: 10px 11px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #020617;
+      color: var(--text);
+      outline: none;
+    }
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 9px 0;
+      color: var(--text);
+      font-size: 14px;
+    }
+    .check-row input { transform: scale(1.1); }
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 14px;
+      cursor: pointer;
+      color: #00111f;
+      background: linear-gradient(135deg, #38bdf8, #22c55e);
+      font-weight: 700;
+      width: 100%;
+      margin-top: 8px;
+    }
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .tab {
+      width: auto;
+      margin: 0;
+      padding: 9px 13px;
+      color: var(--text);
+      background: #0b1220;
+      border: 1px solid var(--border);
+    }
+    .tab.active {
+      color: #00111f;
+      background: linear-gradient(135deg, #38bdf8, #a78bfa);
+    }
+    .diagram-wrap {
+      overflow: auto;
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: #020617;
+      min-height: 520px;
+    }
+    .diagram {
+      min-width: 980px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    .row {
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      gap: 16px;
+      margin: 10px 0;
+      flex-wrap: nowrap;
+    }
+    .box {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: linear-gradient(180deg, #111827, #030712);
+      padding: 12px 14px;
+      min-width: 180px;
+      text-align: center;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 10px 24px rgba(0,0,0,.25);
+      position: relative;
+    }
+    .box.big { min-width: 260px; }
+    .box.wide { min-width: 360px; }
+    .box.green { border-color: rgba(34,197,94,.8); }
+    .box.blue { border-color: rgba(56,189,248,.8); }
+    .box.purple { border-color: rgba(167,139,250,.8); }
+    .box.yellow { border-color: rgba(245,158,11,.8); }
+    .box.red { border-color: rgba(239,68,68,.8); }
+    .title { font-weight: 800; font-size: 15px; margin-bottom: 4px; }
+    .desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .arrow {
+      text-align: center;
+      color: var(--accent);
+      font-size: 25px;
+      line-height: 24px;
+      margin: 0;
+    }
+    .gke-boundary {
+      border: 2px dashed rgba(56,189,248,.55);
+      border-radius: 20px;
+      padding: 18px;
+      margin-top: 12px;
+      background: rgba(14, 165, 233, .06);
+      position: relative;
+    }
+    .boundary-label {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(56,189,248,.15);
+      color: #bae6fd;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+    .node-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 12px;
+    }
+    .node {
+      border: 1px solid rgba(148,163,184,.45);
+      border-radius: 16px;
+      padding: 12px;
+      background: rgba(15, 23, 42, .85);
+    }
+    .pod {
+      padding: 7px 9px;
+      border: 1px solid rgba(34,197,94,.7);
+      border-radius: 10px;
+      margin: 6px 0;
+      color: #bbf7d0;
+      background: rgba(34,197,94,.08);
+      font-size: 12px;
+    }
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+    .info-card {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      background: rgba(15, 23, 42, .72);
+    }
+    .info-card h3 { margin: 0 0 8px; color: var(--accent); font-size: 16px; }
+    .info-card p, .info-card li { color: var(--text); line-height: 1.7; font-size: 14px; }
+    .info-card ul { padding-left: 20px; margin: 8px 0; }
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(56,189,248,.12);
+      color: #bae6fd;
+      border: 1px solid rgba(56,189,248,.3);
+      margin: 3px;
+      font-size: 12px;
+    }
+    pre {
+      background: #020617;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      overflow: auto;
+      color: #d1d5db;
+      line-height: 1.55;
+    }
+    .hidden { display: none; }
+    @media (max-width: 960px) {
+      .layout { grid-template-columns: 1fr; }
+      .control-panel { position: static; height: auto; }
+      .two-col { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>GKE + ArgoCD 架構圖產生器</h1>
+  <div class="subtitle">用選項生出不同層級的 Kubernetes / GitOps 架構圖，適合學習、面試、SRE / DevOps 觀念整理。</div>
+</header>
+
+<main class="layout">
+  <aside class="control-panel">
+    <div class="section">
+      <h2>一、部署流程選項</h2>
+      <label>CI 工具</label>
+      <select id="ciTool">
+        <option value="GitHub Actions">GitHub Actions</option>
+        <option value="Jenkins">Jenkins</option>
+        <option value="GitLab CI">GitLab CI</option>
+        <option value="Cloud Build">Cloud Build</option>
+      </select>
+
+      <label>Image Registry</label>
+      <select id="registry">
+        <option value="Artifact Registry">GCP Artifact Registry</option>
+        <option value="Harbor">Harbor</option>
+        <option value="Docker Hub">Docker Hub</option>
+      </select>
+
+      <label>部署設定來源</label>
+      <select id="manifestType">
+        <option value="Helm Chart">Helm Chart</option>
+        <option value="Kubernetes YAML">Kubernetes YAML</option>
+        <option value="Kustomize">Kustomize</option>
+      </select>
+    </div>
+
+    <div class="section">
+      <h2>二、GKE 規格選項</h2>
+      <label>GKE 模式</label>
+      <select id="gkeMode">
+        <option value="Standard">Standard</option>
+        <option value="Autopilot">Autopilot</option>
+      </select>
+
+      <label>Node 數量</label>
+      <input id="nodeCount" type="number" min="1" max="8" value="3" />
+
+      <label>每個 Node 顯示 Pod 數</label>
+      <input id="podPerNode" type="number" min="1" max="8" value="3" />
+
+      <label>應用程式 Replica 數</label>
+      <input id="replicas" type="number" min="1" max="20" value="3" />
+    </div>
+
+    <div class="section">
+      <h2>三、附加元件</h2>
+      <label class="check-row"><input type="checkbox" id="useIngress" checked /> Ingress + GCP Load Balancer</label>
+      <label class="check-row"><input type="checkbox" id="useHpa" checked /> HPA 自動擴縮 Pod</label>
+      <label class="check-row"><input type="checkbox" id="useNodeAuto" checked /> Cluster Autoscaler 自動擴 Node</label>
+      <label class="check-row"><input type="checkbox" id="useMonitoring" checked /> Prometheus + Grafana</label>
+      <label class="check-row"><input type="checkbox" id="useAlert" checked /> AlertManager + Slack/Teams</label>
+      <label class="check-row"><input type="checkbox" id="useSecret" checked /> Secret Manager / Kubernetes Secret</label>
+      <label class="check-row"><input type="checkbox" id="useCloudSql" /> Cloud SQL / 外部資料庫</label>
+    </div>
+
+    <div class="section">
+      <h2>四、ArgoCD 行為</h2>
+      <label>同步模式</label>
+      <select id="syncMode">
+        <option value="Auto Sync">Auto Sync</option>
+        <option value="Manual Sync">Manual Sync</option>
+      </select>
+      <label class="check-row"><input type="checkbox" id="selfHeal" checked /> Self-Heal：被偷改會修回 Git 狀態</label>
+      <label class="check-row"><input type="checkbox" id="prune" checked /> Prune：Git 移除的資源也會從 K8S 刪掉</label>
+    </div>
+
+    <button onclick="renderAll()">重新產生架構圖</button>
+  </aside>
+
+  <section class="output-panel">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('diagram', this)">架構圖</button>
+      <button class="tab" onclick="switchTab('explain', this)">觀念說明</button>
+      <button class="tab" onclick="switchTab('interview', this)">面試回答</button>
+      <button class="tab" onclick="switchTab('yaml', this)">YAML 範例</button>
+    </div>
+
+    <div id="tab-diagram" class="tab-content">
+      <div class="diagram-wrap">
+        <div id="diagram" class="diagram"></div>
+      </div>
+    </div>
+
+    <div id="tab-explain" class="tab-content hidden">
+      <div id="explain"></div>
+    </div>
+
+    <div id="tab-interview" class="tab-content hidden">
+      <div id="interview"></div>
+    </div>
+
+    <div id="tab-yaml" class="tab-content hidden">
+      <div id="yaml"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+  function value(id) { return document.getElementById(id).value; }
+  function checked(id) { return document.getElementById(id).checked; }
+
+  function box(title, desc, cls = '') {
+    return `<div class="box ${cls}"><div class="title">${title}</div><div class="desc">${desc}</div></div>`;
+  }
+
+  function arrow(text = '↓') {
+    return `<div class="arrow">${text}</div>`;
+  }
+
+  function renderAll() {
+    const config = {
+      ciTool: value('ciTool'),
+      registry: value('registry'),
+      manifestType: value('manifestType'),
+      gkeMode: value('gkeMode'),
+      nodeCount: Number(value('nodeCount')),
+      podPerNode: Number(value('podPerNode')),
+      replicas: Number(value('replicas')),
+      useIngress: checked('useIngress'),
+      useHpa: checked('useHpa'),
+      useNodeAuto: checked('useNodeAuto'),
+      useMonitoring: checked('useMonitoring'),
+      useAlert: checked('useAlert'),
+      useSecret: checked('useSecret'),
+      useCloudSql: checked('useCloudSql'),
+      syncMode: value('syncMode'),
+      selfHeal: checked('selfHeal'),
+      prune: checked('prune')
+    };
+    renderDiagram(config);
+    renderExplain(config);
+    renderInterview(config);
+    renderYaml(config);
+  }
+
+  function renderDiagram(config) {
+    let nodes = '';
+    for (let nodeIndex = 1; nodeIndex <= config.nodeCount; nodeIndex++) {
+      let pods = '';
+      for (let podIndex = 1; podIndex <= config.podPerNode; podIndex++) {
+        pods += `<div class="pod">Pod-${nodeIndex}.${podIndex}｜Node.js API / Web</div>`;
+      }
+      nodes += `
+        <div class="node">
+          <div class="title">Worker Node-${nodeIndex}</div>
+          <div class="desc">執行容器的 VM / Compute 資源</div>
+          ${pods}
+        </div>`;
+    }
+
+    const ingressBlock = config.useIngress ? `
+      ${arrow()}
+      <div class="row">${box('Ingress', '路由規則：api.example.com → Service', 'yellow big')}</div>
+      ${arrow()}
+      <div class="row">${box('GCP Load Balancer', 'Google Cloud 對外入口，接收 Internet 流量', 'yellow big')}</div>` : '';
+
+    const hpaBlock = config.useHpa ? box('HPA', 'CPU / Memory 高時，自動增加 Pod Replica', 'green') : '';
+    const nodeAutoBlock = config.useNodeAuto ? box('Cluster Autoscaler', 'Node 不夠時，自動增加 Worker Node', 'green') : '';
+    const secretBlock = config.useSecret ? box('Secret Manager / K8S Secret', '管理 DB 密碼、API Key、Token', 'purple') : '';
+    const cloudSqlBlock = config.useCloudSql ? box('Cloud SQL / External DB', '資料庫通常不一定放在 K8S 內', 'purple') : '';
+    const monitoringBlock = config.useMonitoring ? box('Prometheus + Grafana', '收集指標與儀表板：CPU、Memory、Pod 狀態', 'blue') : '';
+    const alertBlock = config.useAlert ? box('AlertManager', '異常通知 Slack / Teams / Email', 'red') : '';
+
+    document.getElementById('diagram').innerHTML = `
+      <div class="row">${box('Developer', '工程師修改程式碼或部署設定', 'blue')}</div>
+      ${arrow()}
+      <div class="row">${box('GitHub / GitLab', 'Source Code Repository：程式碼版本管理', 'blue big')}</div>
+      ${arrow()}
+      <div class="row">${box(config.ciTool, 'CI：測試、建置、Docker build', 'purple big')}</div>
+      ${arrow()}
+      <div class="row">${box(config.registry, 'Image Registry：存放 Docker Image', 'purple big')}</div>
+      ${arrow()}
+      <div class="row">${box('GitOps Repository', `${config.manifestType}：Deployment / Service / Ingress 設定`, 'green big')}</div>
+      ${arrow()}
+      <div class="row">${box('ArgoCD', `${config.syncMode}｜監控 Git 並同步到 Kubernetes`, 'green big')}</div>
+      ${arrow()}
+
+      <div class="gke-boundary">
+        <div class="boundary-label">GKE Cluster｜${config.gkeMode}｜Google 提供的 Managed Kubernetes</div>
+        <div class="row">
+          ${box('Control Plane', 'API Server / Scheduler / Controller / etcd｜GKE 代管', 'blue wide')}
+        </div>
+        ${arrow()}
+        <div class="row">
+          ${box('Deployment', `期望狀態：replicas=${config.replicas}，image=api:v1.0.0`, 'green big')}
+          ${box('Service', '穩定入口：把流量導到健康的 Pod', 'green big')}
+        </div>
+        ${ingressBlock}
+        <div class="row">
+          ${hpaBlock}
+          ${nodeAutoBlock}
+          ${secretBlock}
+          ${cloudSqlBlock}
+        </div>
+        <div class="node-grid">${nodes}</div>
+        <div class="row">
+          ${monitoringBlock}
+          ${alertBlock}
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="info-card">
+          <h3>ArgoCD 關鍵狀態</h3>
+          <p><span class="badge">Synced</span> Git 與 GKE 狀態一致。</p>
+          <p><span class="badge">OutOfSync</span> Git 與 GKE 不一致，需要同步。</p>
+          <p><span class="badge">Healthy</span> Pod、Service、Ingress 等資源正常。</p>
+        </div>
+        <div class="info-card">
+          <h3>目前選擇的保護行為</h3>
+          <p><span class="badge">Self-Heal：${config.selfHeal ? '啟用' : '關閉'}</span> 被人工 kubectl 改壞時，是否修回 Git 狀態。</p>
+          <p><span class="badge">Prune：${config.prune ? '啟用' : '關閉'}</span> Git 移除資源後，是否刪除 K8S 內對應資源。</p>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderExplain(config) {
+    document.getElementById('explain').innerHTML = `
+      <div class="two-col">
+        <div class="info-card">
+          <h3>GKE 扮演什麼角色？</h3>
+          <p>GKE 是 Google Cloud 提供的 Managed Kubernetes 平台。它主要負責「讓容器真的跑起來」，包含 Pod、Service、Ingress、Node、網路、儲存、擴縮容與高可用。</p>
+          <ul>
+            <li>GKE 解決：應用程式在哪裡跑。</li>
+            <li>GKE 管理：Kubernetes Cluster、Node、Workload。</li>
+            <li>GKE 不負責：幫你決定 Git 哪個版本該部署。</li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h3>ArgoCD 扮演什麼角色？</h3>
+          <p>ArgoCD 是 GitOps CD 工具。它會看 GitOps Repository 裡面的 YAML、Helm Chart 或 Kustomize，然後把它同步到 Kubernetes。</p>
+          <ul>
+            <li>ArgoCD 解決：應用程式如何部署。</li>
+            <li>ArgoCD 管理：Git 狀態與 K8S 狀態同步。</li>
+            <li>ArgoCD 不負責：提供底層 VM 或 Kubernetes 平台。</li>
+          </ul>
+        </div>
+      </div>
+      <div class="info-card">
+        <h3>完整資料流</h3>
+        <pre>Developer
+  ↓ git push
+${config.ciTool}
+  ↓ npm test / docker build
+${config.registry}
+  ↓ push image
+GitOps Repository
+  ↓ 更新 image tag / manifest
+ArgoCD
+  ↓ sync
+GKE
+  ↓ rolling update
+Pod 新版本開始服務</pre>
+      </div>
+      <div class="info-card">
+        <h3>什麼是 Desired State / Current State？</h3>
+        <p><b>Desired State</b> 是 Git 裡寫的「我希望系統長這樣」。例如 replicas=3、image=api:v1。</p>
+        <p><b>Current State</b> 是 GKE 現在實際跑的狀態。例如 replicas=5、image=api:v2。</p>
+        <p>ArgoCD 的核心任務就是比對兩者。如果不同，就顯示 OutOfSync，並依設定自動或手動同步。</p>
+      </div>
+    `;
+  }
+
+  function renderInterview(config) {
+    document.getElementById('interview').innerHTML = `
+      <div class="info-card">
+        <h3>Q1：GKE 跟 ArgoCD 差在哪？</h3>
+        <p>GKE 是 Google Cloud 提供的 Managed Kubernetes 平台，負責執行 Container Workload；ArgoCD 是 GitOps Continuous Delivery 工具，負責監控 Git Repository 並把部署設定同步到 Kubernetes。簡單說，GKE 解決「在哪裡跑」，ArgoCD 解決「怎麼部署」。</p>
+      </div>
+      <div class="info-card">
+        <h3>Q2：Jenkins / GitHub Actions 跟 ArgoCD 差在哪？</h3>
+        <p>${config.ciTool} 通常做 CI，也就是測試、打包、建置 Docker Image。ArgoCD 做 CD，也就是把 GitOps Repository 內的部署設定同步到 Kubernetes。兩者不是互斥，而是串在一起。</p>
+      </div>
+      <div class="info-card">
+        <h3>Q3：為什麼企業喜歡 ArgoCD？</h3>
+        <ul>
+          <li>Git 是唯一真相來源，容易追蹤誰改了什麼。</li>
+          <li>支援 Rollback，回到上一個 Git commit 即可。</li>
+          <li>能偵測 Drift，避免有人直接 kubectl 改線上環境。</li>
+          <li>可以管理多環境，例如 dev、sit、uat、prod。</li>
+        </ul>
+      </div>
+      <div class="info-card">
+        <h3>Q4：這套架構出問題時怎麼查？</h3>
+        <pre>1. 先看 ArgoCD：Application 是否 OutOfSync / Degraded
+2. 再看 GKE：Deployment / Pod / Service / Ingress 狀態
+3. 再看 Pod log：應用程式是否啟動失敗
+4. 再看 Registry：Image tag 是否存在
+5. 再看 CI：Build / Test 是否成功
+6. 最後看監控：CPU、Memory、Restart Count、Latency</pre>
+      </div>
+    `;
+  }
+
+  function renderYaml(config) {
+    document.getElementById('yaml').innerHTML = `
+      <div class="info-card">
+        <h3>Deployment 範例</h3>
+        <pre>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-api
+spec:
+  replicas: ${config.replicas}
+  selector:
+    matchLabels:
+      app: node-api
+  template:
+    metadata:
+      labels:
+        app: node-api
+    spec:
+      containers:
+        - name: node-api
+          image: asia-east1-docker.pkg.dev/demo/project/node-api:v1.0.0
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"</pre>
+      </div>
+      <div class="info-card">
+        <h3>Service 範例</h3>
+        <pre>apiVersion: v1
+kind: Service
+metadata:
+  name: node-api-service
+spec:
+  selector:
+    app: node-api
+  ports:
+    - port: 80
+      targetPort: 3000
+  type: ClusterIP</pre>
+      </div>
+      <div class="info-card ${config.useHpa ? '' : 'hidden'}">
+        <h3>HPA 範例</h3>
+        <pre>apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: node-api-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: node-api
+  minReplicas: ${Math.max(1, config.replicas)}
+  maxReplicas: ${Math.max(config.replicas + 3, 6)}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 80</pre>
+      </div>
+      <div class="info-card">
+        <h3>ArgoCD Application 範例</h3>
+        <pre>apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: node-api
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/company/gitops-repo.git
+    targetRevision: main
+    path: apps/node-api
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: production
+  syncPolicy:
+    ${config.syncMode === 'Auto Sync' ? 'automated:' : '# Manual Sync：不設定 automated'}
+      ${config.syncMode === 'Auto Sync' ? `prune: ${config.prune}\n      selfHeal: ${config.selfHeal}` : ''}
+    syncOptions:
+      - CreateNamespace=true</pre>
+      </div>
+    `;
+  }
+
+  function switchTab(tabName, button) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+    document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+    button.classList.add('active');
+  }
+
+  renderAll();
+</script>
+</body>
+</html>

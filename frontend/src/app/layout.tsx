@@ -1,13 +1,15 @@
 import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { ThemeProvider } from "./theme-provider";
+import { AntdRegistry } from '@ant-design/nextjs-registry';
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  userScalable: false,
 };
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { ThemeProvider } from "./theme-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,9 +26,11 @@ export default function RootLayout({
   return (
     <html lang="zh-TW">
       <body className={inter.className}>
-        <ThemeProvider>
-          {children}
-        </ThemeProvider>
+        <AntdRegistry>
+          <ThemeProvider>
+            {children}
+          </ThemeProvider>
+        </AntdRegistry>
       </body>
     </html>
   );

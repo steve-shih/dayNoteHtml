@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DevOps 專業 Dashboard 流水決策分流圖</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel2: #1f2937;
+      --card: #020617;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --blue: #38bdf8;
+      --green: #22c55e;
+      --yellow: #f59e0b;
+      --red: #ef4444;
+      --purple: #a78bfa;
+      --border: #334155;
+      --white: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+      background: radial-gradient(circle at top, #1e293b 0%, var(--bg) 55%);
+      color: var(--text);
+      line-height: 1.75;
+    }
+
+    header {
+      padding: 42px 24px 28px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(56,189,248,.12), rgba(167,139,250,.08));
+    }
+
+    header h1 {
+      margin: 0 0 12px;
+      font-size: clamp(28px, 5vw, 48px);
+      letter-spacing: .5px;
+    }
+
+    header p {
+      margin: 0 auto;
+      max-width: 960px;
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      padding: 12px;
+      background: rgba(15, 23, 42, .94);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    nav a {
+      color: var(--text);
+      text-decoration: none;
+      padding: 8px 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255,255,255,.03);
+      font-size: 14px;
+    }
+
+    nav a:hover { border-color: var(--blue); color: var(--blue); }
+
+    main {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 28px 18px 80px;
+    }
+
+    section {
+      margin: 28px 0;
+      padding: 24px;
+      background: rgba(17, 24, 39, .88);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      box-shadow: 0 24px 80px rgba(0,0,0,.22);
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: 28px;
+      color: var(--white);
+    }
+
+    h3 { margin: 20px 0 10px; color: var(--blue); }
+
+    .subtitle { color: var(--muted); margin-top: -4px; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      padding: 18px;
+      background: linear-gradient(180deg, rgba(2,6,23,.92), rgba(15,23,42,.92));
+      border: 1px solid var(--border);
+      border-radius: 18px;
+    }
+
+    .card h3 { margin-top: 0; }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 10px;
+      margin: 2px;
+      border-radius: 999px;
+      font-size: 12px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .good { color: var(--green); }
+    .warn { color: var(--yellow); }
+    .bad { color: var(--red); }
+    .info { color: var(--blue); }
+    .purple { color: var(--purple); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      overflow: hidden;
+      border-radius: 14px;
+      font-size: 14px;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 12px;
+      vertical-align: top;
+    }
+
+    th {
+      background: #0f172a;
+      color: var(--blue);
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    td { background: rgba(2,6,23,.55); }
+
+    .flow-wrap {
+      overflow-x: auto;
+      padding: 8px 2px 18px;
+    }
+
+    .flow {
+      min-width: 1120px;
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .node {
+      position: relative;
+      padding: 16px;
+      border-radius: 16px;
+      background: #020617;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      min-height: 128px;
+      transition: transform .2s ease, border-color .2s ease;
+    }
+
+    .node:hover { transform: translateY(-3px); border-color: var(--blue); }
+
+    .node::after {
+      content: "→";
+      position: absolute;
+      right: -16px;
+      top: 45%;
+      color: var(--blue);
+      font-size: 22px;
+    }
+
+    .node:last-child::after { display: none; }
+
+    .node .title { font-weight: 800; font-size: 16px; color: var(--white); }
+    .node .desc { color: var(--muted); font-size: 13px; margin-top: 8px; }
+    .node .tag { display:inline-block; margin-top: 8px; font-size: 12px; color: var(--yellow); }
+
+    .detail-box {
+      margin-top: 18px;
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid var(--blue);
+      background: rgba(56,189,248,.07);
+    }
+
+    .decision {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .branch {
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(2,6,23,.75);
+    }
+
+    .branch h3 { margin-top: 0; }
+
+    code {
+      background: #020617;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2px 6px;
+      color: #bae6fd;
+    }
+
+    .note {
+      border-left: 4px solid var(--yellow);
+      padding: 12px 14px;
+      background: rgba(245,158,11,.08);
+      border-radius: 10px;
+      color: #fde68a;
+    }
+
+    .mini {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      padding: 28px;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>DevOps 專業 Dashboard 流水決策分流圖</h1>
+    <p>從「服務是否健康」一路分流到 CPU、Memory、Disk、Network、DB、Queue、API、Kubernetes、CI/CD、成本與安全告警，協助快速判斷問題來源與設定監控策略。</p>
+  </header>
+
+  <nav>
+    <a href="#overview">總覽</a>
+    <a href="#flow">流水決策圖</a>
+    <a href="#metrics">常見指標</a>
+    <a href="#alert">告警設定</a>
+    <a href="#dashboards">Dashboard 分頁</a>
+    <a href="#runbook">故障處理 Runbook</a>
+  </nav>
+
+  <main>
+    <section id="overview">
+      <h2>一、DevOps Dashboard 的核心目的</h2>
+      <p class="subtitle">Dashboard 不是把所有數字塞上去，而是用來回答：「現在有沒有壞？壞在哪裡？影響誰？要先救哪裡？」</p>
+      <div class="grid">
+        <div class="card">
+          <h3>1. SLI / SLO / SLA</h3>
+          <p><b>SLI</b> 是服務指標，例如成功率、延遲。<br><b>SLO</b> 是內部目標，例如 99.9% 可用性。<br><b>SLA</b> 是對客戶承諾，違反可能賠償。</p>
+          <span class="pill">Availability</span><span class="pill">Latency</span><span class="pill">Error Rate</span>
+        </div>
+        <div class="card">
+          <h3>2. Golden Signals</h3>
+          <p>Google SRE 常用四大訊號：<b>Latency</b> 延遲、<b>Traffic</b> 流量、<b>Errors</b> 錯誤、<b>Saturation</b> 飽和度。</p>
+          <span class="pill">延遲</span><span class="pill">流量</span><span class="pill">錯誤</span><span class="pill">飽和</span>
+        </div>
+        <div class="card">
+          <h3>3. RED / USE 方法</h3>
+          <p><b>RED</b> 看服務：Rate、Errors、Duration。<br><b>USE</b> 看資源：Utilization、Saturation、Errors。</p>
+          <span class="pill">API</span><span class="pill">Infra</span><span class="pill">DB</span><span class="pill">K8s</span>
+        </div>
+      </div>
+      <div class="note">實務建議：第一層 Dashboard 看「使用者體感」，第二層才看「系統資源」。不要一開始就只看 CPU，因為 CPU 高不一定代表服務壞。</div>
+    </section>
+
+    <section id="flow">
+      <h2>二、流水決策分流圖</h2>
+      <p class="subtitle">點擊每個節點，可查看該步驟該看什麼指標、代表什麼現象，以及常見處理方式。</p>
+      <div class="flow-wrap">
+        <div class="flow">
+          <div class="node" onclick="showDetail('entry')"><div class="title">入口：服務是否異常？</div><div class="desc">先看使用者是否受影響，不先猜機器問題。</div><div class="tag">HTTP 5xx / Latency / Uptime</div></div>
+          <div class="node" onclick="showDetail('traffic')"><div class="title">流量是否暴增？</div><div class="desc">判斷是正常尖峰、行銷活動、爬蟲或攻擊。</div><div class="tag">RPS / QPS / 連線數</div></div>
+          <div class="node" onclick="showDetail('api')"><div class="title">API 是否變慢？</div><div class="desc">用 P95/P99 找慢端點，不只看平均值。</div><div class="tag">P95 / P99 / Timeout</div></div>
+          <div class="node" onclick="showDetail('resource')"><div class="title">資源是否飽和？</div><div class="desc">看 CPU、Memory、Disk、Network 是否卡住。</div><div class="tag">CPU / RAM / IO / Network</div></div>
+          <div class="node" onclick="showDetail('dependency')"><div class="title">依賴是否異常？</div><div class="desc">DB、Redis、Queue、外部 API 是否拖慢服務。</div><div class="tag">DB / Cache / Queue</div></div>
+          <div class="node" onclick="showDetail('deploy')"><div class="title">近期是否部署？</div><div class="desc">比對 deploy 時間與錯誤開始時間。</div><div class="tag">Release / Rollback</div></div>
+          <div class="node" onclick="showDetail('action')"><div class="title">處置與復盤</div><div class="desc">先止血，再找根因，最後補監控與防線。</div><div class="tag">Mitigation / RCA</div></div>
+        </div>
+      </div>
+      <div id="detail" class="detail-box">請點擊上方任一節點查看細節。</div>
+    </section>
+
+    <section id="metrics">
+      <h2>三、常見 DevOps 指標意思與判斷方式</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>類別</th>
+            <th>指標</th>
+            <th>意思</th>
+            <th>觀察現象</th>
+            <th>常見判斷</th>
+            <th>通常怎樣設定</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>服務健康</td><td>Availability / Uptime</td><td>服務可用率</td><td>使用者能否正常打開服務</td><td class="bad">低於 SLO 代表服務品質下降</td><td>99.9% 常見；核心服務可設 99.95%+</td></tr>
+          <tr><td>API</td><td>HTTP 5xx Rate</td><td>伺服器錯誤比例</td><td>程式錯誤、DB 壞、依賴失敗</td><td class="bad">5 分鐘內高於 1% 要注意</td><td>Warning 1%，Critical 5%</td></tr>
+          <tr><td>API</td><td>HTTP 4xx Rate</td><td>客戶端錯誤比例</td><td>參數錯、權限錯、爬蟲掃描</td><td class="warn">突然暴增可能是前端改壞或攻擊</td><td>依正常基準線加 2~3 倍告警</td></tr>
+          <tr><td>延遲</td><td>P95 / P99 Latency</td><td>95% / 99% 請求完成時間</td><td>少數使用者是否很慢</td><td class="bad">P99 飆高通常比平均值更有意義</td><td>依 API 類型設定，例如查詢 API P95 &lt; 500ms</td></tr>
+          <tr><td>流量</td><td>RPS / QPS</td><td>每秒請求數</td><td>服務壓力、活動尖峰、攻擊</td><td class="warn">流量暴增但成功率不掉，通常是容量問題前兆</td><td>超過平常尖峰 150% 通知，200% 告警</td></tr>
+          <tr><td>CPU</td><td>CPU Usage</td><td>CPU 使用率</td><td>計算密集、無限迴圈、壓力過高</td><td class="warn">長時間 &gt; 80% 代表容量緊繃</td><td>Warning 75~80%，Critical 90% 持續 5~10 分鐘</td></tr>
+          <tr><td>Memory</td><td>Memory Usage</td><td>記憶體使用量</td><td>記憶體洩漏、快取過大、併發過高</td><td class="bad">持續上升不下降，常見 memory leak</td><td>Warning 80%，Critical 90%；搭配 OOM Kill</td></tr>
+          <tr><td>Disk</td><td>Disk Usage</td><td>磁碟使用率</td><td>Log 爆量、備份未清、資料暴增</td><td class="bad">&gt; 90% 可能造成服務寫入失敗</td><td>Warning 75~80%，Critical 90%</td></tr>
+          <tr><td>Disk IO</td><td>IO Wait / IOPS</td><td>磁碟等待或讀寫次數</td><td>DB 慢、Log 寫爆、磁碟瓶頸</td><td class="bad">CPU 不高但系統很慢，常看 IO Wait</td><td>IO Wait &gt; 10~20% 持續數分鐘告警</td></tr>
+          <tr><td>Network</td><td>Network In/Out</td><td>網路流入流出</td><td>流量尖峰、資料傳輸、DDoS</td><td class="warn">出口暴增可能是大量下載或資料外洩風險</td><td>依歷史基準線設定異常偵測</td></tr>
+          <tr><td>DB</td><td>Slow Query</td><td>慢查詢數量</td><td>索引失效、查詢掃全表、資料量變大</td><td class="bad">慢查詢暴增通常直接造成 API 變慢</td><td>超過 500ms / 1s / 3s 分級</td></tr>
+          <tr><td>DB</td><td>Connection Pool</td><td>資料庫連線池使用量</td><td>連線不足、未釋放連線、DB 卡住</td><td class="bad">接近 max connection 會造成請求排隊</td><td>使用率 &gt; 80% Warning，&gt; 90% Critical</td></tr>
+          <tr><td>Queue</td><td>Queue Depth</td><td>佇列堆積量</td><td>消費者處理不完、下游異常</td><td class="warn">Queue 變長代表背景任務延遲</td><td>依任務 SLA 設定，例如超過 5 分鐘未消化告警</td></tr>
+          <tr><td>K8s</td><td>Pod Restart</td><td>Pod 重啟次數</td><td>Crash、OOM、健康檢查失敗</td><td class="bad">短時間連續重啟是嚴重訊號</td><td>5~10 分鐘內 restart &gt; 3 次告警</td></tr>
+          <tr><td>K8s</td><td>Pending Pod</td><td>Pod 無法被排程</td><td>資源不足、Node 異常、限制太嚴</td><td class="bad">代表服務可能擴不起來</td><td>Pending 超過 5 分鐘告警</td></tr>
+          <tr><td>CI/CD</td><td>Deploy Failure Rate</td><td>部署失敗率</td><td>測試不穩、環境問題、腳本錯</td><td class="warn">部署失敗變高會拖慢交付</td><td>連續失敗 2 次通知，核心服務失敗即告警</td></tr>
+          <tr><td>安全</td><td>Auth Failure</td><td>登入或授權失敗</td><td>爆破登入、Token 過期、權限設定錯</td><td class="bad">短時間大量失敗可能是攻擊</td><td>同 IP / 帳號 N 分鐘內失敗次數門檻</td></tr>
+          <tr><td>成本</td><td>Cost / Usage</td><td>雲端成本與資源用量</td><td>忘記關機、流量費、磁碟膨脹</td><td class="warn">成本異常上升要快速定位來源</td><td>每日預算 80% 通知，100% 告警</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="alert">
+      <h2>四、告警設定原則</h2>
+      <div class="decision">
+        <div class="branch">
+          <h3>不要只用單點閾值</h3>
+          <p>例如 CPU 超過 80% 立刻告警，容易誤報。較好的方式是：<code>CPU &gt; 80% 持續 10 分鐘</code>，並搭配 API 延遲或錯誤率。</p>
+        </div>
+        <div class="branch">
+          <h3>分級：Info / Warning / Critical</h3>
+          <p><span class="info">Info</span>：只記錄。<br><span class="warn">Warning</span>：需要觀察。<br><span class="bad">Critical</span>：會影響客戶，需要即時處理。</p>
+        </div>
+        <div class="branch">
+          <h3>先看「影響使用者」</h3>
+          <p>核心告警建議優先用：5xx、P95/P99 latency、成功率、付款/登入/查詢等核心流程失敗率。</p>
+        </div>
+        <div class="branch">
+          <h3>用基準線做動態判斷</h3>
+          <p>像流量、4xx、成本這類數字會隨時間變化，建議用歷史平均、尖峰時段、週期比較，而不是固定死門檻。</p>
+        </div>
+      </div>
+
+      <h3>常見告警範例</h3>
+      <table>
+        <thead><tr><th>告警名稱</th><th>條件</th><th>可能原因</th><th>優先動作</th></tr></thead>
+        <tbody>
+          <tr><td>API 5xx 暴增</td><td>5xx &gt; 1% 持續 5 分鐘</td><td>程式錯、DB 壞、外部 API 壞</td><td>查近期部署 → 查錯誤 log → 必要時 rollback</td></tr>
+          <tr><td>P99 延遲飆高</td><td>P99 &gt; 平常 2 倍持續 10 分鐘</td><td>慢查詢、Queue 堆積、資源飽和</td><td>查慢端點 → 查 DB slow query → 查 CPU/IO</td></tr>
+          <tr><td>Memory Leak</td><td>Memory 持續上升且不回落</td><td>物件未釋放、快取無上限</td><td>看 heap、重啟止血、排查最近改動</td></tr>
+          <tr><td>Disk 快滿</td><td>Disk &gt; 85%</td><td>Log 未輪替、備份堆積</td><td>清理 log → 設 logrotate → 擴磁碟</td></tr>
+          <tr><td>Pod CrashLoop</td><td>Pod 連續重啟</td><td>設定錯、環境變數錯、OOM</td><td>kubectl describe/logs → 查 OOMKilled → 修 config</td></tr>
+          <tr><td>Queue 積壓</td><td>Queue depth 持續增加</td><td>consumer 掛掉、下游 DB 慢</td><td>增加 consumer → 查下游 → 暫停非核心任務</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="dashboards">
+      <h2>五、建議 Dashboard 分頁設計</h2>
+      <div class="grid">
+        <div class="card"><h3>Page 1：Executive Overview</h3><p>給主管與值班快速看：服務可用率、錯誤率、核心 API 延遲、目前 Incident、部署版本。</p></div>
+        <div class="card"><h3>Page 2：Service / API</h3><p>每個 API 的 RPS、P95、P99、5xx、4xx、Timeout、Top Slow Endpoint。</p></div>
+        <div class="card"><h3>Page 3：Infrastructure</h3><p>CPU、Memory、Disk、IO Wait、Network、Load Average、Process 狀態。</p></div>
+        <div class="card"><h3>Page 4：Database</h3><p>連線數、慢查詢、鎖等待、讀寫量、索引命中率、Replica Lag。</p></div>
+        <div class="card"><h3>Page 5：Kubernetes</h3><p>Pod 狀態、Restart、Pending、Node 壓力、HPA、CPU/Memory Request 與 Limit。</p></div>
+        <div class="card"><h3>Page 6：CI/CD</h3><p>部署成功率、部署時間、Rollback 次數、測試失敗率、版本與 Commit 對應。</p></div>
+        <div class="card"><h3>Page 7：Security</h3><p>登入失敗、異常 IP、權限拒絕、WAF、Token 錯誤、敏感 API 呼叫。</p></div>
+        <div class="card"><h3>Page 8：Cost</h3><p>每日成本、VM/DB/Storage/Network 成本、閒置資源、成本異常。</p></div>
+      </div>
+    </section>
+
+    <section id="runbook">
+      <h2>六、故障處理 Runbook：實務排查順序</h2>
+      <div class="decision">
+        <div class="branch">
+          <h3>STEP_01：確認影響範圍</h3>
+          <p>是全部服務壞？單一 API 壞？單一區域壞？只有部分客戶壞？先決定事件等級。</p>
+        </div>
+        <div class="branch">
+          <h3>STEP_02：看 Golden Signals</h3>
+          <p>先看 Traffic、Error、Latency、Saturation。不要一開始只看 log，容易迷路。</p>
+        </div>
+        <div class="branch">
+          <h3>STEP_03：對照部署時間</h3>
+          <p>如果錯誤開始時間與部署時間吻合，優先 rollback 或切回穩定版本。</p>
+        </div>
+        <div class="branch">
+          <h3>STEP_04：找瓶頸層</h3>
+          <p>API 慢 → DB 慢？Queue 堆？CPU/Memory/IO 飽和？外部服務 timeout？逐層排除。</p>
+        </div>
+        <div class="branch">
+          <h3>STEP_05：先止血</h3>
+          <p>擴容、限流、關閉非核心功能、清理磁碟、重啟異常 Pod、Rollback。</p>
+        </div>
+        <div class="branch">
+          <h3>STEP_06：RCA 與補防線</h3>
+          <p>事件後補：告警、Dashboard、壓測、部署檢查、自動回滾、容量規劃。</p>
+        </div>
+      </div>
+
+      <h3>面試或實務回答模板</h3>
+      <div class="note">
+        我會先從使用者體感指標判斷服務是否真的受影響，例如 5xx、P95/P99 延遲與成功率。確認影響範圍後，再往下分流到流量、資源、DB、Queue、Kubernetes 與近期部署紀錄。若是核心服務異常，優先止血，例如 rollback、擴容、限流或暫停非核心任務；事後再做 RCA，補上監控與自動化防線。
+      </div>
+    </section>
+  </main>
+
+  <footer>DevOps Dashboard Flow Map · 可直接當作學習筆記、面試準備與團隊監控規格草案</footer>
+
+  <script>
+    const details = {
+      entry: `
+        <h3>入口：服務是否異常？</h3>
+        <p><b>先看：</b>Uptime、HTTP 5xx、核心流程成功率、P95/P99 Latency。</p>
+        <p><b>觀察現象：</b>使用者打不開、登入失敗、付款失敗、查詢 timeout。</p>
+        <p><b>判斷方式：</b>如果 5xx 上升且延遲同步上升，通常是真的服務異常；如果只有 4xx 上升，可能是前端參數、權限或攻擊掃描。</p>
+        <p><b>設定建議：</b>核心服務 Critical：5xx &gt; 1% 持續 5 分鐘；P99 超過平常 2 倍持續 10 分鐘。</p>
+      `,
+      traffic: `
+        <h3>流量是否暴增？</h3>
+        <p><b>先看：</b>RPS/QPS、連線數、來源 IP、User-Agent、地域分布。</p>
+        <p><b>觀察現象：</b>正常活動尖峰、爬蟲、大量重試、DDoS、前端 bug 造成重複呼叫。</p>
+        <p><b>判斷方式：</b>流量暴增但錯誤率沒升，代表容量接近上限；流量暴增且 5xx/P99 同時升，代表服務扛不住。</p>
+        <p><b>設定建議：</b>超過平常同時段 150% 先 Warning，超過 200% 並伴隨錯誤率上升則 Critical。</p>
+      `,
+      api: `
+        <h3>API 是否變慢？</h3>
+        <p><b>先看：</b>Top Slow Endpoint、P95/P99、Timeout、每個 endpoint 的 5xx。</p>
+        <p><b>觀察現象：</b>只有單一 API 慢，通常是查詢、外部依賴或特定邏輯；全部 API 慢，可能是共用資源飽和。</p>
+        <p><b>判斷方式：</b>平均延遲容易掩蓋問題，P95/P99 更能看出少數使用者很慢的情況。</p>
+        <p><b>設定建議：</b>查詢 API P95 可抓 300~800ms；報表 API 可抓 3~10 秒；依業務 SLA 調整。</p>
+      `,
+      resource: `
+        <h3>資源是否飽和？</h3>
+        <p><b>先看：</b>CPU、Memory、Disk Usage、IO Wait、Network、Load Average。</p>
+        <p><b>觀察現象：</b>CPU 高代表計算壓力；Memory 持續上升可能 memory leak；IO Wait 高常見於 DB 或大量 log。</p>
+        <p><b>判斷方式：</b>CPU 高但延遲不高，不一定要處理；CPU 不高但服務很慢，要看 IO、DB、Network。</p>
+        <p><b>設定建議：</b>CPU &gt; 80% 持續 10 分鐘；Memory &gt; 90%；Disk &gt; 85%；IO Wait &gt; 10~20%。</p>
+      `,
+      dependency: `
+        <h3>依賴是否異常？</h3>
+        <p><b>先看：</b>DB slow query、DB connection、Redis hit rate、Queue depth、外部 API timeout。</p>
+        <p><b>觀察現象：</b>DB 慢會拖慢 API；Queue 堆積會讓背景任務延遲；外部 API timeout 會造成整體等待。</p>
+        <p><b>判斷方式：</b>如果 API 慢但主機資源正常，多半要查 DB、Cache、Queue、第三方服務。</p>
+        <p><b>設定建議：</b>DB connection &gt; 80% Warning；Slow Query 超過 SLA 告警；Queue 超過可接受等待時間告警。</p>
+      `,
+      deploy: `
+        <h3>近期是否部署？</h3>
+        <p><b>先看：</b>部署版本、Commit、部署時間、錯誤開始時間、Rollback 記錄。</p>
+        <p><b>觀察現象：</b>部署後 5xx、P99、Memory、DB query 同時變差，通常與版本有關。</p>
+        <p><b>判斷方式：</b>時間線高度吻合時，不要硬查太久；核心服務先 rollback 止血。</p>
+        <p><b>設定建議：</b>Dashboard 要標記 deploy annotation，讓監控圖能看到版本切換時間點。</p>
+      `,
+      action: `
+        <h3>處置與復盤</h3>
+        <p><b>先止血：</b>Rollback、擴容、限流、清理磁碟、重啟異常 Pod、關閉非核心功能。</p>
+        <p><b>再追根因：</b>保留 log、metric、trace、錯誤樣本，避免重啟後證據消失。</p>
+        <p><b>最後補防線：</b>補告警、補壓測、補部署檢查、補自動回滾、補容量規劃。</p>
+        <p><b>設定建議：</b>每次事故都要新增至少一個偵測手段與一個預防手段。</p>
+      `
+    };
+
+    function showDetail(key) {
+      document.getElementById('detail').innerHTML = details[key];
+    }
+  </script>
+</body>
+</html>

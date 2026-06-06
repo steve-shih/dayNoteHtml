@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RESTful API vs GraphQL 系統設計教材</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #202534;
+      --muted: #667085;
+      --line: #d9deea;
+      --primary: #2563eb;
+      --green: #059669;
+      --orange: #ea580c;
+      --purple: #7c3aed;
+      --red: #dc2626;
+      --shadow: 0 10px 30px rgba(15, 23, 42, .08);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.75;
+    }
+    header {
+      padding: 42px 24px;
+      background: linear-gradient(135deg, #172554, #2563eb 55%, #7c3aed);
+      color: white;
+    }
+    header h1 { margin: 0 0 12px; font-size: clamp(28px, 4vw, 48px); }
+    header p { margin: 0; max-width: 980px; opacity: .92; font-size: 18px; }
+    nav {
+      position: sticky; top: 0; z-index: 10;
+      background: rgba(255,255,255,.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+      padding: 10px 18px;
+      display: flex; gap: 10px; overflow-x: auto;
+    }
+    nav a {
+      color: var(--text); text-decoration: none; white-space: nowrap;
+      padding: 8px 12px; border-radius: 999px; border: 1px solid var(--line);
+      background: white; font-size: 14px;
+    }
+    nav a:hover { border-color: var(--primary); color: var(--primary); }
+    main { max-width: 1240px; margin: 0 auto; padding: 28px 18px 80px; }
+    section { margin-bottom: 28px; }
+    .card {
+      background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 24px; margin-bottom: 20px;
+    }
+    h2 { margin-top: 0; font-size: 30px; }
+    h3 { margin: 24px 0 10px; font-size: 22px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+    @media (max-width: 900px) { .grid, .grid-3 { grid-template-columns: 1fr; } }
+    .tag { display:inline-block; padding: 4px 10px; border-radius: 999px; background:#eef2ff; color:#3730a3; font-size: 13px; margin: 3px; }
+    .muted { color: var(--muted); }
+    .api-box {
+      border: 1px solid var(--line); border-radius: 14px; padding: 16px; background: #fbfcff;
+    }
+    .api-box strong { font-size: 20px; }
+    table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 14px; }
+    th, td { border: 1px solid var(--line); padding: 12px; vertical-align: top; }
+    th { background: #eef2ff; text-align: left; }
+    pre {
+      background: #0f172a; color: #dbeafe; padding: 18px; border-radius: 14px;
+      overflow-x: auto; line-height: 1.55; font-size: 14px;
+    }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .flow-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: #fff; padding: 12px; }
+    svg { max-width: 100%; height: auto; display:block; min-width: 820px; }
+    .node { fill: #fff; stroke: #94a3b8; stroke-width: 1.5; }
+    .node-blue { fill: #eff6ff; stroke:#2563eb; }
+    .node-green { fill: #ecfdf5; stroke:#059669; }
+    .node-orange { fill: #fff7ed; stroke:#ea580c; }
+    .node-purple { fill: #f5f3ff; stroke:#7c3aed; }
+    .node-red { fill:#fef2f2; stroke:#dc2626; }
+    .arrow { stroke:#64748b; stroke-width:1.8; marker-end:url(#arrow); fill:none; }
+    .label { font-size: 14px; fill:#1f2937; font-weight: 700; }
+    .small { font-size: 12px; fill:#475569; }
+    .question { padding: 14px; border: 1px solid var(--line); border-radius: 14px; margin: 10px 0; background:#fbfcff; }
+    .question label { display:flex; gap:10px; align-items:flex-start; cursor:pointer; }
+    .result {
+      border: 2px solid #bfdbfe; background:#eff6ff; border-radius: 16px; padding: 18px; margin-top: 16px;
+    }
+    .result h3 { margin-top:0; }
+    button {
+      border: 0; background: var(--primary); color:white; border-radius: 12px; padding: 11px 16px;
+      font-weight: 700; cursor:pointer; margin-right: 8px;
+    }
+    button.secondary { background:#475569; }
+    .score { font-weight:800; color:var(--primary); }
+    .mini-diagram { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:12px 0; }
+    .pill { border:1px solid var(--line); background:white; border-radius:12px; padding:8px 12px; font-weight:700; }
+    .connector { color:#64748b; font-weight:800; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>RESTful API vs GraphQL：系統設計決策教材</h1>
+    <p>用白話、圖解、決策樹與 Node.js 範例，理解兩種 API 設計方式的差異：什麼時候用 RESTful API，什麼時候用 GraphQL。</p>
+  </header>
+
+  <nav>
+    <a href="#intro">核心介紹</a>
+    <a href="#diagram">圖解比較</a>
+    <a href="#decision">決策樹</a>
+    <a href="#proscons">優缺點</a>
+    <a href="#usage">基本使用</a>
+    <a href="#tool">工具範例</a>
+    <a href="#summary">總結</a>
+  </nav>
+
+  <main>
+    <section id="intro" class="card">
+      <h2>一、各自介紹</h2>
+      <div class="grid">
+        <div class="api-box">
+          <strong>RESTful API</strong>
+          <p>RESTful API 是把系統資料設計成一個一個「資源 Resource」，例如 <code>/users</code>、<code>/orders</code>、<code>/products</code>。前端透過 HTTP 方法操作資源。</p>
+          <p><span class="tag">GET 查詢</span><span class="tag">POST 新增</span><span class="tag">PUT/PATCH 修改</span><span class="tag">DELETE 刪除</span></p>
+          <p><b>白話：</b>像去餐廳點固定菜單。你要會員資料，就點「會員 API」；你要訂單資料，就再點「訂單 API」。</p>
+          <p><b>解決問題：</b>讓前後端用標準 HTTP 規則溝通，簡單、清楚、好快取、好除錯。</p>
+        </div>
+        <div class="api-box">
+          <strong>GraphQL</strong>
+          <p>GraphQL 是一種查詢語言與 API Runtime。前端可以自己指定「我要哪些欄位」，通常只打一個 endpoint，例如 <code>/graphql</code>。</p>
+          <p><span class="tag">Query 查詢</span><span class="tag">Mutation 修改</span><span class="tag">Schema 型別定義</span><span class="tag">Resolver 資料解析</span></p>
+          <p><b>白話：</b>像自助餐。你不是點固定套餐，而是自己夾「只要姓名、頭像、最近三筆訂單」。</p>
+          <p><b>解決問題：</b>減少前端多次請求、避免資料拿太多或太少，適合資料關聯複雜、多端需求不同的系統。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="diagram" class="card">
+      <h2>二、畫圖介紹</h2>
+      <h3>RESTful API：多個資源 endpoint</h3>
+      <div class="flow-wrap">
+        <svg viewBox="0 0 1000 360">
+          <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#64748b"/></marker></defs>
+          <rect class="node node-blue" x="40" y="120" width="180" height="90" rx="18"/>
+          <text class="label" x="80" y="155">Frontend</text><text class="small" x="70" y="182">頁面需要資料</text>
+          <path class="arrow" d="M230 145 C300 70, 380 60, 450 80"/>
+          <path class="arrow" d="M230 165 C310 150, 360 150, 450 150"/>
+          <path class="arrow" d="M230 185 C300 250, 380 260, 450 230"/>
+          <rect class="node node-green" x="470" y="45" width="210" height="65" rx="15"/><text class="label" x="500" y="75">GET /users/1</text><text class="small" x="515" y="96">取得會員</text>
+          <rect class="node node-green" x="470" y="125" width="210" height="65" rx="15"/><text class="label" x="490" y="155">GET /users/1/orders</text><text class="small" x="515" y="176">取得訂單</text>
+          <rect class="node node-green" x="470" y="205" width="210" height="65" rx="15"/><text class="label" x="493" y="235">GET /products/:id</text><text class="small" x="515" y="256">取得商品</text>
+          <path class="arrow" d="M690 80 C760 90, 790 130, 840 150"/>
+          <path class="arrow" d="M690 155 C750 155, 780 155, 840 155"/>
+          <path class="arrow" d="M690 235 C760 220, 790 180, 840 165"/>
+          <rect class="node node-orange" x="840" y="105" width="130" height="100" rx="18"/>
+          <text class="label" x="865" y="145">Backend</text><text class="small" x="867" y="170">Controller</text><text class="small" x="867" y="190">Service</text>
+        </svg>
+      </div>
+      <p><b>重點：</b>REST 的思考是「每個資源都有自己的門」。清楚，但頁面若要很多關聯資料，可能需要打多個 API。</p>
+
+      <h3>GraphQL：單一入口，自訂欄位</h3>
+      <div class="flow-wrap">
+        <svg viewBox="0 0 1000 360">
+          <defs><marker id="arrow2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#64748b"/></marker></defs>
+          <rect class="node node-purple" x="40" y="115" width="190" height="110" rx="18"/>
+          <text class="label" x="72" y="150">Frontend</text><text class="small" x="65" y="177">指定需要欄位</text><text class="small" x="65" y="197">name, avatar, orders</text>
+          <path class="arrow" style="marker-end:url(#arrow2)" d="M240 170 C330 170, 390 170, 460 170"/>
+          <rect class="node node-purple" x="460" y="95" width="220" height="150" rx="18"/>
+          <text class="label" x="520" y="130">POST /graphql</text><text class="small" x="500" y="160">Query 描述要什麼</text><text class="small" x="500" y="182">Schema 檢查型別</text><text class="small" x="500" y="204">Resolver 組合資料</text>
+          <path class="arrow" style="marker-end:url(#arrow2)" d="M690 140 C755 80, 815 75, 880 90"/>
+          <path class="arrow" style="marker-end:url(#arrow2)" d="M690 170 C760 170, 810 170, 880 170"/>
+          <path class="arrow" style="marker-end:url(#arrow2)" d="M690 200 C755 260, 815 260, 880 245"/>
+          <rect class="node node-green" x="880" y="55" width="95" height="55" rx="12"/><text class="small" x="902" y="88">User DB</text>
+          <rect class="node node-green" x="880" y="145" width="95" height="55" rx="12"/><text class="small" x="898" y="178">Order DB</text>
+          <rect class="node node-green" x="880" y="225" width="95" height="55" rx="12"/><text class="small" x="896" y="258">Product</text>
+        </svg>
+      </div>
+      <p><b>重點：</b>GraphQL 的思考是「前端描述要什麼，後端幫你組出來」。彈性高，但後端 Schema、Resolver、效能控管要設計好。</p>
+    </section>
+
+    <section id="decision" class="card">
+      <h2>三、互動式決策樹：何時使用 RESTful API / GraphQL？</h2>
+      <p class="muted">勾選你目前系統符合的情境，下面會自動給出方向。</p>
+      <div class="grid">
+        <div>
+          <div class="question"><label><input type="checkbox" data-rest="2"> 系統大多是 CRUD，例如會員、商品、訂單新增修改查詢。</label></div>
+          <div class="question"><label><input type="checkbox" data-rest="2"> API 需要被很多第三方或外部系統串接。</label></div>
+          <div class="question"><label><input type="checkbox" data-rest="2"> 需要簡單快取、HTTP Status、Log、Nginx/CDN 支援。</label></div>
+          <div class="question"><label><input type="checkbox" data-rest="1"> 團隊剛開始做 API，希望低學習成本。</label></div>
+          <div class="question"><label><input type="checkbox" data-rest="1"> 後端希望 endpoint 權責非常清楚。</label></div>
+        </div>
+        <div>
+          <div class="question"><label><input type="checkbox" data-graphql="2"> 前端常抱怨資料拿太多或太少。</label></div>
+          <div class="question"><label><input type="checkbox" data-graphql="2"> 一個頁面需要組合很多關聯資料，例如 User + Orders + Products + Reviews。</label></div>
+          <div class="question"><label><input type="checkbox" data-graphql="2"> 有 Web / App / Admin 多端，各端需要欄位不同。</label></div>
+          <div class="question"><label><input type="checkbox" data-graphql="1"> 前端變動很快，希望減少一直請後端加 endpoint。</label></div>
+          <div class="question"><label><input type="checkbox" data-graphql="1"> 需要強型別 Schema 與 API Explorer。</label></div>
+        </div>
+      </div>
+      <button onclick="calculateDecision()">產生建議</button>
+      <button class="secondary" onclick="resetDecision()">清除</button>
+      <div id="decisionResult" class="result">
+        <h3>尚未產生</h3>
+        <p>勾選上面的系統情境後，按「產生建議」。</p>
+      </div>
+
+      <h3>完整決策樹</h3>
+      <div class="flow-wrap">
+        <svg viewBox="0 0 1180 680">
+          <defs><marker id="arrow3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#64748b"/></marker></defs>
+          <rect class="node node-blue" x="470" y="25" width="240" height="70" rx="18"/><text class="label" x="505" y="55">要設計 API</text><text class="small" x="505" y="77">先問系統資料需求</text>
+          <path class="arrow" style="marker-end:url(#arrow3)" d="M590 98 L590 145"/>
+          <rect class="node" x="430" y="145" width="320" height="80" rx="18"/><text class="label" x="475" y="178">是否主要是簡單 CRUD？</text><text class="small" x="485" y="202">資源明確、流程穩定</text>
+          <path class="arrow" style="marker-end:url(#arrow3)" d="M430 185 C300 185, 250 240, 210 290"/>
+          <text class="small" x="280" y="205">是</text>
+          <rect class="node node-green" x="45" y="285" width="330" height="100" rx="18"/><text class="label" x="90" y="320">RESTful API 優先</text><text class="small" x="80" y="345">GET /users、POST /orders</text><text class="small" x="80" y="365">清楚、穩定、好快取</text>
+          <path class="arrow" style="marker-end:url(#arrow3)" d="M750 185 C880 185, 930 240, 970 290"/>
+          <text class="small" x="875" y="205">否</text>
+          <rect class="node" x="805" y="285" width="330" height="100" rx="18"/><text class="label" x="840" y="318">頁面是否常需要關聯資料？</text><text class="small" x="850" y="345">多端、多欄位、多資料組合</text>
+          <path class="arrow" style="marker-end:url(#arrow3)" d="M970 388 L970 450"/>
+          <text class="small" x="985" y="425">是</text>
+          <rect class="node node-purple" x="805" y="450" width="330" height="100" rx="18"/><text class="label" x="875" y="485">GraphQL 優先</text><text class="small" x="850" y="512">前端指定欄位、減少多次請求</text><text class="small" x="850" y="532">Schema + Resolver 管控</text>
+          <path class="arrow" style="marker-end:url(#arrow3)" d="M805 335 C680 360, 610 420, 555 480"/>
+          <text class="small" x="670" y="382">否</text>
+          <rect class="node node-orange" x="385" y="475" width="330" height="110" rx="18"/><text class="label" x="445" y="510">REST + BFF / 聚合 API</text><text class="small" x="425" y="537">多數情境先 REST</text><text class="small" x="425" y="557">少數複雜頁面用後端聚合</text>
+          <path class="arrow" style="marker-end:url(#arrow3)" d="M210 390 C240 485, 300 540, 385 540"/>
+          <text class="small" x="255" y="492">複雜頁面可補 BFF</text>
+        </svg>
+      </div>
+    </section>
+
+    <section id="proscons" class="card">
+      <h2>四、優缺點比較</h2>
+      <table>
+        <thead><tr><th>面向</th><th>RESTful API</th><th>GraphQL</th></tr></thead>
+        <tbody>
+          <tr><td>核心概念</td><td>以資源 endpoint 為中心。</td><td>以 Schema 與 Query 為中心。</td></tr>
+          <tr><td>學習成本</td><td>低，HTTP 觀念直覺。</td><td>中高，需要理解 Schema、Resolver、N+1、Query Complexity。</td></tr>
+          <tr><td>前端彈性</td><td>較低，endpoint 回什麼通常後端決定。</td><td>高，前端可指定欄位。</td></tr>
+          <tr><td>資料過多/過少</td><td>容易 over-fetching / under-fetching。</td><td>較能避免，因為可指定欄位。</td></tr>
+          <tr><td>快取</td><td>天然支援 HTTP Cache、CDN、ETag。</td><td>較複雜，通常需要 Apollo/Client Cache 或自訂策略。</td></tr>
+          <tr><td>除錯與監控</td><td>URL、Status Code、Log 很直觀。</td><td>所有請求常進 /graphql，需要額外記錄 operation name 與 query cost。</td></tr>
+          <tr><td>權限控管</td><td>可依 endpoint 控制。</td><td>需到 field/resolver 層級設計權限。</td></tr>
+          <tr><td>效能風險</td><td>多次請求、資料重複傳輸。</td><td>查詢過深、N+1、複雜 query 可能拖垮後端。</td></tr>
+          <tr><td>適合情境</td><td>CRUD、外部 API、穩定資源、公開服務。</td><td>複雜資料關聯、多端需求不同、前端快速變動。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="usage" class="card">
+      <h2>五、基本使用方法</h2>
+      <div class="grid">
+        <div>
+          <h3>RESTful API 基本設計</h3>
+          <div class="mini-diagram"><span class="pill">Client</span><span class="connector">→</span><span class="pill">GET /users/1</span><span class="connector">→</span><span class="pill">Controller</span><span class="connector">→</span><span class="pill">DB</span></div>
+<pre><code>// RESTful API：Express 範例
+import express from 'express';
+
+const application = express();
+application.use(express.json());
+
+const users = [
+  { id: 1, name: 'Steve', email: 'steve@example.com' }
+];
+
+// STEP_01：查詢單一會員資料
+application.get('/users/:userId', (request, response) => {
+  const userId = Number(request.params.userId);
+  const user = users.find((userItem) => userItem.id === userId);
+
+  if (!user) {
+    return response.status(404).json({ message: '找不到會員' });
+  }
+
+  return response.status(200).json(user);
+});
+
+// STEP_02：新增會員資料
+application.post('/users', (request, response) => {
+  const newUser = {
+    id: users.length + 1,
+    name: request.body.name,
+    email: request.body.email
+  };
+
+  users.push(newUser);
+  return response.status(201).json(newUser);
+});
+
+application.listen(3000);</code></pre>
+        </div>
+        <div>
+          <h3>GraphQL 基本設計</h3>
+          <div class="mini-diagram"><span class="pill">Client</span><span class="connector">→</span><span class="pill">Query 欄位</span><span class="connector">→</span><span class="pill">Resolver</span><span class="connector">→</span><span class="pill">DB</span></div>
+<pre><code>// GraphQL：Apollo Server 範例
+import { ApolloServer } from '@apollo/server';
+import { startStandaloneServer } from '@apollo/server/standalone';
+
+const users = [
+  { id: '1', name: 'Steve', email: 'steve@example.com' }
+];
+
+// STEP_01：定義前端可以查什麼資料型別
+const typeDefinitions = `#graphql
+  type User {
+    id: ID!
+    name: String!
+    email: String!
+  }
+
+  type Query {
+    user(userId: ID!): User
+    users: [User!]!
+  }
+`;
+
+// STEP_02：定義每個欄位實際怎麼取得資料
+const resolvers = {
+  Query: {
+    user: (_, argumentsObject) => {
+      return users.find((userItem) => userItem.id === argumentsObject.userId);
+    },
+    users: () => users
+  }
+};
+
+const server = new ApolloServer({
+  typeDefs: typeDefinitions,
+  resolvers
+});
+
+await startStandaloneServer(server, {
+  listen: { port: 4000 }
+});</code></pre>
+        </div>
+      </div>
+
+      <h3>GraphQL Query 長這樣</h3>
+<pre><code>query GetUser {
+  user(userId: "1") {
+    id
+    name
+  }
+}</code></pre>
+      <p>這個 query 只會要求 <code>id</code> 與 <code>name</code>，不會拿 <code>email</code>。這就是 GraphQL 的核心優勢之一。</p>
+    </section>
+
+    <section id="tool" class="card">
+      <h2>六、用工具快速達成：以 Node.js 為例</h2>
+      <div class="grid">
+        <div class="api-box">
+          <h3>RESTful API 常用工具</h3>
+          <p><b>Express / NestJS / Fastify</b></p>
+          <p>適合快速建立 REST endpoint。例如：</p>
+          <pre><code>npm install express
+node server.js</code></pre>
+          <p>測試工具可用：</p>
+          <span class="tag">Postman</span><span class="tag">Insomnia</span><span class="tag">curl</span><span class="tag">Swagger/OpenAPI</span>
+        </div>
+        <div class="api-box">
+          <h3>GraphQL 常用工具</h3>
+          <p><b>Apollo Server / GraphQL Yoga / NestJS GraphQL</b></p>
+          <p>適合快速建立 Schema 與 Resolver。例如：</p>
+          <pre><code>npm install @apollo/server graphql
+node graphql-server.js</code></pre>
+          <p>測試工具可用：</p>
+          <span class="tag">Apollo Sandbox</span><span class="tag">GraphiQL</span><span class="tag">Postman</span><span class="tag">GraphQL Codegen</span>
+        </div>
+      </div>
+      <h3>實務建議</h3>
+      <p>如果你是從 Node.js 後端開始練習，我建議順序是：</p>
+      <ol>
+        <li>先用 Express 做 RESTful API，理解 route、controller、service、status code。</li>
+        <li>再用 Swagger/OpenAPI 產生 API 文件。</li>
+        <li>遇到多端欄位需求不同、頁面要組合大量關聯資料時，再練 Apollo GraphQL。</li>
+        <li>GraphQL 上線前一定要補：權限、query depth limit、query complexity、DataLoader、operation log。</li>
+      </ol>
+    </section>
+
+    <section id="summary" class="card">
+      <h2>七、總結：怎麼選最快？</h2>
+      <div class="grid-3">
+        <div class="api-box"><h3>選 RESTful API</h3><p>需求穩定、CRUD 明確、外部串接多、想簡單快取與除錯。</p></div>
+        <div class="api-box"><h3>選 GraphQL</h3><p>資料關聯複雜、多端欄位不同、前端變動很快、想減少多次請求。</p></div>
+        <div class="api-box"><h3>混合使用</h3><p>大多數系統可以 REST 為主，複雜查詢頁面用 GraphQL 或 BFF 聚合 API。</p></div>
+      </div>
+      <p><b>一句話：</b>RESTful API 是「後端設計好固定資源菜單」；GraphQL 是「前端自己描述要哪些資料」。小到中型 CRUD 系統先 REST；多端、多欄位、多關聯的大型前端系統再考慮 GraphQL。</p>
+    </section>
+  </main>
+
+  <script>
+    function calculateDecision() {
+      let restScore = 0;
+      let graphqlScore = 0;
+      document.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
+        if (!checkbox.checked) return;
+        restScore += Number(checkbox.dataset.rest || 0);
+        graphqlScore += Number(checkbox.dataset.graphql || 0);
+      });
+
+      const result = document.getElementById('decisionResult');
+      let title = '';
+      let description = '';
+      let actions = '';
+
+      if (restScore === 0 && graphqlScore === 0) {
+        title = '尚未選擇情境';
+        description = '請先勾選你目前系統的特徵。';
+        actions = '';
+      } else if (restScore > graphqlScore + 1) {
+        title = '建議方向：RESTful API 優先';
+        description = '你的系統比較像資源導向、CRUD 穩定、需要清楚 endpoint 與標準 HTTP 能力。';
+        actions = '<ul><li>先設計資源：/users、/orders、/products。</li><li>定義 HTTP 方法與 Status Code。</li><li>用 Swagger/OpenAPI 做文件。</li><li>若單一頁面資料太散，再加 BFF 聚合 API。</li></ul>';
+      } else if (graphqlScore > restScore + 1) {
+        title = '建議方向：GraphQL 優先';
+        description = '你的系統比較像資料關聯複雜、多端需求不同、前端需要高彈性。';
+        actions = '<ul><li>先設計 Schema：User、Order、Product。</li><li>設計 Query / Mutation。</li><li>Resolver 內避免 N+1，可用 DataLoader。</li><li>上線前加 query depth、complexity、權限與 operation log。</li></ul>';
+      } else {
+        title = '建議方向：REST 為主，GraphQL 或 BFF 輔助';
+        description = '你的需求介於兩者之間。多數系統可以 REST 起步，少數複雜頁面再加 GraphQL 或 BFF。';
+        actions = '<ul><li>CRUD 與外部串接維持 REST。</li><li>複雜 Dashboard、App 首頁、關聯查詢可用 GraphQL。</li><li>若團隊不熟 GraphQL，先用 BFF 聚合 API。</li></ul>';
+      }
+
+      result.innerHTML = `<h3>${title}</h3><p>REST 分數：<span class="score">${restScore}</span>，GraphQL 分數：<span class="score">${graphqlScore}</span></p><p>${description}</p>${actions}`;
+    }
+
+    function resetDecision() {
+      document.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => checkbox.checked = false);
+      document.getElementById('decisionResult').innerHTML = '<h3>尚未產生</h3><p>勾選上面的系統情境後，按「產生建議」。</p>';
+    }
+  </script>
+</body>
+</html>

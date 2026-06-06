@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>系統設計工具箱：名詞白話、案例與簡易圖</title>
+  <style>
+    :root{
+      --bg:#f6f7fb;--card:#fff;--ink:#1f2937;--muted:#6b7280;--line:#dbe1ea;--blue:#2563eb;--green:#059669;--orange:#d97706;--red:#dc2626;--purple:#7c3aed;
+    }
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",Arial,sans-serif;line-height:1.65}
+    header{position:sticky;top:0;z-index:10;background:linear-gradient(135deg,#111827,#1e3a8a);color:white;padding:22px 28px;box-shadow:0 4px 18px #0002}
+    header h1{margin:0;font-size:28px} header p{margin:6px 0 0;color:#dbeafe}
+    .layout{display:grid;grid-template-columns:280px 1fr;gap:22px;max-width:1500px;margin:0 auto;padding:22px}
+    nav{position:sticky;top:105px;align-self:start;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:0 8px 26px #11182710;max-height:calc(100vh - 130px);overflow:auto}
+    nav a{display:block;text-decoration:none;color:var(--ink);padding:9px 10px;border-radius:10px;font-size:14px} nav a:hover{background:#eef2ff;color:#1d4ed8}.nav-title{font-weight:800;margin:10px;color:#111827}
+    main{min-width:0}.hero,.section,.term{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:0 8px 26px #1118270d;margin-bottom:18px;padding:22px}
+    .hero{background:linear-gradient(135deg,#ffffff,#eff6ff)} h2{font-size:24px;margin:0 0 12px;border-left:6px solid var(--blue);padding-left:12px} h3{font-size:20px;margin:0 0 8px} h4{margin:14px 0 6px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.pill{background:#f1f5f9;border:1px solid var(--line);border-radius:999px;padding:6px 10px;font-size:13px;display:inline-block;margin:3px}.tag{font-size:12px;border-radius:999px;padding:3px 8px;background:#e0e7ff;color:#3730a3;font-weight:700}.term-head{display:flex;justify-content:space-between;gap:12px;align-items:start;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:12px}.term-title{font-size:22px;font-weight:900}.term-sub{color:var(--muted);font-size:14px}.cols{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;align-items:start}.box{background:#f8fafc;border:1px solid var(--line);border-radius:14px;padding:12px}.box strong{color:#0f172a}.problem{border-left:5px solid var(--red)}.example{border-left:5px solid var(--green)}.use{border-left:5px solid var(--orange)}.draw{border-left:5px solid var(--purple)}
+    .diagram{background:white;border:1px dashed #cbd5e1;border-radius:14px;padding:14px;overflow:auto}.flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.node{background:#fff;border:2px solid #93c5fd;border-radius:12px;padding:8px 12px;font-weight:700;white-space:nowrap}.node.green{border-color:#86efac}.node.orange{border-color:#fdba74}.node.purple{border-color:#c4b5fd}.arrow{color:#64748b;font-weight:900}.stack{display:grid;gap:8px}.layer{border:2px solid #bfdbfe;background:#eff6ff;border-radius:10px;padding:8px 12px;text-align:center;font-weight:800}.warn{background:#fff7ed;border:1px solid #fed7aa;border-radius:14px;padding:12px}.mini{font-size:14px;color:var(--muted)}.searchbar{display:flex;gap:10px;margin:14px 0}.searchbar input{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:12px;font-size:16px}.btn{border:0;background:#2563eb;color:white;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer}.btn.secondary{background:#475569}.kbd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#e5e7eb;border-radius:6px;padding:1px 5px}.checklist li{margin:4px 0}
+    @media(max-width:1000px){.layout{grid-template-columns:1fr}nav{position:relative;top:0}.cols,.grid{grid-template-columns:1fr}header{position:relative}.term-head{display:block}}
+    @media print{nav,header .searchbar,.btn{display:none}.layout{display:block;padding:0}.term,.section,.hero{break-inside:avoid;box-shadow:none}}
+  </style>
+</head>
+<body>
+<header>
+  <h1>系統設計工具箱：名詞白話、案例與簡易圖</h1>
+  <p>設計系統前先知道有哪些武器：它們解決什麼問題、什麼時候用、簡單圖怎麼看。</p>
+</header>
+<div class="layout">
+  <nav>
+    <div class="nav-title">快速搜尋</div>
+    <div class="searchbar"><input id="searchInput" placeholder="搜尋：DDD / Strategy / CQRS / TDD..." /></div>
+    <button class="btn secondary" onclick="resetSearch()">清除搜尋</button>
+    <div class="nav-title">分類</div>
+    <a href="#principles">設計原則</a>
+    <a href="#patterns">Design Patterns</a>
+    <a href="#architecture">架構模式</a>
+    <a href="#domain">領域設計</a>
+    <a href="#development">開發與測試方法</a>
+    <a href="#distributed">分散式與整合</a>
+    <a href="#data">資料設計</a>
+    <a href="#frontend">前端/UI</a>
+  </nav>
+  <main>
+    <section class="hero">
+      <h2>怎麼讀這份工具箱？</h2>
+      <p>不要死背名詞。設計系統時，先問：「我現在痛的是哪裡？」是物件建立很亂？業務規則很複雜？部署擴充困難？還是測試驗證不足？不同問題對應不同工具。</p>
+      <div class="grid">
+        <div class="box"><strong>Design Pattern</strong><br>解決局部程式碼變化點。</div>
+        <div class="box"><strong>DDD / 架構模式</strong><br>解決業務複雜度與系統邊界。</div>
+        <div class="box"><strong>TDD / BDD / SDD</strong><br>解決怎麼確認做對、怎麼協作。</div>
+      </div>
+    </section>
+
+    <section id="principles" class="section"><h2>一、設計原則 Principles</h2><p class="mini">原則不是 Pattern，而是判斷程式碼是否健康的標準。</p></section>
+
+    <article class="term" data-key="solid srp ocp lsp isp dip 設計原則">
+      <div class="term-head"><div><div class="term-title">SOLID</div><div class="term-sub">物件導向設計的五大原則</div></div><span class="tag">Principle</span></div>
+      <div class="cols"><div>
+        <div class="box problem"><strong>解決什麼問題：</strong>類別太肥、依賴太硬、改一個地方壞一堆。</div>
+        <div class="box example"><strong>白話例子：</strong>訂單系統中，OrderService 不應同時負責折扣、寄信、付款、產生 PDF。每件事應有清楚職責。</div>
+        <div class="box use"><strong>常見導向：</strong>SRP 拆職責、OCP 用 Strategy/Factory、DIP 用 Interface + DI。</div>
+      </div><div class="diagram"><div class="stack"><div class="layer">S：單一職責</div><div class="layer">O：開放擴充，關閉修改</div><div class="layer">L：子類可替代父類</div><div class="layer">I：介面小而專一</div><div class="layer">D：依賴抽象，不依賴具體</div></div></div></div>
+    </article>
+
+    <article class="term" data-key="dry kiss yagni separation concerns demeter composition cohesion coupling">
+      <div class="term-head"><div><div class="term-title">DRY / KISS / YAGNI / 關注點分離</div><div class="term-sub">讓系統不要過度重複、過度複雜、過度設計</div></div><span class="tag">Principle</span></div>
+      <div class="cols"><div>
+        <div class="box problem"><strong>解決什麼問題：</strong>同一段規則散落各處、架構太華麗但需求根本用不到。</div>
+        <div class="box example"><strong>白話例子：</strong>只有 3 個 CRUD API，不需要一開始就拆微服務、CQRS、Event Sourcing。</div>
+        <div class="box use"><strong>判斷：</strong>重複兩次先觀察，重複三次再抽象；看得懂比炫技重要。</div>
+      </div><div class="diagram"><div class="flow"><div class="node">需求</div><span class="arrow">→</span><div class="node orange">最簡方案</div><span class="arrow">→</span><div class="node green">痛點明確</div><span class="arrow">→</span><div class="node purple">再抽象</div></div></div></div>
+    </article>
+
+    <section id="patterns" class="section"><h2>二、Design Patterns 設計模式</h2><p class="mini">Design Pattern 是針對「常見程式設計問題」的經典解法，不是架構全餐。</p></section>
+
+    <article class="term" data-key="factory method abstract factory builder prototype singleton creational 建立型">
+      <div class="term-head"><div><div class="term-title">Creational Patterns 建立型模式</div><div class="term-sub">專門處理物件怎麼建立</div></div><span class="tag">Design Pattern</span></div>
+      <div class="cols"><div><div class="box problem"><strong>解決什麼問題：</strong>到處 new、建立條件很多、建立步驟複雜。</div><div class="box example"><strong>白話例子：</strong>依照付款方式建立 CreditCardPayment、LinePayPayment、ApplePayPayment。</div><div class="box use"><strong>包含：</strong>Factory Method、Abstract Factory、Builder、Prototype、Singleton。</div></div><div class="diagram"><div class="flow"><div class="node">需求條件</div><span class="arrow">→</span><div class="node orange">建立工廠/建造器</div><span class="arrow">→</span><div class="node green">正確物件</div></div></div></div>
+    </article>
+
+    <article class="term" data-key="factory method 工廠方法">
+      <div class="term-head"><div><div class="term-title">Factory Method</div><div class="term-sub">把 new 的判斷集中到工廠方法</div></div><span class="tag">Creational</span></div>
+      <div class="cols"><div><div class="box problem"><strong>解決：</strong>呼叫端不想知道要 new 哪個類別。</div><div class="box example"><strong>例子：</strong>輸入 paymentType = credit_card，就建立信用卡付款物件。</div><div class="box use"><strong>適合：</strong>同一類型物件有多種實作。</div></div><div class="diagram"><div class="flow"><div class="node">Client</div><span class="arrow">→</span><div class="node orange">PaymentFactory</div><span class="arrow">→</span><div class="node green">CreditCard / LinePay / ATM</div></div></div></div>
+    </article>
+
+    <article class="term" data-key="abstract factory 抽象工廠">
+      <div class="term-head"><div><div class="term-title">Abstract Factory</div><div class="term-sub">建立一整組互相搭配的物件家族</div></div><span class="tag">Creational</span></div>
+      <div class="cols"><div><div class="box problem"><strong>解決：</strong>多個物件必須成套搭配，不能混用。</div><div class="box example"><strong>例子：</strong>Windows UI 產生 WindowsButton + WindowsInput；Mac UI 產生 MacButton + MacInput。</div><div class="box use"><strong>適合：</strong>主題切換、跨平台元件、品牌套件。</div></div><div class="diagram"><div class="flow"><div class="node">UIFactory</div><span class="arrow">→</span><div class="node purple">Windows Family</div><span class="arrow">/</span><div class="node green">Mac Family</div></div></div></div>
+    </article>
+
+    <article class="term" data-key="builder 建造者 參數很多">
+      <div class="term-head"><div><div class="term-title">Builder</div><div class="term-sub">一步一步組出複雜物件</div></div><span class="tag">Creational</span></div>
+      <div class="cols"><div><div class="box problem"><strong>解決：</strong>constructor 參數太多、可選設定太多。</div><div class="box example"><strong>例子：</strong>建立報表：設定日期、欄位、排序、群組、匯出格式。</div><div class="box use"><strong>適合：</strong>QueryBuilder、ReportBuilder、EmailBuilder。</div></div><div class="diagram"><div class="flow"><div class="node">setDate()</div><span class="arrow">→</span><div class="node">setColumns()</div><span class="arrow">→</span><div class="node">setFormat()</div><span class="arrow">→</span><div class="node green">Report</div></div></div></div>
+    </article>
+
+    <article class="term" data-key="structural adapter facade decorator proxy composite bridge flyweight 結構型">
+      <div class="term-head"><div><div class="term-title">Structural Patterns 結構型模式</div><div class="term-sub">專門處理物件之間怎麼組合、包裝、隔離</div></div><span class="tag">Design Pattern</span></div>
+      <div class="cols"><div><div class="box problem"><strong>解決：</strong>介面不合、系統太複雜、想加功能但不想改原類別。</div><div class="box example"><strong>白話例子：</strong>舊金流 API 和新系統格式不同，用 Adapter 包起來。</div><div class="box use"><strong>包含：</strong>Adapter、Facade、Decorator、Proxy、Composite、Bridge、Flyweight。</div></div><div class="diagram"><div class="flow"><div class="node">原物件</div><span class="arrow">＋</span><div class="node orange">包裝/轉接/代理</div><span class="arrow">→</span><div class="node green">更好用的結構</div></div></div></div>
+    </article>
+
+    <article class="term" data-key="adapter facade decorator proxy composite bridge flyweight">
+      <div class="term-head"><div><div class="term-title">Adapter / Facade / Decorator / Proxy 等</div><div class="term-sub">結構型常用模式速查</div></div><span class="tag">Structural</span></div>
+      <div class="cols"><div><div class="box example"><strong>Adapter：</strong>轉換不相容介面，像轉接頭。</div><div class="box example"><strong>Facade：</strong>把複雜子系統包成簡單入口，像客服櫃台。</div><div class="box example"><strong>Decorator：</strong>不改原物件，外面一層層加功能，像飲料加珍珠、奶蓋。</div><div class="box example"><strong>Proxy：</strong>代理控制存取、快取、權限，像秘書擋不必要請求。</div></div><div class="diagram"><div class="stack"><div class="layer">Client</div><div class="layer">Adapter / Facade / Decorator / Proxy</div><div class="layer">Real Service / Legacy System</div></div></div></div>
+    </article>
+
+    <article class="term" data-key="behavioral strategy observer state command chain template mediator iterator memento visitor interpreter 行為型">
+      <div class="term-head"><div><div class="term-title">Behavioral Patterns 行為型模式</div><div class="term-sub">專門處理流程、演算法、狀態、通知、任務</div></div><span class="tag">Design Pattern</span></div>
+      <div class="cols"><div><div class="box problem"><strong>解決：</strong>if/else 很多、狀態切換複雜、物件互相通知混亂。</div><div class="box example"><strong>白話例子：</strong>不同會員等級有不同折扣，用 Strategy 切換折扣演算法。</div><div class="box use"><strong>包含：</strong>Strategy、Observer、State、Command、Chain、Template Method 等。</div></div><div class="diagram"><div class="flow"><div class="node">事件/狀態</div><span class="arrow">→</span><div class="node orange">選擇行為</div><span class="arrow">→</span><div class="node green">執行結果</div></div></div></div>
+    </article>
+
+    <article class="term" data-key="strategy observer state chain command template method mediator">
+      <div class="term-head"><div><div class="term-title">Strategy / Observer / State / Command 等</div><div class="term-sub">行為型常用模式速查</div></div><span class="tag">Behavioral</span></div>
+      <div class="cols"><div><div class="box example"><strong>Strategy：</strong>演算法可替換，例如折扣策略。</div><div class="box example"><strong>Observer：</strong>一對多通知，例如訂單付款成功後通知庫存、物流、寄信。</div><div class="box example"><strong>State：</strong>狀態不同，行為不同，例如訂單待付款/已付款/取消。</div><div class="box example"><strong>Command：</strong>把操作包成任務，例如排程、Undo、重試。</div><div class="box example"><strong>Chain：</strong>多關卡依序處理，例如權限檢查、資料驗證、風控。</div></div><div class="diagram"><div class="flow"><div class="node">Request</div><span class="arrow">→</span><div class="node">Validate</div><span class="arrow">→</span><div class="node">Authorize</div><span class="arrow">→</span><div class="node">Execute</div><span class="arrow">→</span><div class="node green">Notify</div></div></div></div>
+    </article>
+
+    <section id="architecture" class="section"><h2>三、架構模式 Architecture Patterns</h2><p class="mini">架構模式是系統骨架，處理模組邊界、依賴方向、部署與資料流。</p></section>
+
+    <article class="term" data-key="mvc mvp mvvm layered three tier clean hexagonal onion modular monolith microservices">
+      <div class="term-head"><div><div class="term-title">MVC / Layered / Clean / Hexagonal</div><div class="term-sub">常見單體或模組化系統骨架</div></div><span class="tag">Architecture</span></div>
+      <div class="cols"><div><div class="box problem"><strong>解決：</strong>畫面、業務邏輯、資料庫混在一起。</div><div class="box example"><strong>例子：</strong>Controller 接 API，Service 處理業務，Repository 存取 DB。</div><div class="box use"><strong>選擇：</strong>簡單 CRUD 用 MVC/Layered；業務複雜用 Clean/Hexagonal。</div></div><div class="diagram"><div class="stack"><div class="layer">Controller / UI</div><div class="layer">Application Service</div><div class="layer">Domain Model</div><div class="layer">Repository / Infrastructure</div></div></div></div>
+    </article>
+
+    <article class="term" data-key="cqrs event sourcing event driven microservices serverless api gateway bff broker pipe filter soa">
+      <div class="term-head"><div><div class="term-title">CQRS / Event-Driven / Microservices / BFF</div><div class="term-sub">大型系統與多服務協作常見架構</div></div><span class="tag">Architecture</span></div>
+      <div class="cols"><div><div class="box problem"><strong>解決：</strong>讀寫負載差異大、多系統要非同步協作、不同前端需要不同 API。</div><div class="box example"><strong>例子：</strong>訂單成立後發事件，庫存服務、物流服務、通知服務各自處理。</div><div class="box use"><strong>注意：</strong>不要一開始就微服務。先確認團隊、部署、資料一致性是否真的需要。</div></div><div class="diagram"><div class="flow"><div class="node">Order Service</div><span class="arrow">→ event →</span><div class="node orange">Message Broker</div><span class="arrow">→</span><div class="node green">Inventory</div><div class="node green">Notify</div><div class="node green">Shipping</div></div></div></div>
+    </article>
+
+    <section id="domain" class="section"><h2>四、領域設計與分析方法</h2><p class="mini">當業務規則比 CRUD 複雜時，需要先把業務語言、邊界和規則整理清楚。</p></section>
+
+    <article class="term" data-key="ddd domain driven design bounded context ubiquitous language entity value object aggregate repository domain service application service specification policy saga event storming">
+      <div class="term-head"><div><div class="term-title">DDD：Domain-Driven Design</div><div class="term-sub">用業務模型驅動系統設計</div></div><span class="tag">Domain</span></div>
+      <div class="cols"><div><div class="box problem"><strong>解決：</strong>業務規則散落程式、工程師和業務講不同語言、模組邊界不清楚。</div><div class="box example"><strong>例子：</strong>長照系統的個案、排班、打卡、補助、核銷，不只是資料表，而是有規則的領域模型。</div><div class="box use"><strong>核心名詞：</strong>Bounded Context、Entity、Value Object、Aggregate、Repository、Domain Service。</div></div><div class="diagram"><div class="flow"><div class="node">業務語言</div><span class="arrow">→</span><div class="node orange">領域模型</div><span class="arrow">→</span><div class="node green">程式結構</div></div></div></div>
+    </article>
+
+    <article class="term" data-key="event storming 事件風暴 bounded context">
+      <div class="term-head"><div><div class="term-title">Event Storming</div><div class="term-sub">用事件把業務流程攤開來討論</div></div><span class="tag">Domain</span></div>
+      <div class="cols"><div><div class="box problem"><strong>解決：</strong>需求討論太抽象，不知道流程中有哪些狀態與事件。</div><div class="box example"><strong>例子：</strong>訂單已建立 → 付款成功 → 庫存已扣除 → 物流已建立 → 通知已寄出。</div><div class="box use"><strong>適合：</strong>開發前釐清流程、找出邊界、找出事件與命令。</div></div><div class="diagram"><div class="flow"><div class="node orange">OrderCreated</div><span class="arrow">→</span><div class="node orange">PaymentPaid</div><span class="arrow">→</span><div class="node orange">StockReserved</div><span class="arrow">→</span><div class="node orange">ShipmentCreated</div></div></div></div>
+    </article>
+
+    <section id="development" class="section"><h2>五、開發流程與測試方法</h2><p class="mini">這類方法不是架構，而是讓需求、規格、測試、程式碼能對齊。</p></section>
+
+    <article class="term" data-key="tdd bdd atdd sdd spec driven development test driven behavior acceptance ci cd code review pair programming trunk based git flow">
+      <div class="term-head"><div><div class="term-title">TDD / BDD / ATDD / SDD</div><div class="term-sub">從測試、行為或規格推動開發</div></div><span class="tag">Process</span></div>
+      <div class="cols"><div><div class="box problem"><strong>解決：</strong>寫完才發現需求誤解、改程式不敢動、測試不足。</div><div class="box example"><strong>白話：</strong>TDD 先寫測試；BDD 用 Given-When-Then 描述行為；ATDD 先定驗收條件；SDD 先寫規格再生成/實作。</div><div class="box use"><strong>適合：</strong>核心業務規則、複雜流程、高風險功能。</div></div><div class="diagram"><div class="flow"><div class="node">Spec / Test</div><span class="arrow">→</span><div class="node orange">Implementation</div><span class="arrow">→</span><div class="node green">Refactor</div><span class="arrow">→</span><div class="node purple">CI/CD</div></div></div></div>
+    </article>
+
+    <section id="distributed" class="section"><h2>六、系統整合與分散式設計</h2><p class="mini">當系統開始跨服務、跨隊伍、跨資料庫，就會遇到可靠性與一致性問題。</p></section>
+
+    <article class="term" data-key="message queue pub sub webhook outbox inbox retry circuit breaker bulkhead rate limiting idempotency distributed lock eventual consistency saga service discovery load balancing cache aside write through read through">
+      <div class="term-head"><div><div class="term-title">Queue / Outbox / Retry / Circuit Breaker / Idempotency</div><div class="term-sub">讓分散式系統更可靠</div></div><span class="tag">Distributed</span></div>
+      <div class="cols"><div><div class="box problem"><strong>解決：</strong>API 失敗、重複請求、服務互相拖垮、事件漏送。</div><div class="box example"><strong>例子：</strong>付款成功後寫入 Outbox，再由背景工作送事件，避免 DB 成功但事件沒送出去。</div><div class="box use"><strong>常用：</strong>Retry 處理暫時失敗；Circuit Breaker 防止連鎖故障；Idempotency 防重複扣款。</div></div><div class="diagram"><div class="flow"><div class="node">API</div><span class="arrow">→</span><div class="node orange">DB + Outbox</div><span class="arrow">→</span><div class="node purple">Worker</div><span class="arrow">→</span><div class="node green">Message Queue</div></div></div></div>
+    </article>
+
+    <section id="data" class="section"><h2>七、資料庫與資料設計模式</h2><p class="mini">資料設計不只建表，還包含查詢模型、歷史紀錄、一致性與效能。</p></section>
+
+    <article class="term" data-key="er model normalization denormalization index read model write model repository unit of work data mapper active record audit log soft delete snapshot temporal table sharding partitioning">
+      <div class="term-head"><div><div class="term-title">ER / 正規化 / Index / Audit Log / Sharding</div><div class="term-sub">資料結構、效能、歷史與擴展</div></div><span class="tag">Data</span></div>
+      <div class="cols"><div><div class="box problem"><strong>解決：</strong>資料重複、查詢慢、歷史追蹤不清楚、資料量變大。</div><div class="box example"><strong>例子：</strong>重要表加 Audit Log 記錄誰在什麼時間改了什麼；大量資料用 Partition 分區。</div><div class="box use"><strong>判斷：</strong>交易資料重一致性；報表資料重查詢速度。</div></div><div class="diagram"><div class="flow"><div class="node">Write Model</div><span class="arrow">→</span><div class="node orange">DB</div><span class="arrow">→</span><div class="node green">Read Model / Report</div><span class="arrow">＋</span><div class="node purple">Audit Log</div></div></div></div>
+    </article>
+
+    <section id="frontend" class="section"><h2>八、UI / 前端設計模式</h2><p class="mini">前端也需要架構，尤其是狀態、元件、資料流與設計系統。</p></section>
+
+    <article class="term" data-key="component based container presentational flux redux mvvm hooks compound component render props state machine ui atomic design design system">
+      <div class="term-head"><div><div class="term-title">Component / Redux / Hooks / Atomic Design / Design System</div><div class="term-sub">前端元件與狀態管理</div></div><span class="tag">Frontend</span></div>
+      <div class="cols"><div><div class="box problem"><strong>解決：</strong>畫面邏輯重複、狀態混亂、UI 不一致。</div><div class="box example"><strong>例子：</strong>把按鈕、表單、Modal 做成共用元件；複雜流程用狀態機控制。</div><div class="box use"><strong>適合：</strong>React/Vue/Angular 專案、後台系統、設計系統。</div></div><div class="diagram"><div class="stack"><div class="layer">Page</div><div class="layer">Feature Components</div><div class="layer">Shared Components</div><div class="layer">Design Tokens</div></div></div></div>
+    </article>
+
+    <section class="section">
+      <h2>最後總結：選工具前先問問題</h2>
+      <ul class="checklist">
+        <li>物件建立很亂 → 先看 Creational Pattern。</li>
+        <li>介面不合、包裝複雜 → 先看 Structural Pattern。</li>
+        <li>流程、狀態、通知、演算法很多 → 先看 Behavioral Pattern。</li>
+        <li>業務規則複雜 → 先看 DDD / Event Storming。</li>
+        <li>依賴方向混亂 → 先看 Clean Architecture / Hexagonal。</li>
+        <li>讀寫差異大、多服務協作 → 先看 CQRS / Event-Driven。</li>
+        <li>不敢改程式 → 先補 TDD / BDD / CI/CD。</li>
+      </ul>
+      <div class="warn"><strong>老大記憶法：</strong>Pattern 是局部招式，Architecture 是骨架，DDD 是業務地圖，TDD/BDD/SDD 是驗證方法，分散式模式是大型系統的保命機制。</div>
+    </section>
+  </main>
+</div>
+<script>
+const input=document.getElementById('searchInput');
+input.addEventListener('input',()=>{const q=input.value.trim().toLowerCase();document.querySelectorAll('.term').forEach(card=>{const text=(card.innerText+' '+card.dataset.key).toLowerCase();card.style.display=!q||text.includes(q)?'block':'none';});});
+function resetSearch(){input.value='';document.querySelectorAll('.term').forEach(card=>card.style.display='block');}
+</script>
+</body>
+</html>

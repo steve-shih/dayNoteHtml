@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>系統設計方法總覽與動態決策圖</title>
+<style>
+  :root{
+    --bg:#f6f7fb;--panel:#ffffff;--ink:#172033;--muted:#667085;--line:#d8deea;
+    --blue:#2563eb;--green:#059669;--orange:#ea580c;--purple:#7c3aed;--red:#dc2626;--cyan:#0891b2;
+    --soft-blue:#eff6ff;--soft-green:#ecfdf5;--soft-orange:#fff7ed;--soft-purple:#f5f3ff;--soft-red:#fef2f2;--soft-cyan:#ecfeff;
+  }
+  *{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.65}
+  header{padding:34px 28px;background:linear-gradient(135deg,#111827,#1d4ed8);color:#fff}
+  header h1{margin:0 0 8px;font-size:30px} header p{margin:0;opacity:.9;max-width:980px}
+  .wrap{max-width:1480px;margin:auto;padding:22px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:0 8px 24px rgba(15,23,42,.06);padding:22px;margin-bottom:22px}
+  h2{margin:0 0 14px;font-size:24px} h3{margin:18px 0 10px;font-size:18px}.muted{color:var(--muted)}
+  .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  @media(max-width:1100px){.grid,.grid-3,.grid-2{grid-template-columns:1fr 1fr}} @media(max-width:680px){.grid,.grid-3,.grid-2{grid-template-columns:1fr}}
+  .card{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff}.card h3{margin-top:0}.tag{display:inline-block;border-radius:999px;padding:3px 9px;font-size:12px;font-weight:700;margin:2px 4px 2px 0;background:#eef2ff;color:#3730a3}
+  .method{min-height:158px}.method .items{font-size:14px;color:#334155;margin-top:8px}.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 10px;margin:4px;font-size:14px;cursor:pointer}.pill input{accent-color:var(--blue)}
+  .builder{display:grid;grid-template-columns:360px 1fr;gap:18px}@media(max-width:1000px){.builder{grid-template-columns:1fr}}
+  .question{border:1px solid var(--line);border-radius:14px;padding:13px;margin-bottom:12px;background:#fbfdff}.question b{display:block;margin-bottom:7px}
+  button{border:0;border-radius:12px;padding:11px 14px;font-weight:800;cursor:pointer;background:var(--blue);color:#fff;margin:4px 6px 4px 0}button.secondary{background:#475569}button.ghost{background:#fff;color:#1e293b;border:1px solid var(--line)}
+  .result-box{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:1000px){.result-box{grid-template-columns:1fr}}
+  .recommend{border-left:5px solid var(--blue);background:#f8fafc;padding:14px;border-radius:12px;margin:10px 0}.recommend h3{margin:0 0 6px}.score{float:right;background:#111827;color:#fff;border-radius:999px;padding:2px 8px;font-size:12px}
+  .legend{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.legend span{font-size:13px;border-radius:999px;padding:4px 9px;border:1px solid var(--line);background:#fff}
+  .svg-box{width:100%;overflow:auto;border:1px solid var(--line);border-radius:14px;background:#fff;padding:8px}.svg-box svg{min-width:920px;width:100%;height:auto}.node{rx:14;ry:14;stroke-width:1.5}.nodeText{font-size:14px;font-weight:700;fill:#172033}.smallText{font-size:12px;fill:#475569}.edge{stroke:#94a3b8;stroke-width:2;fill:none;marker-end:url(#arrow)}
+  details{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff;margin:8px 0}summary{font-weight:800;cursor:pointer}.compact .optional{display:none}.largeText .nodeText{font-size:17px}.largeText .smallText{font-size:14px}
+  .flow-note{font-size:14px;color:#475569}.kbd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:6px;padding:1px 5px}
+</style>
+</head>
+<body>
+<header>
+  <h1>系統設計方法總覽 × 動態決策圖產生器</h1>
+  <p>先把 Design Pattern、SOLID、DDD、BDD、TDD、SDD、架構模式、分散式模式、資料模式、前端模式全部放在同一張知識地圖，再用問題引導你選出大致方向。</p>
+</header>
+<div class="wrap">
+  <section class="panel">
+    <h2>一、設計系統前，先知道有哪些工具箱</h2>
+    <p class="muted">不要一開始就問「我要用哪個 Pattern？」比較好的順序是：先判斷問題種類，再選設計方法。下面是完整工具箱。</p>
+    <div class="grid">
+      <div class="card method"><h3>1. 設計原則</h3><span class="tag">Principles</span><div class="items">SOLID、DRY、KISS、YAGNI、Separation of Concerns、Law of Demeter、Composition over Inheritance、高內聚低耦合。</div></div>
+      <div class="card method"><h3>2. 建立型 Pattern</h3><span class="tag">Creational</span><div class="items">Factory Method、Abstract Factory、Builder、Prototype、Singleton。解決「物件怎麼建立」的問題。</div></div>
+      <div class="card method"><h3>3. 結構型 Pattern</h3><span class="tag">Structural</span><div class="items">Adapter、Bridge、Composite、Decorator、Facade、Flyweight、Proxy。解決「物件怎麼組合」的問題。</div></div>
+      <div class="card method"><h3>4. 行為型 Pattern</h3><span class="tag">Behavioral</span><div class="items">Strategy、Observer、State、Command、Chain、Template、Mediator、Iterator、Memento、Visitor、Interpreter。</div></div>
+      <div class="card method"><h3>5. 架構模式</h3><span class="tag">Architecture</span><div class="items">MVC、MVP、MVVM、Layered、Three-Tier、Clean、Hexagonal、Onion、Modular Monolith、Microservices、CQRS、Event Sourcing、EDA、SOA、Serverless、BFF、API Gateway。</div></div>
+      <div class="card method"><h3>6. 領域設計</h3><span class="tag">Domain</span><div class="items">DDD、Event Storming、Bounded Context、Ubiquitous Language、Entity、Value Object、Aggregate、Repository、Domain Service、Application Service、Specification、Saga、Policy。</div></div>
+      <div class="card method"><h3>7. 開發與驗證方法</h3><span class="tag">Process</span><div class="items">TDD、BDD、ATDD、SDD、CI/CD、Code Review、Pair Programming、Trunk-Based Development、Git Flow。</div></div>
+      <div class="card method"><h3>8. 分散式與韌性模式</h3><span class="tag">Distributed</span><div class="items">Message Queue、Pub/Sub、Webhook、Outbox、Inbox、Retry、Circuit Breaker、Bulkhead、Rate Limiting、Idempotency、Distributed Lock、Service Discovery、Load Balancing、Cache Aside。</div></div>
+      <div class="card method"><h3>9. 資料設計模式</h3><span class="tag">Data</span><div class="items">ER Model、Normalization、Denormalization、Index Design、Read/Write Model、Repository、Unit of Work、Data Mapper、Active Record、Audit Log、Soft Delete、Snapshot、Temporal Table、Sharding、Partitioning。</div></div>
+      <div class="card method"><h3>10. 前端 / UI 模式</h3><span class="tag">Frontend</span><div class="items">Component-Based、Container/Presentational、Flux、Redux、Hooks、Compound Component、Render Props、State Machine UI、Atomic Design、Design System。</div></div>
+      <div class="card method"><h3>11. API 與整合模式</h3><span class="tag">Integration</span><div class="items">REST、GraphQL、gRPC、Webhook、BFF、API Gateway、Backend for Frontend、Contract Testing、Versioning、Pagination、Idempotency Key。</div></div>
+      <div class="card method"><h3>12. 觀測與維運模式</h3><span class="tag">Ops</span><div class="items">Logging、Metrics、Tracing、SLO/SLI/SLA、Alerting、Blue-Green、Canary、Feature Flag、Rollback、Runbook。</div></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>二、動態決策圖產生器</h2>
+    <p class="muted">勾選你遇到的設計問題，按下產生。系統會給你：方向、建議 Pattern / 方法、為什麼、以及動態圖。</p>
+    <div class="builder">
+      <aside>
+        <div class="question"><b>Q1：需求本質是什麼？</b><label class="pill"><input type="checkbox" value="creation"> 物件建立很亂</label><label class="pill"><input type="checkbox" value="structure"> 物件結構很亂</label><label class="pill"><input type="checkbox" value="behavior"> 流程/行為常變</label><label class="pill"><input type="checkbox" value="domain"> 業務規則複雜</label><label class="pill"><input type="checkbox" value="architecture"> 系統架構混亂</label></div>
+        <div class="question"><b>Q2：變動點在哪裡？</b><label class="pill"><input type="checkbox" value="algorithm"> 演算法/規則常切換</label><label class="pill"><input type="checkbox" value="state"> 狀態不同，行為不同</label><label class="pill"><input type="checkbox" value="notify"> 一件事要通知很多地方</label><label class="pill"><input type="checkbox" value="pipeline"> 多關卡依序處理</label><label class="pill"><input type="checkbox" value="steps"> 流程固定但步驟可替換</label></div>
+        <div class="question"><b>Q3：耦合問題在哪裡？</b><label class="pill"><input type="checkbox" value="newLow"> 高層直接 new 低層</label><label class="pill"><input type="checkbox" value="legacy"> 新舊介面不相容</label><label class="pill"><input type="checkbox" value="subsystem"> 子系統太複雜</label><label class="pill"><input type="checkbox" value="access"> 要權限/快取/遠端代理</label><label class="pill"><input type="checkbox" value="tree"> 樹狀結構</label></div>
+        <div class="question"><b>Q4：資料與整合問題？</b><label class="pill"><input type="checkbox" value="readwrite"> 讀寫需求差異大</label><label class="pill"><input type="checkbox" value="async"> 跨系統非同步</label><label class="pill"><input type="checkbox" value="consistency"> 分散式一致性</label><label class="pill"><input type="checkbox" value="audit"> 需要稽核/追蹤歷史</label><label class="pill"><input type="checkbox" value="scale"> 流量/擴充壓力</label></div>
+        <div class="question"><b>Q5：開發流程要怎麼保證正確？</b><label class="pill"><input type="checkbox" value="testFirst"> 想先寫測試</label><label class="pill"><input type="checkbox" value="behaviorSpec"> 想用情境描述驗收</label><label class="pill"><input type="checkbox" value="specFirst"> 想先寫規格讓 AI/人依規格做</label><label class="pill"><input type="checkbox" value="acceptance"> 想從驗收條件開始</label></div>
+        <button onclick="generate()">產生決策圖</button><button class="secondary" onclick="resetAll()">清空</button><button class="ghost" onclick="demo()">套用範例：長照排班系統</button>
+        <div class="question"><b>顯示選項</b><label class="pill"><input id="compactToggle" type="checkbox" onchange="toggleView()"> 隱藏次要說明</label><label class="pill"><input id="largeToggle" type="checkbox" onchange="toggleView()"> 放大圖中文字</label></div>
+      </aside>
+      <main id="output">
+        <div class="card"><h3>尚未產生</h3><p class="muted">請勾選左側問題，或套用範例。</p></div>
+      </main>
+    </div>
+  </section>
+</div>
+<script>
+const knowledge = {
+ creation:{title:'建立型 Pattern', score:2, methods:['Factory Method','Abstract Factory','Builder','Prototype','Singleton'], why:'當建立物件的條件、步驟、家族或生命週期開始變複雜，不要讓呼叫端到處 new。'},
+ structure:{title:'結構型 Pattern', score:2, methods:['Adapter','Facade','Decorator','Proxy','Composite','Bridge','Flyweight'], why:'當類別之間的組合、包裝、轉接、樹狀關係變複雜，需要讓結構更穩定。'},
+ behavior:{title:'行為型 Pattern', score:2, methods:['Strategy','State','Observer','Chain of Responsibility','Command','Template Method','Mediator'], why:'當流程、演算法、通知、狀態與操作封裝會頻繁變動，需要把變動行為抽出去。'},
+ domain:{title:'DDD / 領域設計', score:3, methods:['DDD','Event Storming','Bounded Context','Entity','Value Object','Aggregate','Repository','Domain Service','Specification','Policy'], why:'當業務規則比 CRUD 複雜，優先建模業務語言與規則，不要直接用資料表思考。'},
+ architecture:{title:'架構模式', score:3, methods:['Layered','Clean Architecture','Hexagonal','Modular Monolith','Microservices','CQRS','Event-Driven'], why:'當問題跨越多模組、多團隊、多部署或依賴方向混亂，需要先決定系統骨架。'},
+ algorithm:{title:'Strategy', score:4, methods:['Strategy Pattern','Policy Pattern','Specification Pattern'], why:'演算法或規則常切換，例如不同補助計算、不同折扣、不同驗證規則。'},
+ state:{title:'State', score:4, methods:['State Pattern','State Machine'], why:'同一個物件在不同狀態下有不同行為，例如訂單、案件、排班、審核流程。'},
+ notify:{title:'Observer / PubSub', score:4, methods:['Observer','Pub/Sub','Event-Driven Architecture'], why:'一個事件發生後，多個模組要反應，例如建立個案後通知、寫 Audit Log、推播。'},
+ pipeline:{title:'Chain of Responsibility', score:4, methods:['Chain of Responsibility','Pipeline','Middleware'], why:'請求需要通過多個處理關卡，例如驗證、權限、格式化、風控、轉派。'},
+ steps:{title:'Template Method', score:3, methods:['Template Method','Hook Method'], why:'整體流程固定，但部分步驟依情境替換，例如匯出報表流程固定但資料來源不同。'},
+ newLow:{title:'DIP / Factory / DI', score:4, methods:['Dependency Inversion','Dependency Injection','Factory Method','Repository Interface'], why:'高層模組直接依賴低層實作會導致測試困難與替換困難。'},
+ legacy:{title:'Adapter', score:5, methods:['Adapter Pattern','Anti-Corruption Layer'], why:'新系統與舊系統介面不合，透過 Adapter 隔離轉換。'},
+ subsystem:{title:'Facade', score:5, methods:['Facade Pattern','Application Service'], why:'子系統太複雜時，包一個簡單入口，讓外部不用知道內部細節。'},
+ access:{title:'Proxy', score:4, methods:['Proxy Pattern','Cache Proxy','Protection Proxy','Remote Proxy'], why:'需要控制存取、延遲載入、快取、遠端呼叫或權限檢查。'},
+ tree:{title:'Composite', score:5, methods:['Composite Pattern','Tree Model'], why:'資料天然是樹狀，例如組織、選單、資料夾、表單群組。'},
+ readwrite:{title:'CQRS', score:5, methods:['CQRS','Read Model','Write Model','Materialized View'], why:'查詢和寫入模型差很多時，強行用同一套 Model 會很痛苦。'},
+ async:{title:'Event-Driven / Queue', score:5, methods:['Message Queue','Pub/Sub','Event-Driven Architecture','Outbox Pattern'], why:'跨系統不應互相卡住，事件與佇列能降低耦合。'},
+ consistency:{title:'Saga / Outbox', score:5, methods:['Saga Pattern','Outbox Pattern','Inbox Pattern','Idempotency','Retry'], why:'分散式交易不能只靠單一 DB transaction，要處理補償、重試與冪等。'},
+ audit:{title:'Audit Log / Event Sourcing', score:4, methods:['Audit Log','Event Sourcing','Snapshot','Temporal Table'], why:'若需要追蹤誰在何時做了什麼，或需要還原歷史狀態，要設計歷史紀錄。'},
+ scale:{title:'Scalability / Resilience', score:4, methods:['Cache Aside','Rate Limiting','Circuit Breaker','Bulkhead','Load Balancing','Sharding'], why:'流量與成本壓力出現時，重點是快取、限流、隔離、降級與水平擴充。'},
+ testFirst:{title:'TDD', score:4, methods:['TDD','Unit Test','Mock','Test Double'], why:'先用測試定義單元行為，適合核心邏輯、演算法、Domain Service。'},
+ behaviorSpec:{title:'BDD', score:4, methods:['BDD','Given-When-Then','Cucumber Style'], why:'用業務情境描述系統行為，適合跨工程、PM、QA 溝通。'},
+ specFirst:{title:'SDD', score:4, methods:['Spec-Driven Development','API Contract','Design Doc','AI Coding Spec'], why:'先寫規格再實作，特別適合 AI Coding、多人協作與大型功能。'},
+ acceptance:{title:'ATDD', score:4, methods:['ATDD','Acceptance Criteria','E2E Test'], why:'從驗收條件開始設計，適合需求容易誤解的功能。'}
+};
+function selected(){return [...document.querySelectorAll('input[type=checkbox]:checked')].filter(x=>knowledge[x.value]).map(x=>x.value)}
+function generate(){
+ const keys=selected();
+ if(!keys.length){document.getElementById('output').innerHTML='<div class="card"><h3>請至少選一個問題</h3><p class="muted">系統設計的重點是先找到主要矛盾。</p></div>';return}
+ const recs=keys.map(k=>({key:k,...knowledge[k]})).sort((a,b)=>b.score-a.score);
+ const top=recs.slice(0,6);
+ document.getElementById('output').innerHTML=`
+ <div class="legend"><span>藍色：架構/方向</span><span>綠色：Pattern</span><span>橘色：流程/測試</span><span>紫色：資料/分散式</span></div>
+ <div class="result-box"><div>${top.map(renderRec).join('')}</div><div class="svg-box">${renderSvg(top)}</div></div>
+ <details open><summary>設計順序建議</summary>${renderOrder(recs)}</details>
+ <details><summary>每個元素解釋</summary>${top.map(x=>`<p><b>${x.title}</b>：${x.why}<br><span class="muted">常見搭配：${x.methods.join('、')}</span></p>`).join('')}</details>`;
+ toggleView();
+}
+function renderRec(x){return `<div class="recommend"><span class="score">${x.score}/5</span><h3>${x.title}</h3><p>${x.why}</p><div>${x.methods.map(m=>`<span class="tag">${m}</span>`).join('')}</div></div>`}
+function renderOrder(recs){
+ const has=k=>recs.some(r=>r.key===k);
+ let steps=[];
+ if(has('domain')) steps.push('先做 Event Storming / DDD，釐清 Entity、Value Object、Aggregate、Bounded Context。');
+ if(has('architecture')||has('readwrite')||has('async')) steps.push('再選系統骨架：Clean / Hexagonal / Modular Monolith / CQRS / Event-Driven。');
+ if(has('creation')||has('structure')||has('behavior')) steps.push('接著處理局部程式碼：Factory、Strategy、Observer、Adapter、Facade 等。');
+ if(has('consistency')||has('audit')||has('scale')) steps.push('再補資料一致性、歷史紀錄、快取、限流、重試與監控。');
+ if(has('testFirst')||has('behaviorSpec')||has('specFirst')||has('acceptance')) steps.push('最後決定開發驗證流程：SDD 寫規格，BDD 寫情境，TDD 寫核心測試，ATDD 寫驗收。');
+ if(!steps.length) steps=['先確認主要變動點，再決定 Pattern，不要為了用 Pattern 而用 Pattern。'];
+ return `<ol>${steps.map(s=>`<li>${s}</li>`).join('')}</ol>`
+}
+function colorFor(x){
+ if(['domain','architecture','readwrite','async','consistency','audit','scale'].includes(x.key)) return ['#f5f3ff','#7c3aed'];
+ if(['testFirst','behaviorSpec','specFirst','acceptance'].includes(x.key)) return ['#fff7ed','#ea580c'];
+ if(['algorithm','state','notify','pipeline','steps','legacy','subsystem','access','tree','newLow'].includes(x.key)) return ['#ecfdf5','#059669'];
+ return ['#eff6ff','#2563eb'];
+}
+function wrapText(text, max=18){let out=[];for(let i=0;i<text.length;i+=max)out.push(text.slice(i,i+max));return out}
+function renderSvg(nodes){
+ const h=170+nodes.length*112;
+ let nodeSvg='', edgeSvg='';
+ nodes.forEach((n,i)=>{
+   const y=110+i*105; const [fill,stroke]=colorFor(n);
+   edgeSvg+=`<path class="edge" d="M250 ${y+32} C330 ${y+32}, 330 ${y+32}, 405 ${y+32}"/>`;
+   nodeSvg+=`<rect class="node" x="410" y="${y}" width="430" height="74" fill="${fill}" stroke="${stroke}"/>
+   <text x="430" y="${y+26}" class="nodeText">${n.title}</text>
+   <text x="430" y="${y+50}" class="smallText optional">${n.methods.slice(0,3).join(' / ')}</text>`;
+ });
+ return `<svg viewBox="0 0 980 ${h}" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#94a3b8"/></marker></defs>
+ <rect class="node" x="35" y="${Math.max(70, h/2-55)}" width="220" height="110" fill="#eff6ff" stroke="#2563eb"/>
+ <text x="60" y="${Math.max(105, h/2-18)}" class="nodeText">系統設計問題</text>
+ <text x="60" y="${Math.max(132, h/2+9)}" class="smallText">先找主要變動點</text>
+ <text x="60" y="${Math.max(154, h/2+31)}" class="smallText optional">再選方法，不先套招</text>
+ ${edgeSvg}${nodeSvg}
+ <rect class="node optional" x="410" y="${h-58}" width="430" height="38" fill="#f8fafc" stroke="#cbd5e1"/>
+ <text x="430" y="${h-34}" class="smallText optional">提醒：Pattern 是工具，不是架構目的；優先解決變動、耦合、測試與維護成本。</text>
+ </svg>`
+}
+function resetAll(){document.querySelectorAll('input[type=checkbox]').forEach(x=>x.checked=false);generate()}
+function demo(){resetAll();['domain','architecture','algorithm','state','notify','pipeline','readwrite','audit','specFirst','testFirst'].forEach(v=>{const el=document.querySelector(`input[value="${v}"]`);if(el)el.checked=true});generate()}
+function toggleView(){const out=document.getElementById('output'); if(!out)return; out.classList.toggle('compact',document.getElementById('compactToggle')?.checked); out.classList.toggle('largeText',document.getElementById('largeToggle')?.checked)}
+</script>
+</body>
+</html>

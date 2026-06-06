@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Layout, Menu, Button, Modal, Upload, Select, Input, List, Typography, Space, message, Empty, Tag, Card, Popconfirm, Spin, Divider, Grid, Drawer } from 'antd';
-import { UploadOutlined, FileTextOutlined, PlusOutlined, DownloadOutlined, FolderOpenOutlined, FullscreenOutlined, FullscreenExitOutlined, CloseOutlined, DeleteOutlined, RobotOutlined, SendOutlined, SaveOutlined, MenuOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+axios.defaults.headers.common['ngrok-skip-browser-warning'] = '69420';
+import { Layout, Menu, Button, Modal, Upload, Select, Input, List, Typography, Space, message, Empty, Tag, Card, Popconfirm, Spin, Divider, Grid, Drawer, Tabs } from 'antd';
+import { UploadOutlined, FileTextOutlined, PlusOutlined, DownloadOutlined, FolderOpenOutlined, FullscreenOutlined, FullscreenExitOutlined, CloseOutlined, DeleteOutlined, RobotOutlined, SendOutlined, SaveOutlined, MenuOutlined, ArrowLeftOutlined, ExportOutlined, LinkOutlined } from '@ant-design/icons';
 import type { UploadProps, MenuProps } from 'antd';
 import type { RcFile } from 'antd/es/upload';
 
 const { Header, Sider, Content } = Layout;
 const { Title, Text } = Typography;
 const { Option } = Select;
-const { useBreakpoint } = Grid;
 
 type Note = {
   id: string;
@@ -18,6 +18,8 @@ type Note = {
   stored_filename: string;
   category: string;
   upload_time: string;
+  is_url?: boolean;
+  url?: string;
 };
 
 export default function Home() {
@@ -29,8 +31,7 @@ export default function Home() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   
   // Responsive State
-  const screens = useBreakpoint();
-  const isMobile = screens.md === false;
+  const [isMobile, setIsMobile] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
   
   // AI Chat State
@@ -41,16 +42,27 @@ export default function Home() {
   
   // Upload Modal State
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [uploadTab, setUploadTab] = useState('file');
   const [fileList, setFileList] = useState<RcFile[]>([]);
+  const [urlInput, setUrlInput] = useState('');
+  const [urlNameInput, setUrlNameInput] = useState('');
   const [uploadCategory, setUploadCategory] = useState<string | undefined>(undefined);
   const [newCategoryName, setNewCategoryName] = useState<string>("");
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
     fetchCategories();
     fetchNotes();
     const savedKey = localStorage.getItem("gemini_api_key");
     if (savedKey) setApiKey(savedKey);
+
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   useEffect(() => {
@@ -99,11 +111,6 @@ export default function Home() {
   };
 
   const handleUpload = async () => {
-    if (fileList.length === 0) {
-      message.warning("Please select at least one file to upload.");
-      return;
-    }
-
     let targetCategory = uploadCategory || "未分類";
     if (uploadCategory === "NEW_CATEGORY") {
       if (!newCategoryName) {
@@ -115,34 +122,54 @@ export default function Home() {
 
     setUploading(true);
     try {
-      const results = await Promise.allSettled(fileList.map(async (f) => {
-        const formData = new FormData();
-        formData.append("file", f);
-        formData.append("category", targetCategory);
-        return axios.post(`/api/upload`, formData, {
-          headers: { "Content-Type": "multipart/form-data" }
+      if (uploadTab === 'url') {
+        if (!urlInput.trim()) {
+          message.warning("請輸入網址！");
+          setUploading(false);
+          return;
+        }
+        await axios.post(`/api/notes/url`, {
+          url: urlInput,
+          name: urlNameInput
         });
-      }));
-
-      const successes = results.filter(r => r.status === 'fulfilled');
-      const failures = results.filter(r => r.status === 'rejected');
-
-      if (failures.length === 0) {
-        message.success(`All ${successes.length} files uploaded successfully!`);
-      } else if (successes.length > 0) {
-        message.warning(`${successes.length} uploaded successfully, ${failures.length} failed. Check file types.`);
+        message.success("網址已成功加入，並自動歸類為 WEB URL NOTE！");
       } else {
-        message.error(`Upload failed for all ${failures.length} files. Unsupported type or size.`);
+        if (fileList.length === 0) {
+          message.warning("Please select at least one file to upload.");
+          setUploading(false);
+          return;
+        }
+        const results = await Promise.allSettled(fileList.map(async (f) => {
+          const formData = new FormData();
+          formData.append("file", f);
+          formData.append("category", targetCategory);
+          return axios.post(`/api/upload`, formData, {
+            headers: { "Content-Type": "multipart/form-data" }
+          });
+        }));
+
+        const successes = results.filter(r => r.status === 'fulfilled');
+        const failures = results.filter(r => r.status === 'rejected');
+
+        if (failures.length === 0) {
+          message.success(`All ${successes.length} files uploaded successfully!`);
+        } else if (successes.length > 0) {
+          message.warning(`${successes.length} uploaded successfully, ${failures.length} failed. Check file types.`);
+        } else {
+          message.error(`Upload failed for all ${failures.length} files. Unsupported type or size.`);
+        }
       }
 
       setIsUploadOpen(false);
       setFileList([]);
+      setUrlInput('');
+      setUrlNameInput('');
       setNewCategoryName("");
       setUploadCategory(undefined);
       fetchCategories();
       fetchNotes(activeCategory === "all" ? null : activeCategory);
     } catch (error) {
-      message.error("An unexpected error occurred during upload.");
+      message.error("發生錯誤，無法完成操作。");
     } finally {
       setUploading(false);
     }
@@ -178,6 +205,18 @@ export default function Home() {
       fetchNotes(activeCategory === "all" ? null : activeCategory);
     } catch (error) {
       message.error("Failed to delete note.");
+    }
+  };
+
+  const handleDeleteCategory = async (cat: string) => {
+    try {
+      await axios.delete(`/api/categories/${encodeURIComponent(cat)}`);
+      message.success("分類已刪除，筆記已移至未分類");
+      if (activeCategory === cat) setActiveCategory("all");
+      fetchCategories();
+      fetchNotes(activeCategory === "all" ? null : (activeCategory === cat ? null : activeCategory));
+    } catch (error) {
+      message.error("刪除分類失敗或該分類為系統預設不可刪除");
     }
   };
 
@@ -251,7 +290,23 @@ export default function Home() {
     ...categories.map(cat => ({
       key: cat,
       icon: <FolderOpenOutlined />,
-      label: cat,
+      label: (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{cat}</span>
+          {!["未分類", "AI筆記", "WEB URL NOTE"].includes(cat) && (
+            <Popconfirm
+              title="刪除分類"
+              description="確定刪除此分類？底下的筆記將移至「未分類」。"
+              onConfirm={(e) => { e?.stopPropagation(); handleDeleteCategory(cat); }}
+              onCancel={(e) => e?.stopPropagation()}
+              okText="刪除"
+              cancelText="取消"
+            >
+              <DeleteOutlined style={{ color: '#ff4d4f' }} onClick={(e) => e.stopPropagation()} />
+            </Popconfirm>
+          )}
+        </div>
+      )
     }))
   ];
 
@@ -276,6 +331,14 @@ export default function Home() {
             >
               Upload File
             </Button>
+            <Button 
+              icon={<ExportOutlined />} 
+              block 
+              style={{ marginTop: 8 }}
+              onClick={() => window.open(window.location.href, '_blank')}
+            >
+              在新分頁開啟系統
+            </Button>
           </div>
           <Menu 
             theme="dark" 
@@ -296,6 +359,7 @@ export default function Home() {
       >
         <div style={{ padding: '16px' }}>
           <Button type="primary" icon={<UploadOutlined />} block onClick={() => { setIsUploadOpen(true); setDrawerVisible(false); }} size="large">Upload File</Button>
+          <Button icon={<ExportOutlined />} block style={{ marginTop: 8 }} onClick={() => window.open(window.location.href, '_blank')}>在新分頁開啟系統</Button>
         </div>
         <Menu 
           theme="dark" 
@@ -409,7 +473,7 @@ export default function Home() {
                     }}
                   >
                     <List.Item.Meta
-                      avatar={<FileTextOutlined style={{ fontSize: 24, color: '#1677ff' }} />}
+                      avatar={item.is_url ? <LinkOutlined style={{ fontSize: 24, color: '#1677ff' }} /> : <FileTextOutlined style={{ fontSize: 24, color: '#1677ff' }} />}
                       title={<Text ellipsis style={{ width: isMobile ? '60vw' : 200 }}>{item.original_filename}</Text>}
                       description={
                         <Space direction="vertical" size={0}>
@@ -462,12 +526,21 @@ export default function Home() {
                     )}
                     <Button 
                       type="text" 
-                      icon={<DownloadOutlined />}
-                      href={`/api/notes/${activeNote.stored_filename}`}
-                      download={activeNote.original_filename}
+                      icon={<ExportOutlined />}
+                      href={activeNote.is_url ? activeNote.url : `/api/notes/${activeNote.stored_filename}`}
                       target="_blank"
-                      title="Download"
+                      title="Open in new tab"
                     />
+                    {!activeNote.is_url && (
+                      <Button 
+                        type="text" 
+                        icon={<DownloadOutlined />}
+                        href={`/api/notes/${activeNote.stored_filename}`}
+                        download={activeNote.original_filename}
+                        target="_blank"
+                        title="Download"
+                      />
+                    )}
                     <Popconfirm
                       title="Delete Note"
                       description="Are you sure you want to delete this note?"
@@ -494,7 +567,14 @@ export default function Home() {
                   </Space>
                 </div>
                 <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }} className="custom-scrollbar">
-                  {activeNote.original_filename.endsWith('.html') ? (
+                  {activeNote.is_url ? (
+                    <iframe 
+                      src={activeNote.url}
+                      style={{ width: '100%', height: '100%', minHeight: '600px', border: 'none', background: '#fff', borderRadius: 8 }}
+                      sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+                      title={activeNote.original_filename}
+                    />
+                  ) : activeNote.original_filename.endsWith('.html') ? (
                     <iframe 
                       srcDoc={noteContent}
                       style={{ width: '100%', height: '100%', minHeight: '600px', border: 'none', background: '#fff', borderRadius: 8 }}
@@ -530,30 +610,52 @@ export default function Home() {
         cancelText="Cancel"
       >
         <Space direction="vertical" size="large" style={{ width: '100%', marginTop: 16 }}>
-          <div>
-            <div style={{ marginBottom: 8 }}>Select Files</div>
-            <Upload {...uploadProps}>
-              <Button icon={<UploadOutlined />}>Click to Upload (Multiple)</Button>
-            </Upload>
-          </div>
+          <Tabs activeKey={uploadTab} onChange={setUploadTab} items={[
+            {
+              key: 'file',
+              label: '上傳檔案',
+              children: (
+                <div>
+                  <div style={{ marginBottom: 8 }}>Select Files</div>
+                  <Upload {...uploadProps}>
+                    <Button icon={<UploadOutlined />}>Click to Upload (Multiple)</Button>
+                  </Upload>
+                </div>
+              )
+            },
+            {
+              key: 'url',
+              label: '加入網址',
+              children: (
+                <div>
+                  <div style={{ marginBottom: 8 }}>Website URL</div>
+                  <Input placeholder="https://..." value={urlInput} onChange={e => setUrlInput(e.target.value)} />
+                  <div style={{ marginTop: 16, marginBottom: 8 }}>Title (Optional)</div>
+                  <Input placeholder="Leave empty to use URL as title" value={urlNameInput} onChange={e => setUrlNameInput(e.target.value)} />
+                </div>
+              )
+            }
+          ]} />
 
-          <div>
-            <div style={{ marginBottom: 8 }}>Category (Optional)</div>
-            <Select 
-              value={uploadCategory} 
-              onChange={setUploadCategory}
-              style={{ width: '100%' }}
-              allowClear
-              placeholder="Select category or leave empty for 未分類"
-            >
-              {categories.map(cat => (
-                <Option key={cat} value={cat}>{cat}</Option>
-              ))}
-              <Option value="NEW_CATEGORY"><PlusOutlined /> Add New Category</Option>
-            </Select>
-          </div>
+          {uploadTab === 'file' && (
+            <div>
+              <div style={{ marginBottom: 8 }}>Category (Optional)</div>
+              <Select 
+                value={uploadCategory} 
+                onChange={setUploadCategory}
+                style={{ width: '100%' }}
+                allowClear
+                placeholder="Select category or leave empty for 未分類"
+              >
+                {categories.map(cat => (
+                  <Option key={cat} value={cat}>{cat}</Option>
+                ))}
+                <Option value="NEW_CATEGORY"><PlusOutlined /> Add New Category</Option>
+              </Select>
+            </div>
+          )}
 
-          {uploadCategory === "NEW_CATEGORY" && (
+          {uploadTab === 'file' && uploadCategory === "NEW_CATEGORY" && (
             <div>
               <div style={{ marginBottom: 8 }}>New Category Name</div>
               <Input 

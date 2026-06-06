@@ -5,7 +5,11 @@
     "CS",
     "其他",
     "未分類",
-    "AI筆記"
+    "AI筆記",
+    "123",
+    "WEB URL NOTE",
+    "玟璇健康",
+    "cat"
   ],
   "notes": [
     {
@@ -40,22 +44,105 @@
       "id": "72a875ed-555d-4572-a79e-ec6e739cec9a",
       "original_filename": "toeic_phrases_audio_examples.html",
       "stored_filename": "72a875ed-555d-4572-a79e-ec6e739cec9a.html",
-      "category": "英文",
+      "category": "123",
       "upload_time": "2026-06-03T21:23:32.573936"
-    },
-    {
-      "id": "7c2b1daa-09d8-4332-bf9e-c224fc78e10b",
-      "original_filename": "TOEIC_200x10_Vocabulary.html",
-      "stored_filename": "7c2b1daa-09d8-4332-bf9e-c224fc78e10b.html",
-      "category": "未分類",
-      "upload_time": "2026-06-03T21:25:57.193184"
     },
     {
       "id": "7092d3bd-a8e2-4d65-a4ed-1923b5e22503",
       "original_filename": "TOEIC_Master_Edition.html",
       "stored_filename": "7092d3bd-a8e2-4d65-a4ed-1923b5e22503.html",
-      "category": "未分類",
+      "category": "英文",
       "upload_time": "2026-06-03T21:25:57.305835"
+    },
+    {
+      "id": "fd23655e-64ef-44ae-bcb0-e16a60baa911",
+      "original_filename": "VOICETUBE",
+      "stored_filename": "URL",
+      "category": "WEB URL NOTE",
+      "upload_time": "2026-06-03T21:45:24.428009",
+      "is_url": true,
+      "url": "https://tw.voicetube.com/"
+    },
+    {
+      "id": "729213f2-a2b6-46c7-96f8-a7afcc3250ba",
+      "original_filename": "devops_dashboard_flow.html",
+      "stored_filename": "729213f2-a2b6-46c7-96f8-a7afcc3250ba.html",
+      "category": "CS",
+      "upload_time": "2026-06-04T01:27:12.581676"
+    },
+    {
+      "id": "5d4679de-e5ac-4c2a-8c7d-683c49538756",
+      "original_filename": "preview_2.html",
+      "stored_filename": "5d4679de-e5ac-4c2a-8c7d-683c49538756.html",
+      "category": "未分類",
+      "upload_time": "2026-06-04T01:44:49.990652"
+    },
+    {
+      "id": "02233e13-a5f4-40c5-91d9-376dea95678c",
+      "original_filename": "preview.html",
+      "stored_filename": "02233e13-a5f4-40c5-91d9-376dea95678c.html",
+      "category": "玟璇健康",
+      "upload_time": "2026-06-04T15:01:11.194249"
+    },
+    {
+      "id": "4d10e895-36c9-4402-af86-ce816ba20297",
+      "original_filename": "GCP",
+      "stored_filename": "URL",
+      "category": "WEB URL NOTE",
+      "upload_time": "2026-06-04T22:47:05.503171",
+      "is_url": true,
+      "url": "https://dongdonggcp.kaik.io/learning/1"
+    },
+    {
+      "id": "c656319a-09f5-44df-89a2-1fbac8aad9dd",
+      "original_filename": "preview.html",
+      "stored_filename": "c656319a-09f5-44df-89a2-1fbac8aad9dd.html",
+      "category": "未分類",
+      "upload_time": "2026-06-05T14:02:58.950635"
+    },
+    {
+      "id": "9da03ad8-da4c-4c45-b070-e68cb906ebb0",
+      "original_filename": "preview_1.html",
+      "stored_filename": "9da03ad8-da4c-4c45-b070-e68cb906ebb0.html",
+      "category": "未分類",
+      "upload_time": "2026-06-05T14:03:34.140404"
+    },
+    {
+      "id": "b5fe48f8-ac7b-4669-bcef-26d183e3e7dd",
+      "original_filename": "9992222.html",
+      "stored_filename": "b5fe48f8-ac7b-4669-bcef-26d183e3e7dd.html",
+      "category": "CS",
+      "upload_time": "2026-06-05T14:24:40.201798"
+    },
+    {
+      "id": "ab892ca6-0ea6-4095-8933-9a07006f9949",
+      "original_filename": "12221.html",
+      "stored_filename": "ab892ca6-0ea6-4095-8933-9a07006f9949.html",
+      "category": "未分類",
+      "upload_time": "2026-06-05T14:40:22.128241"
+    },
+    {
+      "id": "6868b086-b840-4f04-bfb0-a5f5478dbb38",
+      "original_filename": "12222.html",
+      "stored_filename": "6868b086-b840-4f04-bfb0-a5f5478dbb38.html",
+      "category": "未分類",
+      "upload_time": "2026-06-05T14:40:35.091279"
+    },
+    {
+      "id": "3e1ccd7b-e0d2-4ce0-b8f3-9af1a053269b",
+      "original_filename": "99991111.html",
+      "stored_filename": "3e1ccd7b-e0d2-4ce0-b8f3-9af1a053269b.html",
+      "category": "未分類",
+      "upload_time": "2026-06-05T14:47:11.626853"
+    },
+    {
+      "id": "cd07013e-5977-440f-96af-3418784281fd",
+      "original_filename": "breed",
+      "stored_filename": "URL",
+      "category": "WEB URL NOTE",
+      "upload_time": "2026-06-06T18:37:45.884962",
+      "is_url": true,
+      "url": "https://feeding.ngrok.app/"
     }
   ]
 }

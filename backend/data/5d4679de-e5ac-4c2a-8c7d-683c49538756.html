@@ -1,0 +1,126 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>DevOps Dashboard 記憶圖鑑</title>
+<style>
+body{font-family:Arial;padding:20px;background:#f5f7fa}
+.card{background:white;padding:20px;margin:15px 0;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.1)}
+h1,h2{color:#1f4e79}
+svg{width:100%;height:auto}
+table{border-collapse:collapse;width:100%}
+td,th{border:1px solid #ccc;padding:8px}
+.good{background:#d4edda}
+.warn{background:#fff3cd}
+.bad{background:#f8d7da}
+</style>
+</head>
+<body>
+
+<h1>DevOps Dashboard 實戰記憶圖鑑</h1>
+
+<div class="card">
+<h2>① 整體故障判斷流程圖</h2>
+<svg viewBox="0 0 1200 300">
+<rect x="20" y="100" width="180" height="80" fill="#cfe2ff"/>
+<text x="55" y="145">使用者抱怨變慢</text>
+
+<rect x="260" y="100" width="180" height="80" fill="#ffe599"/>
+<text x="315" y="145">CPU</text>
+
+<rect x="500" y="100" width="180" height="80" fill="#ffe599"/>
+<text x="555" y="145">Memory</text>
+
+<rect x="740" y="100" width="180" height="80" fill="#ffe599"/>
+<text x="800" y="145">Disk IO</text>
+
+<rect x="980" y="100" width="180" height="80" fill="#ffe599"/>
+<text x="1040" y="145">Network</text>
+
+<line x1="200" y1="140" x2="260" y2="140" stroke="black"/>
+<line x1="440" y1="140" x2="500" y2="140" stroke="black"/>
+<line x1="680" y1="140" x2="740" y2="140" stroke="black"/>
+<line x1="920" y1="140" x2="980" y2="140" stroke="black"/>
+</svg>
+
+<p><b>記憶口訣：</b> CPU → Memory → Disk → Network</p>
+</div>
+
+<div class="card">
+<h2>② CPU 像餐廳廚師</h2>
+<table>
+<tr><th>現象</th><th>指標</th><th>建議值</th></tr>
+<tr class="good"><td>正常</td><td>CPU Usage</td><td>&lt; 60%</td></tr>
+<tr class="warn"><td>忙碌</td><td>CPU Usage</td><td>60~80%</td></tr>
+<tr class="bad"><td>塞車</td><td>CPU Usage</td><td>&gt; 80%</td></tr>
+<tr class="bad"><td>CPU搶不到</td><td>Load Average</td><td>大於 CPU Core</td></tr>
+</table>
+</div>
+
+<div class="card">
+<h2>③ Memory 像辦公桌</h2>
+<svg viewBox="0 0 1000 120">
+<rect x="50" y="30" width="700" height="50" fill="#93c47d"/>
+<rect x="750" y="30" width="150" height="50" fill="#f6b26b"/>
+<rect x="900" y="30" width="50" height="50" fill="#e06666"/>
+<text x="300" y="65">可用記憶體</text>
+<text x="780" y="65">Cache</text>
+<text x="905" y="65">Swap</text>
+</svg>
+
+<ul>
+<li>Memory > 85% 持續 10 分鐘告警</li>
+<li>Swap > 10% 開始調查</li>
+<li>OOM Killer 出現立即告警</li>
+</ul>
+</div>
+
+<div class="card">
+<h2>④ Disk IO 像高速公路</h2>
+<table>
+<tr><th>指標</th><th>意思</th><th>告警</th></tr>
+<tr><td>Disk Usage</td><td>硬碟容量</td><td>>80%</td></tr>
+<tr><td>IO Wait</td><td>CPU在等硬碟</td><td>>10%</td></tr>
+<tr><td>Read Latency</td><td>讀取延遲</td><td>>20ms</td></tr>
+<tr><td>Write Latency</td><td>寫入延遲</td><td>>20ms</td></tr>
+</table>
+</div>
+
+<div class="card">
+<h2>⑤ Network 像高速公路收費站</h2>
+<table>
+<tr><th>指標</th><th>觀察現象</th></tr>
+<tr><td>Bandwidth</td><td>流量是否爆滿</td></tr>
+<tr><td>Packet Loss</td><td>封包遺失</td></tr>
+<tr><td>Latency</td><td>延遲變高</td></tr>
+<tr><td>Connection Count</td><td>是否遭受攻擊</td></tr>
+</table>
+</div>
+
+<div class="card">
+<h2>⑥ Kubernetes 必看 Dashboard</h2>
+<table>
+<tr><th>層級</th><th>必看指標</th></tr>
+<tr><td>Node</td><td>CPU、Memory、Disk</td></tr>
+<tr><td>Pod</td><td>Restart Count</td></tr>
+<tr><td>Deployment</td><td>Available Replicas</td></tr>
+<tr><td>Ingress</td><td>5xx Error</td></tr>
+<tr><td>Service</td><td>Response Time</td></tr>
+</table>
+</div>
+
+<div class="card">
+<h2>⑦ SRE 黃金四指標 (Golden Signals)</h2>
+<table>
+<tr><th>指標</th><th>記憶方式</th></tr>
+<tr><td>Latency</td><td>慢不慢</td></tr>
+<tr><td>Traffic</td><td>多人不多人</td></tr>
+<tr><td>Error</td><td>有沒有壞</td></tr>
+<tr><td>Saturation</td><td>快不快爆掉</td></tr>
+</table>
+<p><b>口訣：</b> 慢、人、壞、爆</p>
+</div>
+
+</body>
+</html>
