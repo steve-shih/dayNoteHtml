@@ -3,6 +3,7 @@ import json
 import uuid
 import threading
 from datetime import datetime
+from dotenv import load_dotenv
 import google.generativeai as genai
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
@@ -11,6 +12,7 @@ from pymongo import MongoClient
 
 app = Flask(__name__)
 CORS(app)
+load_dotenv()
 
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB max limit
 ALLOWED_EXTENSIONS = {'txt', 'html', 'pdf', 'md', 'png', 'jpg', 'jpeg', 'csv'}
