@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GCP (Google Cloud Platform) 完整對照與決策指南</title>
+    <style>
+        :root {
+            --primary-color: #1a73e8;
+            --secondary-color: #ff6d00;
+            --dark-bg: #0f172a;
+            --light-bg: #f8fafc;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-main);
+            background-color: var(--light-bg);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            border-bottom: 4px solid var(--primary-color);
+            padding-bottom: 20px;
+        }
+
+        header h1 {
+            color: var(--dark-bg);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: var(--card-shadow);
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .section-card.openstack {
+            border-left-color: var(--secondary-color);
+        }
+
+        h2 {
+            color: var(--dark-bg);
+            font-size: 1.8rem;
+            margin-top: 0;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 1rem;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--dark-bg);
+            color: white;
+            padding: 14px 16px;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tr:nth-child(even) {
+            background-color: #f1f5f9;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .badge-gcp { background-color: #e8f0fe; color: var(--primary-color); }
+        .badge-os { background-color: #fff3e0; color: var(--secondary-color); }
+
+        .diagram-container {
+            text-align: center;
+            padding: 20px;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+
+        .interactive-panel {
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #1557b0;
+        }
+
+        .flow-node {
+            fill: #ffffff;
+            stroke: #475569;
+            stroke-width: 2;
+        }
+        
+        .flow-text {
+            font-size: 14px;
+            fill: #1e293b;
+            font-weight: 500;
+            text-anchor: middle;
+            dominant-baseline: middle;
+        }
+
+        .highlight-gcp { fill: #e8f0fe; stroke: var(--primary-color); stroke-width: 3; }
+        .highlight-os { fill: #fff3e0; stroke: var(--secondary-color); stroke-width: 3; }
+        .highlight-hybrid { fill: #f3e5f5; stroke: #9c27b0; stroke-width: 3; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>GCP 與 OpenStack 深度比對與架構導航指南</h1>
+        <p>公有雲代管服務 (Public Cloud) 與 私有雲自主建置 (Private Cloud) 的戰術與戰略選擇</p>
+    </header>
+
+    <!-- 1. 核心哲學對照 -->
+    <div class="grid-2">
+        <div class="section-card">
+            <h2><span class="badge badge-gcp">GCP</span> Google Cloud Platform</h2>
+            <p><strong>核心哲學：</strong>基礎設施即代碼與全託管服務（NoOps 理念）。</p>
+            <p>企業不需要關心實體機房、電力、冷卻與硬體故障汰換。所有的資源皆透過軟體定義，並具備全球級別的骨幹網路（Global Backbone Network）支援。適合追求快速產品迭代、高彈性擴展與人工智慧機器學習整合的現代化企業。</p>
+            <ul>
+                <li><strong>付費模式：</strong>營運支出 (Operational Expenditure, OPEX)，按秒或按時計費。</li>
+                <li><strong>核心優勢：</strong>數據分析 (BigQuery) 與 託管式容器服務 (Google Kubernetes Engine, GKE)。</li>
+            </ul>
+        </div>
+
+        <div class="section-card openstack">
+            <h2><span class="badge badge-os">OpenStack</span> 開源雲端作業系統</h2>
+            <p><strong>核心哲學：</strong>完全掌控、自主維護與消除供應商鎖定 (Vendor Lock-in)。</p>
+            <p>企業透過開源框架，在自有的實體伺服器（Bare Metal）上搭建一個類似公有雲體驗的基礎設施即服務 (Infrastructure as a Service, IaaS) 環境。適合對資料合規性（如金融、國防、醫療）有極高要求，或是具備大規模實體機房折舊需求的傳統大型企業。</p>
+            <ul>
+                <li><strong>付費模式：</strong>資本支出 (Capital Expenditure, CAPEX)，需前期投入硬體採購成本。</li>
+                <li><strong>核心優勢：</strong>高度客製化，完全掌控地端軟體定義網路 (SDN) 與 軟體定義儲存 (SDS)。</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 2. 服務元件對照表 -->
+    <div class="section-card" style="border-left-color: #475569;">
+        <h2>核心技術元件跨雲對照表表表 (Mapping Matrix)</h2>
+        <p>無論在公有雲或私有雲，雲端基礎設施的核心四大支柱（運算、網路、儲存、身分）邏輯皆是共通的：</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>雲端架構層級 (Layers)</th>
+                    <th>GCP 服務名稱 (全名與縮寫)</th>
+                    <th>OpenStack 專案代號 (英文原文)</th>
+                    <th>核心功能說明 (Functional Description)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>虛擬化運算 (Compute)</strong></td>
+                    <td>Google Compute Engine (GCE)</td>
+                    <td>Nova</td>
+                    <td>建立與管理按需配置的虛擬機器 (Virtual Machines, VM) 實例。</td>
+                </tr>
+                <tr>
+                    <td><strong>區塊儲存 (Block Storage)</strong></td>
+                    <td>Persistent Disk (PD)</td>
+                    <td>Cinder</td>
+                    <td>提供給虛擬機器掛載的高性能、持久化區塊層級儲存設備。</td>
+                </tr>
+                <tr>
+                    <td><strong>物件儲存 (Object Storage)</strong></td>
+                    <td>Google Cloud Storage (GCS)</td>
+                    <td>Swift</td>
+                    <td>儲存非結構化資料（如圖片、備份檔）的非階層式分散式儲存系統。</td>
+                </tr>
+                <tr>
+                    <td><strong>虛擬網路 (Networking)</strong></td>
+                    <td>Virtual Private Cloud (VPC)</td>
+                    <td>Neutron</td>
+                    <td>提供軟體定義網路 (SDN)，包含子網、路由、防火牆與負載均衡。</td>
+                </tr>
+                <tr>
+                    <td><strong>身分與存取管理 (IAM)</strong></td>
+                    <td>Identity and Access Management (IAM)</td>
+                    <td>Keystone</td>
+                    <td>提供集中式的身分驗證、使用者目錄與基於角色的權限控制 (RBAC)。</td>
+                </tr>
+                <tr>
+                    <td><strong>系統映像檔 (Image)</strong></td>
+                    <td>Compute Engine Images</td>
+                    <td>Glance</td>
+                    <td>管理與儲存虛擬機器開機所需的作業系統映像檔模板。</td>
+                </tr>
+                <tr>
+                    <td><strong>裸機管理 (Bare Metal)</strong></td>
+                    <td>Bare Metal Solution (BMS)</td>
+                    <td>Ironic</td>
+                    <td>直接在實體伺服器上部署作業系統，免除虛擬化層的效能損耗。</td>
+                </tr>
+                </tbody>
+        </table>
+    </div>
+
+    <!-- 3. 決策樹圖表 (SVG) -->
+    <div class="section-card" style="border-left-color: #0d9488;">
+        <h2>架構選型決策樹 (Cloud Architecture Decision Tree)</h2>
+        <p>透過以下結構化的決策流程，評估您的企業目前最適合走哪一條雲端路線：</p>
+        
+        <div class="diagram-container">
+            <svg width="1000" height="500" viewBox="0 0 1000 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- 箭頭定義 -->
+                <defs>
+                    <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+                    </marker>
+                </defs>
+
+                <!-- 根節點 -->
+                <rect x="420" y="20" width="160" height="60" rx="8" class="flow-node" style="fill: #f1f5f9; stroke: #1e293b;"/>
+                <text x="500" y="50" class="flow-text" style="font-weight: bold;">評估起點：雲端選型</text>
+
+                <!-- 連線: 根到法規限制 -->
+                <path d="M 500 80 L 500 130" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+
+                <!-- 決策節點 1: 法規與資料限制 -->
+                <polygon points="500,130 630,170 500,210 370,170" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+                <text x="500" y="165" class="flow-text" style="font-size: 12px;">法規是否有嚴格限制</text>
+                <text x="500" y="180" class="flow-text" style="font-size: 12px;">資料絕對不能出境？</text>
+
+                <!-- 分支：是 (走向地端/OpenStack) -->
+                <path d="M 370 170 L 220 170 L 220 240" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+                <text x="280" y="160" class="flow-text" style="fill: #b91c1c;">是 (Yes)</text>
+
+                <!-- 決策節點 2: 地端運維能力 -->
+                <polygon points="220,240 330,275 220,310 110,275" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+                <text x="220" y="270" class="flow-text" style="font-size: 12px;">團隊有強大機房維護</text>
+                <text x="220" y="285" class="flow-text" style="font-size: 12px;">與 OpenStack 專家嗎？</text>
+
+                <!-- 分支：否 (走向公有雲/GCP) -->
+                <path d="M 630 170 L 780 170 L 780 240" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+                <text x="710" y="160" class="flow-text" style="fill: #15803d;">否 (No)</text>
+
+                <!-- 決策節點 3: 財務與開發速度 -->
+                <polygon points="780,240 890,275 780,310 670,275" fill="#fffbeb" stroke="#d97706" stroke-width="2"/>
+                <text x="780" y="270" class="flow-text" style="font-size: 12px;">追求極速開發與整合</text>
+                <text x="780" y="285" class="flow-text" style="font-size: 12px;">機器學習/大數據服務？</text>
+
+                <!-- 決策 2 走向 OpenStack 結論 -->
+                <path d="M 220 310 L 220 380" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+                <text x="235" y="340" class="flow-text" style="fill: #15803d;">是</text>
+
+                <rect x="120" y="380" width="200" height="70" rx="8" class="flow-node highlight-os"/>
+                <text x="220" y="405" class="flow-text" style="font-weight: bold; fill: #ff6d00;">部署 OpenStack 私有雲</text>
+                <text x="220" y="425" class="flow-text" style="font-size: 12px; fill: #7c2d12;">全面掌控軟硬體與資料主權</text>
+
+                <!-- 決策 2 走向 混合雲 結論 (如果沒有足夠運維能力卻被法規限制) -->
+                <path d="M 330 275 L 500 275 L 500 380" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+                <text x="400" y="260" class="flow-text" style="fill: #b91c1c;">否 (尋求託管解決方案)</text>
+
+                <rect x="400" y="380" width="200" height="70" rx="8" class="flow-node highlight-hybrid"/>
+                <text x="500" y="405" class="flow-text" style="font-weight: bold; fill: #9c27b0;">採用混合雲 (Hybrid Cloud)</text>
+                <text x="500" y="425" class="flow-text" style="font-size: 12px; fill: #4a044e;">使用 GCP GKE Enterprise 聯邦管理</text>
+
+                <!-- 決策 3 走向 GCP 結論 -->
+                <path d="M 780 310 L 780 380" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+                <text x="795" y="340" class="flow-text" style="fill: #15803d;">是</text>
+
+                <rect x="680" y="380" width="200" height="70" rx="8" class="flow-node highlight-gcp"/>
+                <text x="780" y="405" class="flow-text" style="font-weight: bold; fill: #1a73e8;">全面擁抱 GCP 公有雲</text>
+                <text x="780" y="425" class="flow-text" style="font-size: 12px; fill: #1e3a8a;">釋放維運人力，專注核心業務開發</text>
+            </svg>
+        </div>
+    </div>
+
+    <!-- 4. 混合雲架構工作流程 -->
+    <div class="section-card" style="border-left-color: #9c27b0;">
+        <h2>現代企業實務：GCP + OpenStack 混合雲架構流程圖</h2>
+        <p>下方流程圖展示了典型的「現代地端與雲端協同運作模式」：地端 OpenStack 負責安全資料儲存，GCP 負責高併發流量彈性擴展與大數據運算。</p>
+        
+        <div class="diagram-container">
+            <svg width="1000" height="300" viewBox="0 0 1000 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- 背景方框群組 -->
+                <rect x="20" y="20" width="420" height="260" rx="12" fill="#fff3e0" stroke="#ff6d00" stroke-dasharray="5 5" stroke-width="2"/>
+                <text x="40" y="45" style="fill: #ff6d00; font-weight: bold; font-size: 14px;">企業地端機房 (OpenStack Private Cloud)</text>
+
+                <rect x="560" y="20" width="420" height="260" rx="12" fill="#e8f0fe" stroke="#1a73e8" stroke-dasharray="5 5" stroke-width="2"/>
+                <text x="580" y="45" style="fill: #1a73e8; font-weight: bold; font-size: 14px;">全球公有雲端 (Google Cloud Platform)</text>
+
+                <!-- 地端節點：核心資料庫 -->
+                <rect x="50" y="110" width="140" height="60" rx="6" fill="#ffffff" stroke="#475569" stroke-width="2"/>
+                <text x="120" y="140" class="flow-text">Nova / Cinder<br>核心機密資料庫</text>
+
+                <!-- 地端節點：地端 Kubernetes -->
+                <rect x="260" y="110" width="140" height="60" rx="6" fill="#ffffff" stroke="#475569" stroke-width="2"/>
+                <text x="330" y="140" class="flow-text">Local K8s 叢集<br>(機密資料處理)</text>
+
+                <!-- 連線：資料庫到地端K8s -->
+                <path d="M 190 140 L 260 140" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+                <!-- 跨雲通道 -->
+                <path d="M 400 140 L 600 140" stroke="#9c27b0" stroke-width="3" marker-end="url(#arrow)"/>
+                <text x="500" y="120" class="flow-text" style="fill: #9c27b0; font-weight: bold; font-size: 12px;">Cloud Interconnect / VPN</text>
+
+                <!-- 雲端節點：GKE -->
+                <rect x="600" y="110" width="140" height="60" rx="6" fill="#ffffff" stroke="#475569" stroke-width="2"/>
+                <text x="670" y="140" class="flow-text">Google Kubernetes<br>Engine (GKE)</text>
+
+                <!-- 雲端節點：BigQuery -->
+                <rect x="810" y="110" width="140" height="60" rx="6" fill="#ffffff" stroke="#475569" stroke-width="2"/>
+                <text x="880" y="140" class="flow-text">BigQuery<br>海量數據分析清理</text>
+
+                <!-- 連線：GKE 到 BigQuery -->
+                <path d="M 740 140 L 810 140" stroke="#475569" stroke-width="2" marker-end="url(#arrow)"/>
+
+                <!-- 聯邦管理控制鏈 -->
+                <path d="M 330 110 L 330 70 L 670 70 L 670 110" stroke="#9c27b0" stroke-width="2" stroke-dasharray="3 3" marker-end="url(#arrow)"/>
+                <text x="500" y="60" class="flow-text" style="fill: #7b1fa2; font-size: 11px;">GKE Enterprise (Anthos) 統一多雲控制面</text>
+            </svg>
+        </div>
+    </div>
+
+    <!-- 5. 商業落地與總體擁有成本分析 -->
+    <div class="section-card" style="border-left-color: #ea4335;">
+        <h2>總體擁有成本 (Total Cost of Ownership, TCO) 商業落地建議</h2>
+        <p>在評估此項架構投資時，企業決策階層應遵循以下三階段分析法：</p>
+        <ol>
+            <li>
+                <strong>第一階段：基礎架構容量核算 (Capacity Planning)</strong>
+                <p>若企業預期未來三年內，伺服器節點需求小於 50 台，強烈建議直接使用 <strong>GCP</strong>。因為 OpenStack 的初始高昂建置成本（包含機房電力改裝、高可用性控制節點的硬體開銷）在規模較小時無法被有效攤提。</p>
+            </li>
+            <li>
+                <strong>第二階段：運維工程人力成本彈性評估 (Human Capital Analysis)</strong>
+                <p>維護一個穩定的 OpenStack 叢集通常需要至少 3 類資深工程師：網路專才 (Neutron 專家)、儲存專才 (Ceph / Cinder 專家) 以及系統虛擬化專家。在人才市場上，這類團隊的年薪總額高昂。相較之下，使用 GCP 則可實作 NoOps，將維運成本轉化為直接的業務開發戰力。</p>
+            </li>
+            <li>
+                <strong>第三階段：法規合規與退場策略 (Compliance & Egress Strategy)</strong>
+                <p>對於受嚴格管制的民營金控、政府單位，全面的公有雲可能面臨稽核挑戰。此時落地技術方案為：採用 **OpenStack 作為基礎架構 (IaaS) 層**，其上部署標準的 Kubernetes 叢集，並透過 **GCP GKE Enterprise** 連線回雲端，達成完美的混合雲架構落地。</p>
+            </li>
+        </ol>
+    </div>
+</div>
+
+<script>
+    // #region STEP_01: 頁面載入與互動日誌初始化
+    // STEP_01.01: 設定互動元件的基礎控制邏輯
+    // 來源：內部系統維護事件觸發
+    // 用途：確保網頁元素與架構狀態正確綁定
+    document.addEventListener("DOMContentLoaded", function() {
+        console.log("GCP 與 OpenStack 互動導航指南已成功加載。");
+    });
+    // #endregion
+</script>
+
+</body>
+</html>

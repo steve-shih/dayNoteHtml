@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>登入 API：從瀏覽器到伺服器每一層資料長相動畫</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #11182d;
+      --panel2: #16213d;
+      --text: #e8eefc;
+      --muted: #9fb0d0;
+      --accent: #69a7ff;
+      --green: #4ee59c;
+      --yellow: #ffd166;
+      --red: #ff5c7c;
+      --orange: #ff9f43;
+      --border: rgba(255,255,255,.12);
+      --code: #07111f;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(105,167,255,.18), transparent 28%),
+        radial-gradient(circle at 90% 20%, rgba(78,229,156,.10), transparent 28%),
+        var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", Arial, sans-serif;
+    }
+
+    header {
+      padding: 24px 28px 12px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(9, 14, 29, .82);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+      letter-spacing: .5px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 1180px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 360px minmax(640px, 1fr);
+      gap: 18px;
+      padding: 18px;
+    }
+
+    .sidebar, .main-card, .detail-card {
+      background: rgba(17, 24, 45, .92);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    }
+
+    .sidebar {
+      padding: 16px;
+      height: calc(100vh - 132px);
+      position: sticky;
+      top: 112px;
+      overflow: auto;
+    }
+
+    .control-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background: var(--panel2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: .18s ease;
+      font-weight: 700;
+    }
+
+    button:hover { transform: translateY(-1px); border-color: rgba(105,167,255,.55); }
+    button.primary { background: linear-gradient(135deg, #2776ff, #6fa9ff); color: white; border: 0; }
+    button.active { outline: 2px solid var(--accent); }
+
+    .layer-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .layer-btn {
+      text-align: left;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 32px 1fr;
+      gap: 8px;
+      align-items: center;
+      padding: 10px;
+      background: rgba(255,255,255,.04);
+      border-radius: 14px;
+      border: 1px solid var(--border);
+    }
+
+    .layer-btn.active {
+      border-color: var(--accent);
+      background: rgba(105,167,255,.16);
+    }
+
+    .idx {
+      width: 28px;
+      height: 28px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 50%;
+      background: rgba(105,167,255,.18);
+      color: #bcd7ff;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .layer-title { font-weight: 800; }
+    .layer-sub { color: var(--muted); font-size: 12px; margin-top: 3px; }
+
+    .main {
+      display: grid;
+      gap: 18px;
+    }
+
+    .main-card {
+      padding: 18px;
+      min-height: 420px;
+    }
+
+    .top-grid {
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .network-stage {
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      overflow: hidden;
+    }
+
+    .devices {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .device {
+      min-height: 96px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(255,255,255,.04);
+      padding: 10px 8px;
+      text-align: center;
+      position: relative;
+      transition: .25s ease;
+    }
+
+    .device.active {
+      transform: translateY(-4px);
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(78,229,156,.12);
+      background: rgba(78,229,156,.10);
+    }
+
+    .device .icon { font-size: 30px; margin-bottom: 6px; }
+    .device .name { font-weight: 900; font-size: 13px; }
+    .device .hint { color: var(--muted); font-size: 11px; margin-top: 4px; }
+
+    .arrow-line {
+      height: 44px;
+      margin: 10px 0 20px;
+      border-radius: 22px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .packet {
+      width: 92px;
+      height: 30px;
+      background: linear-gradient(135deg, var(--yellow), #ff8f3c);
+      border-radius: 16px;
+      position: absolute;
+      top: 6px;
+      left: 8px;
+      display: grid;
+      place-items: center;
+      color: #2b1600;
+      font-size: 12px;
+      font-weight: 900;
+      box-shadow: 0 6px 16px rgba(0,0,0,.3);
+      transition: transform .45s ease;
+    }
+
+    .enc { color: var(--yellow); }
+    .password { color: var(--red); font-weight: 900; }
+    .safe { color: var(--green); font-weight: 900; }
+    .danger { color: var(--red); font-weight: 900; }
+
+    .step-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 12px;
+    }
+
+    .step-title h2 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .badge {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 10px;
+      color: #cfe0ff;
+      background: rgba(105,167,255,.12);
+      font-size: 12px;
+      white-space: nowrap;
+      font-weight: 800;
+    }
+
+    .explain {
+      color: var(--muted);
+      line-height: 1.75;
+      margin-bottom: 12px;
+    }
+
+    pre {
+      margin: 0;
+      background: var(--code);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      overflow: auto;
+      line-height: 1.55;
+      color: #d9e8ff;
+      font-size: 13px;
+      white-space: pre-wrap;
+    }
+
+    .code-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 14px 0 8px;
+      color: #c7d8f8;
+      font-weight: 900;
+    }
+
+    .detail-card {
+      padding: 18px;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .info-box {
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .info-box h3 {
+      margin: 0 0 10px;
+      font-size: 16px;
+    }
+
+    ul {
+      margin: 8px 0 0 20px;
+      padding: 0;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .mini-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+
+    .mini-table th, .mini-table td {
+      border: 1px solid var(--border);
+      padding: 8px;
+      vertical-align: top;
+    }
+
+    .mini-table th {
+      background: rgba(105,167,255,.13);
+      text-align: left;
+    }
+
+    .flow-note {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .pill {
+      background: rgba(255,255,255,.045);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .pill b { color: var(--text); }
+
+    @media (max-width: 1160px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; }
+      .top-grid, .detail-grid { grid-template-columns: 1fr; }
+      .devices { grid-template-columns: repeat(2, 1fr); }
+      .flow-note { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>登入 API 每一層資料長相：Browser → Switch → Router → Server</h1>
+  <div class="subtitle">
+    範例固定為登入 API：帳號 <b>steve</b>、密碼 <span class="password">123</span>、驗證碼 <b>AB12</b>。
+    每一層都完整展示，不用省略符號；密碼只要以明文存在，就用紅字標記。到 TLS 後外部只能看到加密位元組。
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="control-row">
+      <button class="primary" onclick="playAll()">▶ 自動播放</button>
+      <button onclick="prevLayer()">上一層</button>
+      <button onclick="nextLayer()">下一層</button>
+    </div>
+    <div class="control-row">
+      <button onclick="setMode('request')" id="mode-request" class="active">Request 去程</button>
+      <button onclick="setMode('response')" id="mode-response">Response 回程</button>
+    </div>
+    <div class="layer-list" id="layerList"></div>
+  </aside>
+
+  <main class="main">
+    <section class="main-card">
+      <div class="top-grid">
+        <div class="network-stage">
+          <div class="devices" id="devices"></div>
+          <div class="arrow-line">
+            <div class="packet" id="packet">LOGIN</div>
+          </div>
+          <div class="flow-note">
+            <div class="pill"><b>電腦內部：</b>Browser、DNS、TLS、TCP/IP、網卡</div>
+            <div class="pill"><b>區網：</b>Switch、ARP、MAC Frame</div>
+            <div class="pill"><b>路由：</b>Router、NAT、Firewall、ISP</div>
+            <div class="pill"><b>伺服器：</b>LB、WAF、Nginx、Node、Redis、MongoDB</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="step-title">
+            <h2 id="stepTitle"></h2>
+            <span class="badge" id="stepBadge"></span>
+          </div>
+          <div class="explain" id="stepExplain"></div>
+          <div class="code-title">此層資料完整長相</div>
+          <pre id="stepCode"></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="detail-card">
+      <div class="detail-grid">
+        <div class="info-box">
+          <h3>這一層用到的技術 / 輔助選項</h3>
+          <ul id="techList"></ul>
+        </div>
+        <div class="info-box">
+          <h3>安全重點與可觀察工具</h3>
+          <ul id="securityList"></ul>
+        </div>
+      </div>
+
+      <div class="code-title">完整封裝 / 拆解觀念</div>
+      <pre id="wrapCode"></pre>
+
+      <div class="code-title">此層常見問題</div>
+      <table class="mini-table">
+        <thead>
+          <tr><th>問題</th><th>原因</th><th>處理方向</th></tr>
+        </thead>
+        <tbody id="problemTable"></tbody>
+      </table>
+    </section>
+  </main>
+</div>
+
+<script>
+const passwordHtml = '<span class="password">123</span>';
+
+const devices = [
+  { key: 'computer', icon: '💻', name: 'Client 電腦', hint: 'Browser / OS / TCP/IP' },
+  { key: 'switch', icon: '🔀', name: 'Switch', hint: 'MAC / Frame' },
+  { key: 'router', icon: '📡', name: 'Router', hint: 'NAT / Routing' },
+  { key: 'internet', icon: '🌐', name: 'Internet / ISP', hint: '多跳路由' },
+  { key: 'lb', icon: '⚖️', name: 'Load Balancer', hint: '分流 / TLS' },
+  { key: 'gateway', icon: '🛡️', name: 'WAF / Nginx', hint: '防護 / 反代' },
+  { key: 'server', icon: '🖥️', name: 'App Server', hint: 'Node / Redis / DB' }
+];
+
+const requestLayers = [
+  {
+    title: '01. 使用者在瀏覽器輸入登入資料',
+    badge: 'Browser UI',
+    device: 'computer',
+    explain: '使用者在登入表單輸入帳號、密碼、驗證碼。這一刻密碼存在瀏覽器記憶體與表單欄位中，屬於明文資料。',
+    code: `登入表單欄位：
+userId   = "steve"
+password = "<span class="password">123</span>"
+captcha  = "AB12"
+
+畫面上的 input：
+&lt;input name="userId"   value="steve"&gt;
+&lt;input name="password" type="password" value="<span class="password">123</span>"&gt;
+&lt;input name="captcha"  value="AB12"&gt;`,
+    tech: ['HTML Form / Input', 'JavaScript event listener', 'Password input type', '前端欄位驗證', 'Chrome DevTools Elements / Console'],
+    security: ['type="password" 只是不顯示在畫面，不代表加密。', 'XSS 可能偷到表單值。', '不要把密碼寫進 URL query string。'],
+    wrap: `目前還沒有網路封包。
+
+資料狀態：
+Browser DOM / JS Memory
+{
+  userId: "steve",
+  password: "<span class="password">123</span>",
+  captcha: "AB12"
+}`,
+    problems: [
+      ['密碼在畫面看不到', 'type=password 只做遮蔽', '仍需 HTTPS、防 XSS、不要 console.log 密碼'],
+      ['驗證碼錯誤', '輸入與伺服器保存不一致', '重新取得驗證碼或檢查 session/captchaId']
+    ]
+  },
+  {
+    title: '02. JavaScript 組成登入 Payload',
+    badge: 'JS Object',
+    device: 'computer',
+    explain: '前端把表單欄位組成 JavaScript 物件，準備用 fetch 或 axios 傳給後端。',
+    code: `const loginPayload = {
+  userId: "steve",
+  password: "<span class="password">123</span>",
+  captcha: "AB12",
+  captchaId: "captcha-session-7788"
+};
+
+fetch("https://api.demo.com/api/login", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify(loginPayload)
+});`,
+    tech: ['fetch / axios', 'JSON.stringify', 'Content-Type', 'Promise / async await', '前端 DTO'],
+    security: ['不要把密碼存入 localStorage。', '不要 console.log 完整 loginPayload。', '前端驗證只能提升體驗，真正驗證必須在後端。'],
+    wrap: `資料仍是明文，但只存在瀏覽器與即將送出的 HTTP Body 裡。
+
+JS Object：
+{
+  userId: "steve",
+  password: "<span class="password">123</span>",
+  captcha: "AB12",
+  captchaId: "captcha-session-7788"
+}`,
+    problems: [
+      ['body 是空的', '忘記 JSON.stringify 或 Content-Type 錯誤', '確認 body 與 headers'],
+      ['CORS blocked', '後端未允許前端 Origin', '調整 CORS allowlist']
+    ]
+  },
+  {
+    title: '03. JSON 序列化後的 Body',
+    badge: 'JSON Body',
+    device: 'computer',
+    explain: 'JS Object 會被序列化成 JSON 字串。這是 HTTP Request Body 的實際內容。',
+    code: `{
+  "userId": "steve",
+  "password": "<span class="password">123</span>",
+  "captcha": "AB12",
+  "captchaId": "captcha-session-7788"
+}`,
+    tech: ['JSON', 'UTF-8 encoding', 'Body Parser', 'DTO validation', 'Schema validation'],
+    security: ['JSON 本身不加密。', '只要不是 HTTPS，中間人可看到 password。', '後端要限制 body size，避免大量 payload 攻擊。'],
+    wrap: `Application Data：
+JSON Body
+└── userId   : "steve"
+└── password : "<span class="password">123</span>"
+└── captcha  : "AB12"
+└── captchaId: "captcha-session-7788"`,
+    problems: [
+      ['400 Bad Request', 'JSON 格式錯誤', '檢查逗號、引號、Content-Type'],
+      ['欄位型別錯', 'password/captcha 可能不是 string', '用 Zod/Joi/class-validator 驗證']
+    ]
+  },
+  {
+    title: '04. HTTP Request 完整長相',
+    badge: 'HTTP Application Layer',
+    device: 'computer',
+    explain: 'HTTP 層會把 Method、Path、Headers、Body 組在一起。注意：HTTPS 加密前，HTTP header 與 body 都是可讀文字。',
+    code: `POST /api/login HTTP/1.1
+Host: api.demo.com
+Connection: keep-alive
+Content-Type: application/json; charset=utf-8
+Content-Length: 100
+Accept: application/json
+Origin: https://www.demo.com
+Referer: https://www.demo.com/login
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X) Chrome/148.0.0.0 Safari/537.36
+
+{
+  "userId": "steve",
+  "password": "<span class="password">123</span>",
+  "captcha": "AB12",
+  "captchaId": "captcha-session-7788"
+}`,
+    tech: ['HTTP/1.1 或 HTTP/2', 'RESTful API', 'Headers', 'Status Code', 'CORS preflight OPTIONS'],
+    security: ['HTTP 明文時密碼會被看見。', 'Authorization / Cookie 也在 HTTP header 內。', '正式登入 API 必須使用 HTTPS。'],
+    wrap: `HTTP Message =
+Start Line
++ Headers
++ Blank Line
++ Body
+
+此階段資料尚未被 TLS 加密：
+password = "<span class="password">123</span>"`,
+    problems: [
+      ['OPTIONS 先出現', 'CORS preflight', '後端需回 Access-Control-Allow-*'],
+      ['Content-Length 不符', '編碼或 body 被改', '讓 runtime 自動計算，不要手寫']
+    ]
+  },
+  {
+    title: '05. DNS：api.demo.com 轉成 IP',
+    badge: 'DNS',
+    device: 'computer',
+    explain: '瀏覽器或 OS 會查 DNS，把網域轉成伺服器或 Load Balancer 的 IP。DNS 查的是目的地，不會傳送密碼。',
+    code: `DNS Query：
+QNAME  = api.demo.com
+QTYPE  = A
+QCLASS = IN
+
+DNS Response：
+api.demo.com. 300 IN A 34.120.88.15
+
+本機 DNS Cache：
+api.demo.com -> 34.120.88.15`,
+    tech: ['DNS Resolver', 'A Record', 'AAAA Record', 'CNAME', 'DNS Cache', 'DoH / DoT'],
+    security: ['一般 DNS 可能被看到你查了哪個網域。', 'DNS 不包含 password。', '可用 DNS over HTTPS 降低 DNS 被監看。'],
+    wrap: `目的地解析：
+api.demo.com
+↓ DNS
+34.120.88.15
+
+登入資料沒有放在 DNS 封包內。`,
+    problems: [
+      ['找不到主機', 'DNS 沒設定或快取錯', '用 nslookup/dig 檢查'],
+      ['連到舊 IP', 'DNS cache 尚未更新', '降低 TTL 或清快取']
+    ]
+  },
+  {
+    title: '06. TLS Handshake 建立 HTTPS 安全通道',
+    badge: 'TLS 1.3',
+    device: 'computer',
+    explain: 'TLS 先建立加密通道，驗證憑證與交換 session key。真正的 HTTP 登入內容會在安全通道建立後才送出。',
+    code: `TLS ClientHello：
+Content Type: Handshake
+TLS Version : 1.3
+Server Name : api.demo.com
+
+Client Random:
+4f 9a 8c d1 e2 44 a1 b2
+93 18 2c 71 6f 3d 77 88
+21 a4 9b 10 5e 3c 80 41
+99 aa 01 2d 77 8f 64 2c
+
+Supported Cipher Suites:
+TLS_AES_128_GCM_SHA256
+TLS_AES_256_GCM_SHA384
+TLS_CHACHA20_POLY1305_SHA256
+
+Key Share:
+Group: X25519
+Client Public Key:
+b8 34 c9 9a 22 17 65 e4
+1d 88 9c a4 10 22 ab 73
+45 8d d0 2f 0a 94 c2 76
+19 42 6a 0d 73 81 f2 90`,
+    tech: ['TLS 1.3', 'Certificate', 'ECDHE', 'AES-GCM', 'SNI', 'ALPN'],
+    security: ['憑證驗證可防假伺服器。', 'ECDHE 提供前向安全性。', 'Handshake 階段沒有傳 password。'],
+    wrap: `TLS 建立安全通道：
+ClientHello
+↓
+ServerHello + Certificate
+↓
+Key Exchange
+↓
+產生 Session Key
+
+登入 HTTP Body 尚未送出。`,
+    problems: [
+      ['NET::ERR_CERT_DATE_INVALID', '憑證過期', '更新憑證'],
+      ['Handshake failed', 'TLS 版本或 cipher 不支援', '檢查 Nginx/LB TLS 設定']
+    ]
+  },
+  {
+    title: '07. TLS Application Data：HTTP 被加密後',
+    badge: 'Encrypted TLS Record',
+    device: 'computer',
+    explain: '完整 HTTP Request 被 TLS 加密。外部網路設備只看得到 TLS Record 的位元組，看不到 password=123。',
+    code: `TLS Record：
+Content Type: Application Data
+Version     : TLS 1.2 compatibility value 0x0303
+Length      : 0196 bytes
+
+Encrypted Application Data:
+17 03 03 00 c4
+8b 2f 9c 41 d0 e5 0a
+3a 91 f4 68 20 88 7c 9b
+d3 77 4e 18 a5 2c 7a 03
+42 19 ef a9 cc 1a 0b 6e
+90 4f 22 63 c1 83 8d 45
+12 58 0a 71 fa 61 e0 9d
+24 6c 0e b7 a1 93 77 53
+6a 81 4d 30 e2 76 b8 f2
+f9 13 45 08 ce 33 2a 10
+0c 6f 8a 2e 57 91 30 d8
+7b 61 94 2a 4e 8c 5f 09
+aa b2 4d 71 22 e3 4a 6c
+6e 1d 7c 90 52 73 ab 8d
+
+解密後的 HTTP 內容才包含：
+"password": "<span class="password">123</span>"`,
+    tech: ['TLS Record Protocol', 'AES-256-GCM', 'AEAD', 'Session Key', 'Integrity Check'],
+    security: ['Router、Switch、ISP 看不到 123。', '伺服器 TLS 終止點可以解密。', '如果伺服器被入侵，仍可能看到明文。'],
+    wrap: `封裝狀態：
+TLS Record
+└── Encrypted HTTP Request
+    └── 解密後才是：
+        POST /api/login
+        {
+          "password": "<span class="password">123</span>"
+        }`,
+    problems: [
+      ['Wireshark 看不到 HTTP', 'HTTPS 正常加密', '這是正常現象'],
+      ['仍被偷密碼', '可能是前端 XSS 或後端 log 洩漏', '檢查應用層安全']
+    ]
+  },
+  {
+    title: '08. TCP Segment：可靠傳輸與 Port',
+    badge: 'TCP',
+    device: 'computer',
+    explain: 'TLS 加密資料會被放進 TCP Payload。TCP 管順序、重傳、流量控制；Port 443 代表 HTTPS 服務。',
+    code: `TCP Segment：
+Source Port      : 52331
+Destination Port : 443
+Sequence Number  : 10001
+Acknowledgment   : 50001
+Header Length    : 32 bytes
+Flags            : PSH, ACK
+Window Size      : 65535
+Checksum         : 0x8a2f
+
+TCP Payload：
+TLS Application Data
+17 03 03 00 c4 8b 2f 9c 41 d0 e5 0a 3a 91 f4 68
+20 88 7c 9b d3 77 4e 18 a5 2c 7a 03 42 19 ef a9
+cc 1a 0b 6e 90 4f 22 63 c1 83 8d 45 12 58 0a 71`,
+    tech: ['TCP 3-way handshake', 'Sequence Number', 'ACK', 'Retransmission', 'Window Size', 'Port'],
+    security: ['TCP 不加密，只負責傳輸。', '真正保護密碼的是 TLS。', '防火牆可依 Port 443 放行或阻擋。'],
+    wrap: `TCP Segment
+├── TCP Header
+│   ├── Source Port: 52331
+│   └── Destination Port: 443
+└── Payload
+    └── TLS Encrypted Data`,
+    problems: [
+      ['Connection timeout', '路由、防火牆或服務未開', '檢查 port 443 與 security group'],
+      ['重傳很多', '網路品質差或丟包', '用 tcpdump/Wireshark 分析']
+    ]
+  },
+  {
+    title: '09. IP Packet：來源與目的地 IP',
+    badge: 'IP Layer',
+    device: 'computer',
+    explain: 'TCP Segment 會被包進 IP Packet。IP 決定封包要送到哪個目的地。',
+    code: `IPv4 Packet：
+Version        : 4
+Header Length  : 20 bytes
+Total Length   : 308 bytes
+Identification : 0x44a1
+Flags          : Don't Fragment
+TTL            : 64
+Protocol       : TCP (6)
+Header Checksum: 0x2f91
+
+Source IP      : 192.168.1.100
+Destination IP : 34.120.88.15
+
+IP Payload：
+TCP Segment
+├── Source Port      : 52331
+├── Destination Port : 443
+└── Payload          : TLS Encrypted Application Data`,
+    tech: ['IPv4 / IPv6', 'Routing', 'TTL', 'ICMP', 'Subnet', 'Default Gateway'],
+    security: ['IP 層看不到 HTTP body。', '來源內網 IP 出網後通常會被 NAT 改寫。', 'ACL / Firewall 常依 IP 規則控管。'],
+    wrap: `IP Packet
+├── IP Header
+│   ├── Source IP: 192.168.1.100
+│   └── Destination IP: 34.120.88.15
+└── Payload
+    └── TCP Segment`,
+    problems: [
+      ['No route to host', '沒有路由或 gateway 錯', '檢查 route table'],
+      ['Ping 不通但 HTTPS 可通', 'ICMP 被擋', '用 curl/nc 測 port']
+    ]
+  },
+  {
+    title: '10. Ethernet / Wi-Fi Frame：網卡送到 Switch',
+    badge: 'Data Link Layer',
+    device: 'switch',
+    explain: 'IP Packet 會被包成 Ethernet Frame。Switch 主要看 MAC Address，不看 HTTP 密碼內容。',
+    code: `Ethernet Frame：
+Destination MAC : aa:bb:cc:dd:ee:ff  // Default Gateway / Router MAC
+Source MAC      : 11:22:33:44:55:66  // Client Wi-Fi / Ethernet MAC
+EtherType       : 0x0800 IPv4
+Frame Check Seq : 0x91ab22cf
+
+Ethernet Payload：
+IPv4 Packet
+├── Source IP      : 192.168.1.100
+├── Destination IP : 34.120.88.15
+└── Payload        : TCP Segment + TLS Encrypted Data`,
+    tech: ['Ethernet', 'Wi-Fi 802.11', 'MAC Address', 'ARP', 'Switch MAC Table', 'VLAN'],
+    security: ['Switch 不需要解密 TLS。', '同網段攻擊者可能做 ARP Spoofing，但 HTTPS 仍保護內容。', '企業可用 VLAN 隔離。'],
+    wrap: `Frame
+├── L2 Header: MAC
+├── L3 Payload: IP Packet
+│   └── L4 Payload: TCP
+│       └── L7 Payload: TLS encrypted HTTP
+└── FCS`,
+    problems: [
+      ['ARP 找不到 Gateway MAC', 'Gateway 不通或網段錯', '檢查 ARP table / IP config'],
+      ['區網廣播過多', '網路迴圈或設備異常', '檢查 STP/VLAN']
+    ]
+  },
+  {
+    title: '11. Router / NAT：內網 IP 轉外網 IP',
+    badge: 'Router NAT',
+    device: 'router',
+    explain: '家用或公司 Router 會把內網來源 IP 改成公開 IP，並記錄連線對應表。',
+    code: `NAT 前：
+Source IP      : 192.168.1.100
+Source Port    : 52331
+Destination IP : 34.120.88.15
+Destination Port: 443
+
+NAT Table 新增：
+Inside Local  : 192.168.1.100:52331
+Inside Global : 220.130.88.33:62001
+Outside Global: 34.120.88.15:443
+
+NAT 後：
+Source IP      : 220.130.88.33
+Source Port    : 62001
+Destination IP : 34.120.88.15
+Destination Port: 443
+
+Payload 仍是：
+TLS Encrypted Application Data`,
+    tech: ['NAT', 'PAT', 'Default Gateway', 'Firewall Rule', 'Port Forwarding', 'Stateful Inspection'],
+    security: ['NAT 不等於資安防護，只是位址轉換。', 'Router 可看到目標 IP/Port，看不到 HTTPS 內的 password。', 'Stateful firewall 會記錄連線狀態。'],
+    wrap: `Router 只改外層 IP/Port：
+Before NAT: 192.168.1.100:52331
+After NAT : 220.130.88.33:62001
+
+裡面的 TLS encrypted payload 不變。`,
+    problems: [
+      ['回包回不來', 'NAT table 過期或防火牆阻擋', '檢查 state table'],
+      ['IP 被封鎖', '公開 IP 觸發限流或黑名單', '檢查 WAF/LB log']
+    ]
+  },
+  {
+    title: '12. Internet / ISP 多跳路由',
+    badge: 'Routing',
+    device: 'internet',
+    explain: '封包會經過多個路由器與 ISP Backbone。每一跳只根據目的 IP 決定下一跳。',
+    code: `Hop 1：
+Router IP : 220.130.88.1
+Action    : Forward to ISP Core
+
+Hop 2：
+Router IP : 10.90.12.1
+Action    : Forward to International / Cloud Edge
+
+Hop 3：
+Router IP : 203.66.10.9
+Action    : Forward to Google Cloud Edge
+
+Hop 4：
+Router IP : 34.120.88.15
+Action    : Arrive at Cloud Load Balancer
+
+封包主要欄位：
+Source IP      : 220.130.88.33
+Destination IP : 34.120.88.15
+Protocol       : TCP
+Destination Port: 443
+Payload        : TLS Encrypted Data`,
+    tech: ['BGP', 'ISP Backbone', 'Traceroute', 'Peering', 'Anycast', 'MTU'],
+    security: ['中間 ISP 可看到 IP/Port/流量大小，看不到 HTTPS 密碼內容。', '流量分析仍可能推測你連到哪個服務。', 'SNI 可能暴露網域，ECH 可改善但普及度視環境。'],
+    wrap: `每一跳只處理外層：
+IP Header
+└── Destination IP = 34.120.88.15
+
+內層：
+TCP + TLS encrypted HTTP 不被中間路由器解析。`,
+    problems: [
+      ['某地區連線慢', '路由繞路或 ISP 壅塞', '用 traceroute/mtr 檢查'],
+      ['封包過大失敗', 'MTU / Fragment 問題', '調整 MTU 或檢查 PMTUD']
+    ]
+  },
+  {
+    title: '13. Cloud Load Balancer：入口分流',
+    badge: 'L4 / L7 LB',
+    device: 'lb',
+    explain: '流量到雲端入口後，Load Balancer 依規則分配到後端。TLS 可能在 LB 終止，也可能穿透到 Nginx。',
+    code: `Incoming Connection：
+Client IP        : 220.130.88.33
+Client Port      : 62001
+LB IP            : 34.120.88.15
+LB Port          : 443
+Protocol         : HTTPS
+
+L7 Routing Rule：
+Host             : api.demo.com
+Path             : /api/login
+Backend Service  : login-api-backend
+Balancing Method : Least Connection
+
+Backend Candidates：
+10.10.1.11:3000 current_connections=18
+10.10.1.12:3000 current_connections=07
+10.10.1.13:3000 current_connections=12
+
+Selected Backend：
+10.10.1.12:3000`,
+    tech: ['Load Balancer', 'Health Check', 'Round Robin', 'Least Connection', 'IP Hash', 'SSL Termination'],
+    security: ['可在 LB 做 TLS Termination。', '可限制來源、套 Cloud Armor/WAF。', '需正確傳 X-Forwarded-For，保留真實 Client IP。'],
+    wrap: `LB 決策：
+HTTPS Request
+↓
+Host: api.demo.com
+Path: /api/login
+↓
+Backend: 10.10.1.12:3000`,
+    problems: [
+      ['502 Bad Gateway', '後端健康檢查失敗', '檢查 backend service / health check'],
+      ['Client IP 消失', '未傳 X-Forwarded-For', '調整 LB/Nginx proxy headers']
+    ]
+  },
+  {
+    title: '14. WAF：檢查攻擊特徵與限流',
+    badge: 'WAF / Security',
+    device: 'gateway',
+    explain: 'WAF 會檢查 SQL Injection、XSS、Bot、暴力登入、IP Reputation 等。正常登入資料應通過。',
+    code: `WAF Inspection：
+
+Request Summary:
+Method : POST
+Path   : /api/login
+Host   : api.demo.com
+IP     : 220.130.88.33
+
+Decrypted HTTP Body at WAF termination point:
+{
+  "userId": "steve",
+  "password": "<span class="password">123</span>",
+  "captcha": "AB12",
+  "captchaId": "captcha-session-7788"
+}
+
+Rules:
+SQL Injection Pattern : NOT_MATCHED
+XSS Pattern           : NOT_MATCHED
+Bot Score             : LOW_RISK
+Rate Limit            : 3 requests / 60 seconds
+Geo Block             : NOT_BLOCKED
+
+Decision:
+ALLOW`,
+    tech: ['WAF', 'Rate Limit', 'Bot Detection', 'IP Reputation', 'Geo Block', 'OWASP CRS'],
+    security: ['若 WAF 是 TLS 終止點，它能看到解密後的 password。', 'WAF log 不應記錄完整密碼。', '登入 API 應額外做帳號級限流。'],
+    wrap: `WAF 解析後：
+HTTP Request
+└── Body password = "<span class="password">123</span>"
+
+安全處理：
+Log 時應遮蔽：
+password = "[REDACTED]"`,
+    problems: [
+      ['正常登入被擋', 'WAF false positive', '調整 rule 或 allowlist'],
+      ['暴力破解沒擋住', '只做 IP 限流不夠', '加帳號級限流與 captcha']
+    ]
+  },
+  {
+    title: '15. Nginx Reverse Proxy',
+    badge: 'Nginx',
+    device: 'gateway',
+    explain: 'Nginx 接到請求後，可能做 SSL termination、反向代理、壓縮、限流，再把請求轉給 Node.js。',
+    code: `Nginx 收到的 HTTP Request：
+POST /api/login HTTP/1.1
+Host: api.demo.com
+X-Real-IP: 220.130.88.33
+X-Forwarded-For: 220.130.88.33
+X-Forwarded-Proto: https
+Content-Type: application/json; charset=utf-8
+
+{
+  "userId": "steve",
+  "password": "<span class="password">123</span>",
+  "captcha": "AB12",
+  "captchaId": "captcha-session-7788"
+}
+
+Nginx 設定：
+location /api/ {
+  limit_req zone=login_zone burst=10 nodelay;
+  proxy_pass http://node_login_api;
+  proxy_set_header Host $host;
+  proxy_set_header X-Real-IP $remote_addr;
+  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+  proxy_set_header X-Forwarded-Proto $scheme;
+}`,
+    tech: ['Reverse Proxy', 'Upstream', 'proxy_pass', 'limit_req', 'Access Log', 'Gzip/Brotli'],
+    security: ['Nginx access log 不應記錄 request body password。', '可限制 body size。', '可只允許內網連到 Node.js port。'],
+    wrap: `Nginx 行為：
+Client HTTPS Request
+↓
+Nginx
+↓ proxy_pass
+Node.js http://127.0.0.1:3000/api/login`,
+    problems: [
+      ['413 Payload Too Large', 'client_max_body_size 太小', '調整 Nginx body size'],
+      ['504 Gateway Timeout', 'Node.js 回應太慢', '檢查 upstream timeout 與 app log']
+    ]
+  },
+  {
+    title: '16. Node.js Express 解析 Request',
+    badge: 'Backend App',
+    device: 'server',
+    explain: 'Node.js 框架會把 HTTP body 解析成 request.body，接著進 middleware、controller、service。',
+    code: `Express 收到：
+request.method = "POST"
+request.path   = "/api/login"
+request.ip     = "220.130.88.33"
+
+request.headers = {
+  "host": "api.demo.com",
+  "x-real-ip": "220.130.88.33",
+  "x-forwarded-for": "220.130.88.33",
+  "x-forwarded-proto": "https",
+  "content-type": "application/json; charset=utf-8"
+}
+
+request.body = {
+  "userId": "steve",
+  "password": "<span class="password">123</span>",
+  "captcha": "AB12",
+  "captchaId": "captcha-session-7788"
+}`,
+    tech: ['Express / NestJS', 'Body Parser', 'Middleware', 'Controller', 'DTO', 'Validation Pipe'],
+    security: ['不要把 request.body 完整寫進 log。', '密碼驗證後不要繼續保存明文。', '後端必須重新驗證 captcha 與欄位格式。'],
+    wrap: `後端拆解：
+HTTP Request
+↓ body parser
+request.body
+↓ middleware chain
+controller.login()
+↓ service.login()`,
+    problems: [
+      ['request.body undefined', '缺 body parser 或 Content-Type 錯', '啟用 express.json()'],
+      ['IP 都是 Nginx IP', 'trust proxy 未設定', '設定 app.set("trust proxy", true)']
+    ]
+  },
+  {
+    title: '17. Middleware：CORS / Validation / Rate Limit',
+    badge: 'Middleware',
+    device: 'server',
+    explain: '正式登入 API 通常會先跑驗證流程：來源、欄位、頻率、captcha、帳號狀態。',
+    code: `Middleware Pipeline：
+
+01_CORS:
+Origin = https://www.demo.com
+Allow  = true
+
+02_BODY_SIZE:
+Content-Length = 100
+Limit          = 10240
+Result         = PASS
+
+03_VALIDATION:
+userId   : "steve" -> string, length 5 -> PASS
+password : "<span class="password">123</span>"   -> string, length 3 -> PASS
+captcha  : "AB12"  -> string, length 4 -> PASS
+captchaId: "captcha-session-7788" -> string -> PASS
+
+04_RATE_LIMIT:
+Key    = login:ip:220.130.88.33
+Count  = 3
+Limit  = 10 / minute
+Result = PASS`,
+    tech: ['CORS', 'class-validator / Zod / Joi', 'Rate Limit', 'Helmet', 'CSRF 防護'],
+    security: ['登入要同時做 IP + 帳號限流。', '錯誤訊息不要提示帳號存在與否。', 'validation 要在商業邏輯前執行。'],
+    wrap: `Request 進 Controller 前：
+CORS
+↓
+Body size limit
+↓
+Validation
+↓
+Rate limit
+↓
+Captcha check`,
+    problems: [
+      ['429 Too Many Requests', '觸發限流', '調整 burst/limit 或檢查攻擊'],
+      ['403 CORS', 'Origin 不允許', '確認前端網域白名單']
+    ]
+  },
+  {
+    title: '18. Redis 驗證碼比對',
+    badge: 'Redis',
+    device: 'server',
+    explain: '伺服器用 captchaId 到 Redis 找出正確驗證碼，再與使用者輸入比對。',
+    code: `Redis Query：
+GET captcha:captcha-session-7788
+
+Redis Value：
+{
+  "captcha": "AB12",
+  "expiresAt": "2026-06-09T04:10:00+08:00",
+  "used": false
+}
+
+User Input：
+captcha = "AB12"
+
+Compare：
+inputCaptcha = "AB12"
+redisCaptcha = "AB12"
+result       = PASS
+
+After PASS：
+DEL captcha:captcha-session-7788`,
+    tech: ['Redis GET/DEL', 'TTL', 'Session Store', 'One-time Captcha', 'Atomic operation'],
+    security: ['驗證碼應有 TTL。', '驗證成功後應刪除，避免重複使用。', '錯誤多次應觸發更嚴格限流。'],
+    wrap: `Captcha flow：
+request.body.captchaId
+↓
+Redis GET
+↓
+Compare captcha
+↓
+PASS
+↓
+Delete captcha key`,
+    problems: [
+      ['驗證碼明明對卻失敗', 'Redis key 過期或 captchaId 不一致', '檢查 session/captchaId 綁定'],
+      ['驗證碼可重複使用', '成功後未刪除', '驗證成功立即 DEL']
+    ]
+  },
+  {
+    title: '19. MongoDB 查使用者',
+    badge: 'Database Query',
+    device: 'server',
+    explain: '驗證碼通過後，後端查使用者資料。注意：資料庫不應存明文密碼，只存 bcrypt hash。',
+    code: `MongoDB Query：
+db.users.findOne({
+  userId: "steve",
+  deletedAt: null
+})
+
+MongoDB Result：
+{
+  "_id": "10001",
+  "userId": "steve",
+  "displayName": "Steve",
+  "role": "admin",
+  "status": "active",
+  "passwordHash": "$2b$10$Q9uKJc8QzRAh7bLE7I3L1eO7RMkS6mKxN09b8nBf2r7H5x6Vj1sT2",
+  "failedLoginCount": 0,
+  "lastLoginAt": "2026-06-08T21:00:00+08:00"
+}`,
+    tech: ['MongoDB', 'Index', 'Repository Pattern', 'Connection Pool', 'Mongoose / MongoDB Driver'],
+    security: ['資料庫只存 passwordHash，不存 password=123。', 'userId 建議建立 index。', '查不到帳號時也回通用錯誤。'],
+    wrap: `Service:
+userRepository.findByUserId("steve")
+↓
+MongoDB
+↓
+User Document + passwordHash`,
+    problems: [
+      ['查詢很慢', 'userId 沒 index', '建立 unique index'],
+      ['密碼外洩風險高', '存了明文密碼', '改用 bcrypt/argon2 hash']
+    ]
+  },
+  {
+    title: '20. Bcrypt 比對密碼',
+    badge: 'Password Verify',
+    device: 'server',
+    explain: '後端不會把 123 直接拿去資料庫查，而是用 bcrypt.compare 比對明文輸入與資料庫 hash。',
+    code: `Input Password：
+password = "<span class="password">123</span>"
+
+Database Hash：
+passwordHash = "$2b$10$Q9uKJc8QzRAh7bLE7I3L1eO7RMkS6mKxN09b8nBf2r7H5x6Vj1sT2"
+
+Node.js Verify：
+const isPasswordValid = await bcrypt.compare(
+  "<span class="password">123</span>",
+  "$2b$10$Q9uKJc8QzRAh7bLE7I3L1eO7RMkS6mKxN09b8nBf2r7H5x6Vj1sT2"
+);
+
+Result：
+isPasswordValid = true`,
+    tech: ['bcrypt', 'Salt', 'Cost Factor', 'Argon2', 'Constant-time compare'],
+    security: ['bcrypt hash 每次 salt 不同，不應自己做簡單 SHA256。', '密碼比對完就不要保留明文。', '登入失敗要增加 failedLoginCount。'],
+    wrap: `Password verify:
+明文輸入 "<span class="password">123</span>"
++
+資料庫 hash
+↓
+bcrypt.compare()
+↓
+true / false`,
+    problems: [
+      ['同樣密碼 hash 每次不同', 'bcrypt salt 正常行為', '用 compare，不是直接比字串'],
+      ['CPU 過高', 'cost factor 太高或暴力登入', '限流 + 合理 cost']
+    ]
+  },
+  {
+    title: '21. 產生 JWT / Session',
+    badge: 'Auth Token',
+    device: 'server',
+    explain: '登入成功後，後端產生 JWT 或 Session。回傳內容不應包含 password。',
+    code: `JWT Header：
+{
+  "alg": "HS256",
+  "typ": "JWT"
+}
+
+JWT Payload：
+{
+  "sub": "10001",
+  "userId": "steve",
+  "role": "admin",
+  "iat": 1780977600,
+  "exp": 1780981200
+}
+
+JWT Signature Input：
+base64url(header) + "." + base64url(payload)
+
+Signature：
+HMACSHA256(
+  base64url(header) + "." + base64url(payload),
+  SERVER_SECRET
+)
+
+JWT Token：
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
+eyJzdWIiOiIxMDAwMSIsInVzZXJJZCI6InN0ZXZlIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzgwOTc3NjAwLCJleHAiOjE3ODA5ODEyMDB9.
+L1t4OU9bF2zYzSNyw9lH8zKCYv1ZLQ6K0y9QvVv8pX4`,
+    tech: ['JWT', 'Session Cookie', 'Refresh Token', 'HttpOnly Cookie', 'SameSite', 'CSRF'],
+    security: ['JWT payload 只是 Base64URL，不是加密，不要放密碼。', '敏感系統建議使用 HttpOnly Secure Cookie。', 'Token 要有過期時間與撤銷策略。'],
+    wrap: `Login success:
+User verified
+↓
+Generate JWT / Session
+↓
+Response to browser`,
+    problems: [
+      ['JWT 被前端讀取後外洩', '存在 localStorage 遇 XSS', '改用 HttpOnly Cookie'],
+      ['Token 永不過期', '缺 exp', '設定短效 access token + refresh token']
+    ]
+  }
+];
+
+const responseLayers = [
+  {
+    title: '22. HTTP Response：登入成功',
+    badge: 'HTTP Response',
+    device: 'server',
+    explain: '後端回傳登入成功結果。注意：Response 不應回傳 password，也不應回傳 passwordHash。',
+    code: `HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Cache-Control: no-store
+Set-Cookie: access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMDAwMSIsInVzZXJJZCI6InN0ZXZlIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzgwOTc3NjAwLCJleHAiOjE3ODA5ODEyMDB9.L1t4OU9bF2zYzSNyw9lH8zKCYv1ZLQ6K0y9QvVv8pX4; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=3600
+
+{
+  "success": true,
+  "user": {
+    "id": "10001",
+    "userId": "steve",
+    "displayName": "Steve",
+    "role": "admin"
+  }
+}`,
+    tech: ['HTTP Status Code', 'Set-Cookie', 'Cache-Control', 'JSON Response', 'Secure Cookie'],
+    security: ['登入回應禁止快取。', 'Cookie 建議 HttpOnly + Secure + SameSite。', '不可回傳 passwordHash。'],
+    wrap: `Response Body:
+{
+  success: true,
+  user: {...}
+}
+
+沒有 password。`,
+    problems: [
+      ['Cookie 沒存', 'SameSite/Secure/Domain 設定錯', '檢查瀏覽器 Application Cookie'],
+      ['前端拿不到 Set-Cookie', 'CORS credentials 未設定', '前後端都要允許 credentials']
+    ]
+  },
+  {
+    title: '23. Response 經 TLS 加密回傳',
+    badge: 'Encrypted Response',
+    device: 'gateway',
+    explain: '伺服器回傳的 HTTP Response 也會被 TLS 加密。中間網路看不到 JSON user 與 token 內容。',
+    code: `TLS Record：
+Content Type: Application Data
+Version     : 0x0303
+Length      : 0268 bytes
+
+Encrypted Application Data:
+17 03 03 01 0c
+91 2a 0e c8 77 51 19 04
+a2 e1 8c 39 fd 24 7a 65
+18 98 0b 12 49 0c 93 77
+6f 24 31 a0 cd 55 8d 29
+e4 01 3a c9 72 2d f0 0e
+51 a8 c3 6a 41 7c 90 b8
+3e 84 9d 6f 29 c1 5a 33
+d0 12 aa 76 53 44 2c 99
+7f 04 23 e2 5a 0d 81 6b
+
+解密後才是：
+HTTP/1.1 200 OK
+Set-Cookie: access_token=...
+{
+  "success": true
+}`,
+    tech: ['TLS Record', 'AES-GCM', 'Integrity Protection', 'HTTPS'],
+    security: ['中間設備看不到 token。', '終端瀏覽器可解密並保存 Cookie。', '若使用代理解密設備，該設備可看到內容。'],
+    wrap: `Server Response
+↓ TLS Encrypt
+Encrypted TLS Record
+↓ Internet
+Browser decrypts`,
+    problems: [
+      ['瀏覽器顯示 mixed content', 'HTTPS 頁面呼叫 HTTP API', 'API 全部改 HTTPS'],
+      ['Response 被快取', 'Cache-Control 不當', '登入 API 用 no-store']
+    ]
+  },
+  {
+    title: '24. 回到瀏覽器：保存登入狀態',
+    badge: 'Browser Receives',
+    device: 'computer',
+    explain: '瀏覽器解密 TLS 後取得 HTTP Response，依 Set-Cookie 或前端程式保存登入狀態。',
+    code: `Browser 解密後得到：
+
+HTTP/1.1 200 OK
+Set-Cookie: access_token=JWT_TOKEN; HttpOnly; Secure; SameSite=Lax
+
+Response JSON：
+{
+  "success": true,
+  "user": {
+    "id": "10001",
+    "userId": "steve",
+    "displayName": "Steve",
+    "role": "admin"
+  }
+}
+
+後續 API：
+GET /api/profile HTTP/1.1
+Host: api.demo.com
+Cookie: access_token=JWT_TOKEN`,
+    tech: ['Cookie Store', 'HttpOnly Cookie', 'DevTools Network', 'Application Tab', 'SPA Router'],
+    security: ['HttpOnly Cookie 無法被 JavaScript 讀取，可降低 XSS 竊取 token 風險。', '後續 API 會自動帶 Cookie。', '登出時要清 Cookie / revoke session。'],
+    wrap: `Browser:
+TLS decrypt
+↓
+HTTP response parsed
+↓
+Cookie saved
+↓
+UI shows login success`,
+    problems: [
+      ['登入成功但刷新失效', 'Cookie domain/path 或 token 過期', '檢查 Cookie 與 refresh 流程'],
+      ['JS 讀不到 token', 'HttpOnly 正常保護', '改由 /me API 確認登入狀態']
+    ]
+  }
+];
+
+let mode = 'request';
+let currentIndex = 0;
+let timer = null;
+
+function escapeButKeepHtml(value) {
+  return value;
+}
+
+function renderDevices(activeKey) {
+  const container = document.getElementById('devices');
+  container.innerHTML = devices.map(device => `
+    <div class="device ${device.key === activeKey ? 'active' : ''}">
+      <div class="icon">${device.icon}</div>
+      <div class="name">${device.name}</div>
+      <div class="hint">${device.hint}</div>
+    </div>
+  `).join('');
+}
+
+function layerData() {
+  return mode === 'request' ? requestLayers : responseLayers;
+}
+
+function renderLayerList() {
+  const list = document.getElementById('layerList');
+  list.innerHTML = layerData().map((layer, index) => `
+    <button class="layer-btn ${index === currentIndex ? 'active' : ''}" onclick="goLayer(${index})">
+      <span class="idx">${String(index + 1).padStart(2, '0')}</span>
+      <span>
+        <span class="layer-title">${layer.title}</span>
+        <div class="layer-sub">${layer.badge}</div>
+      </span>
+    </button>
+  `).join('');
+}
+
+function renderLayer() {
+  const layer = layerData()[currentIndex];
+  renderLayerList();
+  renderDevices(layer.device);
+
+  document.getElementById('stepTitle').innerHTML = layer.title;
+  document.getElementById('stepBadge').innerHTML = layer.badge;
+  document.getElementById('stepExplain').innerHTML = layer.explain;
+  document.getElementById('stepCode').innerHTML = escapeButKeepHtml(layer.code);
+  document.getElementById('wrapCode').innerHTML = escapeButKeepHtml(layer.wrap);
+
+  document.getElementById('techList').innerHTML = layer.tech.map(item => `<li>${item}</li>`).join('');
+  document.getElementById('securityList').innerHTML = layer.security.map(item => `<li>${item}</li>`).join('');
+  document.getElementById('problemTable').innerHTML = layer.problems.map(row => `
+    <tr>
+      <td>${row[0]}</td>
+      <td>${row[1]}</td>
+      <td>${row[2]}</td>
+    </tr>
+  `).join('');
+
+  const total = layerData().length - 1;
+  const percent = total === 0 ? 0 : currentIndex / total;
+  const maxMove = document.querySelector('.arrow-line').clientWidth - 108;
+  document.getElementById('packet').style.transform = `translateX(${Math.max(0, maxMove * percent)}px)`;
+  document.getElementById('packet').textContent = mode === 'request' ? 'LOGIN →' : '← TOKEN';
+}
+
+function goLayer(index) {
+  currentIndex = index;
+  renderLayer();
+}
+
+function nextLayer() {
+  currentIndex = (currentIndex + 1) % layerData().length;
+  renderLayer();
+}
+
+function prevLayer() {
+  currentIndex = (currentIndex - 1 + layerData().length) % layerData().length;
+  renderLayer();
+}
+
+function setMode(nextMode) {
+  mode = nextMode;
+  currentIndex = 0;
+  document.getElementById('mode-request').classList.toggle('active', mode === 'request');
+  document.getElementById('mode-response').classList.toggle('active', mode === 'response');
+  renderLayer();
+}
+
+function playAll() {
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
+    return;
+  }
+  timer = setInterval(() => {
+    if (currentIndex === layerData().length - 1) {
+      clearInterval(timer);
+      timer = null;
+      return;
+    }
+    nextLayer();
+  }, 1400);
+}
+
+renderLayer();
+window.addEventListener('resize', renderLayer);
+</script>
+</body>
+</html>

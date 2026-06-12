@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>小中大公司架構流量模擬器</title>
+<style>
+  :root {
+    --bg: #0b1020;
+    --panel: #121a33;
+    --panel2: #182242;
+    --border: #33446f;
+    --text: #e9eefc;
+    --muted: #9fb0d8;
+    --request: #60a5fa;
+    --response: #34d399;
+    --warn: #f59e0b;
+    --danger: #fb7185;
+    --node: #1d2a4f;
+    --node2: #24335f;
+    --active: #facc15;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: radial-gradient(circle at top, #172554 0%, var(--bg) 52%);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", Arial, sans-serif;
+  }
+
+  header {
+    padding: 22px 28px 10px;
+  }
+
+  h1 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    letter-spacing: .5px;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 18px;
+    padding: 16px 24px 24px;
+  }
+
+  .controls, .canvas-card, .log-card {
+    background: rgba(18, 26, 51, .88);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    box-shadow: 0 18px 40px rgba(0,0,0,.28);
+  }
+
+  .controls {
+    padding: 18px;
+    align-self: start;
+    position: sticky;
+    top: 12px;
+  }
+
+  .section-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 12px;
+    color: #dbeafe;
+  }
+
+  label {
+    display: block;
+    margin-top: 14px;
+    margin-bottom: 7px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  select, input, button {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #0f172f;
+    color: var(--text);
+    padding: 11px 12px;
+    font-size: 14px;
+    outline: none;
+  }
+
+  input[type="number"] { appearance: textfield; }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  button {
+    margin-top: 14px;
+    cursor: pointer;
+    font-weight: 700;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    border: none;
+    transition: transform .15s ease, filter .15s ease;
+  }
+  button:hover { transform: translateY(-1px); filter: brightness(1.08); }
+  button.secondary { background: #26365f; }
+
+  .hint {
+    margin-top: 14px;
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(96,165,250,.09);
+    border: 1px solid rgba(96,165,250,.22);
+    color: #c7d2fe;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .stats {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .stat {
+    padding: 10px;
+    background: #0e1730;
+    border-radius: 12px;
+    border: 1px solid #26365f;
+  }
+  .stat .num { font-size: 22px; font-weight: 800; color: #bfdbfe; }
+  .stat .txt { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+  .canvas-card { padding: 12px; min-height: 720px; }
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 8px 12px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .legend { display: flex; gap: 14px; align-items: center; }
+  .dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+  .req { background: var(--request); }
+  .res { background: var(--response); }
+  .bal { background: var(--active); }
+
+  svg {
+    width: 100%;
+    height: 670px;
+    background: linear-gradient(180deg, rgba(15,23,47,.8), rgba(8,13,28,.8));
+    border: 1px solid #26365f;
+    border-radius: 14px;
+  }
+
+  .box {
+    fill: rgba(29, 42, 79, .78);
+    stroke: #4a5f97;
+    stroke-width: 1.5;
+    rx: 16;
+  }
+  .box.vm { fill: rgba(20, 31, 61, .88); stroke: #64748b; stroke-dasharray: 5 4; }
+  .box.project { fill: rgba(15, 23, 42, .45); stroke: #475569; stroke-width: 2; }
+  .box.k8s { fill: rgba(30, 41, 89, .6); stroke: #818cf8; }
+  .box.active-node { stroke: var(--active); stroke-width: 3; filter: drop-shadow(0 0 8px rgba(250,204,21,.6)); }
+
+  .node-label { fill: #f8fafc; font-size: 14px; font-weight: 700; pointer-events: none; }
+  .node-sub { fill: #aab9dc; font-size: 11px; pointer-events: none; }
+  .path { stroke: rgba(148,163,184,.42); stroke-width: 2; fill: none; }
+  .path-hot { stroke: rgba(250,204,21,.75); stroke-width: 3; fill: none; stroke-dasharray: 8 6; }
+
+  .packet {
+    filter: drop-shadow(0 0 8px rgba(96,165,250,.9));
+  }
+  .packet.response {
+    filter: drop-shadow(0 0 8px rgba(52,211,153,.9));
+  }
+
+  .log-card { padding: 14px; margin-top: 16px; }
+  .log {
+    height: 170px;
+    overflow: auto;
+    background: #090e1e;
+    border: 1px solid #26365f;
+    border-radius: 12px;
+    padding: 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #cbd5e1;
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border: 1px solid #33446f;
+    background: rgba(15,23,47,.85);
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 12px;
+    color: #cbd5e1;
+  }
+
+  @media (max-width: 980px) {
+    .layout { grid-template-columns: 1fr; }
+    .controls { position: static; }
+    svg { height: 650px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>小／中／大公司架構流量模擬器</h1>
+  <div class="subtitle">
+    可切換架構、設定流量筆數、選擇在哪一層做 Load Balance，並用藍色表示 Request、綠色表示 Response。
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="controls">
+    <div class="section-title">模擬設定</div>
+
+    <label>公司架構規模</label>
+    <select id="architectureSelect">
+      <option value="small-single">小公司：單台 VM 全包</option>
+      <option value="small-nginx">小公司進階：獨立 Nginx VM</option>
+      <option value="medium-vm">中公司：GCP LB + 多台 App VM</option>
+      <option value="medium-nginx">中公司過渡：GCP LB + 多台 Nginx VM</option>
+      <option value="large-k8s">大公司：GCP LB + GKE / K8s</option>
+    </select>
+
+    <label>流量筆數</label>
+    <input id="trafficCount" type="number" min="1" max="200" value="18" />
+
+    <div class="row">
+      <div>
+        <label>平衡位置</label>
+        <select id="balanceLayer"></select>
+      </div>
+      <div>
+        <label>平衡方式</label>
+        <select id="balanceAlgorithm">
+          <option value="random">Random 隨機</option>
+          <option value="round-robin">Round Robin 輪詢</option>
+          <option value="least-conn">Least Connections 最少連線</option>
+          <option value="ip-hash">IP Hash 固定來源</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <button id="runButton">開始模擬</button>
+      <button id="resetButton" class="secondary">重設</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="num" id="requestStat">0</div>
+        <div class="txt">Request 已送出</div>
+      </div>
+      <div class="stat">
+        <div class="num" id="responseStat">0</div>
+        <div class="txt">Response 已返回</div>
+      </div>
+    </div>
+
+    <div class="hint" id="architectureHint"></div>
+  </aside>
+
+  <main>
+    <section class="canvas-card">
+      <div class="topbar">
+        <div id="diagramTitle">架構圖</div>
+        <div class="legend">
+          <span><span class="dot req"></span>Request</span>
+          <span><span class="dot res"></span>Response</span>
+          <span><span class="dot bal"></span>目前平衡層</span>
+        </div>
+      </div>
+      <svg id="diagram" viewBox="0 0 1180 670" preserveAspectRatio="xMidYMid meet"></svg>
+    </section>
+
+    <section class="log-card">
+      <div class="topbar" style="padding:0 2px 10px;">
+        <div>流量紀錄</div>
+        <div class="pill" id="distributionPill">尚未模擬</div>
+      </div>
+      <div class="log" id="logBox"></div>
+    </section>
+  </main>
+</div>
+
+<script>
+const svg = document.getElementById('diagram');
+const architectureSelect = document.getElementById('architectureSelect');
+const balanceLayer = document.getElementById('balanceLayer');
+const balanceAlgorithm = document.getElementById('balanceAlgorithm');
+const trafficCount = document.getElementById('trafficCount');
+const runButton = document.getElementById('runButton');
+const resetButton = document.getElementById('resetButton');
+const logBox = document.getElementById('logBox');
+const requestStat = document.getElementById('requestStat');
+const responseStat = document.getElementById('responseStat');
+const architectureHint = document.getElementById('architectureHint');
+const diagramTitle = document.getElementById('diagramTitle');
+const distributionPill = document.getElementById('distributionPill');
+
+const NS = 'http://www.w3.org/2000/svg';
+let currentArchitecture = null;
+let packets = [];
+let requestDone = 0;
+let responseDone = 0;
+let roundRobinIndex = 0;
+let nodeLoads = {};
+let animationTimers = [];
+
+const architectureDefinitions = {
+  'small-single': {
+    title: '小公司：單台 VM 全包',
+    hint: '全部元件都在同一台 GCP VM 內：Nginx、PM2、Node.js、DB。這種架構便宜簡單，但 VM 掛掉就是整站故障。通常沒有真正的跨機器 Load Balance。',
+    layers: [
+      { id: 'nginx', label: 'Nginx 層', targets: ['nginx'] },
+      { id: 'pm2', label: 'PM2 Process 層', targets: ['pm2a','pm2b'] }
+    ],
+    nodes: [
+      { id:'project', type:'project', x:25, y:25, w:1130, h:610, label:'GCP Project', sub:'同一個雲端專案' },
+      { id:'vm1', type:'vm', x:170, y:115, w:840, h:435, label:'GCP VM：Public IP 34.x.x.x', sub:'一台虛擬機裡放全部服務' },
+      { id:'client', x:45, y:300, w:100, h:64, label:'User', sub:'Browser' },
+      { id:'nginx', x:265, y:185, w:150, h:70, label:'Nginx', sub:'SSL / Proxy' },
+      { id:'pm2a', x:505, y:155, w:150, h:70, label:'PM2 #1', sub:'Node Process' },
+      { id:'pm2b', x:505, y:255, w:150, h:70, label:'PM2 #2', sub:'Node Process' },
+      { id:'app', x:730, y:205, w:150, h:70, label:'Node.js App', sub:'Business API' },
+      { id:'db', x:730, y:365, w:150, h:70, label:'DB', sub:'MongoDB / MySQL' }
+    ],
+    edges: [['client','nginx'],['nginx','pm2a'],['nginx','pm2b'],['pm2a','app'],['pm2b','app'],['app','db']]
+  },
+  'small-nginx': {
+    title: '小公司進階：獨立 Nginx VM',
+    hint: 'Nginx 有獨立 Public IP，後面的 App VM 通常只有 private IP。Nginx 可做 SSL、Reverse Proxy、簡單分流，但單台 Nginx VM 仍是單點故障。',
+    layers: [
+      { id: 'nginx-to-app', label: 'Nginx VM → App VM', targets: ['appvm1','appvm2','appvm3'] },
+      { id: 'app-process', label: 'App VM 內部 PM2 / Docker', targets: ['app1','app2','app3'] }
+    ],
+    nodes: [
+      { id:'project', type:'project', x:25, y:25, w:1130, h:610, label:'GCP Project', sub:'傳統多 VM 架構' },
+      { id:'client', x:45, y:300, w:100, h:64, label:'User', sub:'Browser' },
+      { id:'nginxvm', type:'vm', x:205, y:245, w:195, h:165, label:'Nginx VM', sub:'Public IP' },
+      { id:'nginx', x:230, y:300, w:145, h:64, label:'Nginx', sub:'Proxy / SSL' },
+      { id:'appvm1', type:'vm', x:520, y:95, w:210, h:135, label:'App VM 1', sub:'Private IP' },
+      { id:'app1', x:550, y:145, w:150, h:58, label:'Node App 1', sub:'Docker / PM2' },
+      { id:'appvm2', type:'vm', x:520, y:270, w:210, h:135, label:'App VM 2', sub:'Private IP' },
+      { id:'app2', x:550, y:320, w:150, h:58, label:'Node App 2', sub:'Docker / PM2' },
+      { id:'appvm3', type:'vm', x:520, y:445, w:210, h:135, label:'App VM 3', sub:'Private IP' },
+      { id:'app3', x:550, y:495, w:150, h:58, label:'Node App 3', sub:'Docker / PM2' },
+      { id:'db', x:900, y:300, w:150, h:70, label:'Cloud SQL / DB', sub:'資料庫' }
+    ],
+    edges: [['client','nginx'],['nginx','app1'],['nginx','app2'],['nginx','app3'],['app1','db'],['app2','db'],['app3','db']]
+  },
+  'medium-vm': {
+    title: '中公司：GCP Load Balancer + 多台 App VM',
+    hint: 'GCP Load Balancer 是正式入口，App VM 可以放在 Managed Instance Group。可做健康檢查、滾動重啟與水平擴容。',
+    layers: [
+      { id: 'gcp-lb', label: 'GCP Load Balancer → App VM', targets: ['appvm1','appvm2','appvm3','appvm4'] },
+      { id: 'nginx-inside-vm', label: '各 App VM 內 Nginx → App', targets: ['app1','app2','app3','app4'] }
+    ],
+    nodes: [
+      { id:'project', type:'project', x:25, y:25, w:1130, h:610, label:'GCP Project', sub:'Managed Instance Group 常見架構' },
+      { id:'client', x:45, y:300, w:100, h:64, label:'User', sub:'Browser' },
+      { id:'gclb', x:210, y:285, w:165, h:86, label:'GCP LB', sub:'Health Check / SSL' },
+      ...[0,1,2,3].flatMap((i)=>{
+        const y = 70 + i*140;
+        return [
+          { id:`appvm${i+1}`, type:'vm', x:500, y, w:230, h:110, label:`App VM ${i+1}`, sub:'Nginx + Docker App' },
+          { id:`app${i+1}`, x:535, y:y+45, w:160, h:50, label:`Node App ${i+1}`, sub:'Container' }
+        ];
+      }),
+      { id:'db', x:900, y:235, w:165, h:70, label:'Cloud SQL', sub:'Managed DB' },
+      { id:'redis', x:900, y:365, w:165, h:70, label:'Redis', sub:'Cache / Session' }
+    ],
+    edges: [['client','gclb'],['gclb','app1'],['gclb','app2'],['gclb','app3'],['gclb','app4'],['app1','db'],['app2','db'],['app3','db'],['app4','db'],['app1','redis'],['app2','redis'],['app3','redis'],['app4','redis']]
+  },
+  'medium-nginx': {
+    title: '中公司過渡：GCP LB + 多台 Nginx VM',
+    hint: '保留原本 Nginx 規則，但前面加 GCP LB，避免只有一台 Nginx VM 掛掉。缺點是 Nginx 設定要同步。',
+    layers: [
+      { id: 'gcp-to-nginx', label: 'GCP LB → Nginx VM', targets: ['nginx1','nginx2'] },
+      { id: 'nginx-to-app', label: 'Nginx VM → App VM', targets: ['app1','app2','app3'] }
+    ],
+    nodes: [
+      { id:'project', type:'project', x:25, y:25, w:1130, h:610, label:'GCP Project', sub:'從傳統 Nginx VM 過渡到 HA' },
+      { id:'client', x:45, y:300, w:100, h:64, label:'User', sub:'Browser' },
+      { id:'gclb', x:205, y:285, w:155, h:86, label:'GCP LB', sub:'入口分流' },
+      { id:'nginxvm1', type:'vm', x:455, y:160, w:210, h:110, label:'Nginx VM 1', sub:'Proxy Rules' },
+      { id:'nginx1', x:485, y:205, w:150, h:50, label:'Nginx 1', sub:'SSL / Route' },
+      { id:'nginxvm2', type:'vm', x:455, y:390, w:210, h:110, label:'Nginx VM 2', sub:'Proxy Rules' },
+      { id:'nginx2', x:485, y:435, w:150, h:50, label:'Nginx 2', sub:'SSL / Route' },
+      { id:'app1', x:830, y:140, w:155, h:58, label:'App VM 1', sub:'Node.js' },
+      { id:'app2', x:830, y:300, w:155, h:58, label:'App VM 2', sub:'Node.js' },
+      { id:'app3', x:830, y:460, w:155, h:58, label:'App VM 3', sub:'Node.js' },
+      { id:'db', x:1010, y:300, w:130, h:65, label:'DB', sub:'Managed / VM' }
+    ],
+    edges: [['client','gclb'],['gclb','nginx1'],['gclb','nginx2'],['nginx1','app1'],['nginx1','app2'],['nginx1','app3'],['nginx2','app1'],['nginx2','app2'],['nginx2','app3'],['app1','db'],['app2','db'],['app3','db']]
+  },
+  'large-k8s': {
+    title: '大公司：GCP Load Balancer + GKE / K8s',
+    hint: '外部由 GCP Global LB 接流量，K8s Ingress 處理路由，Service 把流量分到 Pods。通常不用 PM2，因為 K8s 已負責重啟、擴容與滾動更新。',
+    layers: [
+      { id: 'gcp-to-ingress', label: 'GCP LB → Ingress Controller', targets: ['ingress'] },
+      { id: 'service-to-pod', label: 'K8s Service → Pod', targets: ['pod1','pod2','pod3','pod4','pod5'] },
+      { id: 'node-pool', label: 'K8s Scheduler → Worker Node', targets: ['worker1','worker2','worker3'] }
+    ],
+    nodes: [
+      { id:'project', type:'project', x:25, y:25, w:1130, h:610, label:'GCP Project', sub:'雲原生架構' },
+      { id:'client', x:45, y:300, w:100, h:64, label:'User', sub:'Browser' },
+      { id:'gclb', x:190, y:285, w:150, h:86, label:'Global LB', sub:'SSL / WAF' },
+      { id:'cluster', type:'k8s', x:390, y:70, w:535, h:520, label:'GKE Cluster', sub:'Kubernetes 管理容器' },
+      { id:'ingress', x:430, y:125, w:170, h:64, label:'Ingress', sub:'Nginx Ingress' },
+      { id:'service', x:665, y:125, w:170, h:64, label:'K8s Service', sub:'ClusterIP' },
+      { id:'worker1', type:'vm', x:430, y:245, w:145, h:255, label:'Worker VM 1', sub:'Node' },
+      { id:'worker2', type:'vm', x:595, y:245, w:145, h:255, label:'Worker VM 2', sub:'Node' },
+      { id:'worker3', type:'vm', x:760, y:245, w:145, h:255, label:'Worker VM 3', sub:'Node' },
+      { id:'pod1', x:445, y:300, w:115, h:48, label:'Pod 1', sub:'API' },
+      { id:'pod2', x:445, y:385, w:115, h:48, label:'Pod 2', sub:'API' },
+      { id:'pod3', x:610, y:320, w:115, h:48, label:'Pod 3', sub:'API' },
+      { id:'pod4', x:775, y:300, w:115, h:48, label:'Pod 4', sub:'API' },
+      { id:'pod5', x:775, y:385, w:115, h:48, label:'Pod 5', sub:'API' },
+      { id:'db', x:985, y:240, w:145, h:64, label:'Cloud SQL', sub:'DB' },
+      { id:'pubsub', x:985, y:355, w:145, h:64, label:'Pub/Sub', sub:'Queue' }
+    ],
+    edges: [['client','gclb'],['gclb','ingress'],['ingress','service'],['service','pod1'],['service','pod2'],['service','pod3'],['service','pod4'],['service','pod5'],['pod1','db'],['pod2','db'],['pod3','db'],['pod4','db'],['pod5','db'],['pod1','pubsub'],['pod3','pubsub'],['pod5','pubsub']]
+  }
+};
+
+function center(node) { return { x: node.x + node.w/2, y: node.y + node.h/2 }; }
+function getNode(id) { return currentArchitecture.nodes.find(n => n.id === id); }
+
+function clearTimers() {
+  animationTimers.forEach(clearTimeout);
+  animationTimers = [];
+}
+
+function clearSvg() {
+  clearTimers();
+  svg.innerHTML = '';
+  packets = [];
+}
+
+function createEl(name, attrs = {}) {
+  const el = document.createElementNS(NS, name);
+  Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k,v));
+  return el;
+}
+
+function drawBox(node, isActiveTarget = false) {
+  const group = createEl('g', { id: `node-${node.id}` });
+  const rect = createEl('rect', {
+    x: node.x, y: node.y, width: node.w, height: node.h,
+    class: `box ${node.type || ''} ${isActiveTarget ? 'active-node' : ''}`
+  });
+  group.appendChild(rect);
+
+  const label = createEl('text', { x: node.x + 14, y: node.y + 26, class: 'node-label' });
+  label.textContent = node.label;
+  group.appendChild(label);
+
+  const sub = createEl('text', { x: node.x + 14, y: node.y + 46, class: 'node-sub' });
+  sub.textContent = node.sub || '';
+  group.appendChild(sub);
+
+  svg.appendChild(group);
+}
+
+function drawEdge(fromId, toId, hot = false) {
+  const from = getNode(fromId);
+  const to = getNode(toId);
+  if (!from || !to) return;
+  const a = center(from);
+  const b = center(to);
+  const path = createEl('path', {
+    d: `M ${a.x} ${a.y} C ${(a.x+b.x)/2} ${a.y}, ${(a.x+b.x)/2} ${b.y}, ${b.x} ${b.y}`,
+    class: hot ? 'path-hot' : 'path'
+  });
+  svg.insertBefore(path, svg.firstChild);
+}
+
+function renderArchitecture() {
+  clearSvg();
+  const key = architectureSelect.value;
+  currentArchitecture = architectureDefinitions[key];
+  diagramTitle.textContent = currentArchitecture.title;
+  architectureHint.textContent = currentArchitecture.hint;
+
+  updateBalanceOptions();
+  const activeTargets = new Set(getSelectedLayer().targets);
+
+  currentArchitecture.edges.forEach(edge => drawEdge(edge[0], edge[1], false));
+  currentArchitecture.nodes.forEach(node => drawBox(node, activeTargets.has(node.id)));
+  resetStats();
+}
+
+function updateBalanceOptions() {
+  const selected = balanceLayer.value;
+  balanceLayer.innerHTML = '';
+  currentArchitecture.layers.forEach(layer => {
+    const option = document.createElement('option');
+    option.value = layer.id;
+    option.textContent = layer.label;
+    balanceLayer.appendChild(option);
+  });
+  if ([...balanceLayer.options].some(o => o.value === selected)) {
+    balanceLayer.value = selected;
+  }
+}
+
+function getSelectedLayer() {
+  return currentArchitecture.layers.find(layer => layer.id === balanceLayer.value) || currentArchitecture.layers[0];
+}
+
+function resetStats() {
+  requestDone = 0;
+  responseDone = 0;
+  roundRobinIndex = 0;
+  nodeLoads = {};
+  requestStat.textContent = '0';
+  responseStat.textContent = '0';
+  logBox.innerHTML = '';
+  distributionPill.textContent = '尚未模擬';
+}
+
+function chooseTarget(targets, packetIndex) {
+  const algorithm = balanceAlgorithm.value;
+  targets.forEach(id => nodeLoads[id] = nodeLoads[id] || 0);
+
+  if (algorithm === 'round-robin') {
+    const target = targets[roundRobinIndex % targets.length];
+    roundRobinIndex++;
+    nodeLoads[target]++;
+    return target;
+  }
+
+  if (algorithm === 'least-conn') {
+    const minLoad = Math.min(...targets.map(id => nodeLoads[id]));
+    const candidates = targets.filter(id => nodeLoads[id] === minLoad);
+    const target = candidates[Math.floor(Math.random() * candidates.length)];
+    nodeLoads[target]++;
+    return target;
+  }
+
+  if (algorithm === 'ip-hash') {
+    const fakeClientIpLastNumber = (packetIndex * 37 + 13) % 255;
+    const target = targets[fakeClientIpLastNumber % targets.length];
+    nodeLoads[target]++;
+    return target;
+  }
+
+  const target = targets[Math.floor(Math.random() * targets.length)];
+  nodeLoads[target]++;
+  return target;
+}
+
+function shortestPath(fromId, toId) {
+  const graph = {};
+  currentArchitecture.edges.forEach(([a,b]) => {
+    graph[a] = graph[a] || [];
+    graph[b] = graph[b] || [];
+    graph[a].push(b);
+    graph[b].push(a);
+  });
+  const queue = [[fromId]];
+  const visited = new Set([fromId]);
+  while (queue.length) {
+    const path = queue.shift();
+    const last = path[path.length - 1];
+    if (last === toId) return path;
+    (graph[last] || []).forEach(next => {
+      if (!visited.has(next)) {
+        visited.add(next);
+        queue.push([...path, next]);
+      }
+    });
+  }
+  return [fromId, toId];
+}
+
+function routeToFinalTarget(balanceTarget) {
+  const key = architectureSelect.value;
+  if (key === 'small-single') return 'db';
+  if (key === 'small-nginx') return 'db';
+  if (key === 'medium-vm') return Math.random() > .55 ? 'redis' : 'db';
+  if (key === 'medium-nginx') return 'db';
+  if (key === 'large-k8s') return Math.random() > .55 ? 'pubsub' : 'db';
+  return balanceTarget;
+}
+
+function interpolate(a, b, t) {
+  return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+}
+
+function animateAlongPath(nodeIds, color, isResponse, delay, onDone) {
+  const circle = createEl('circle', {
+    r: 6,
+    fill: color,
+    class: isResponse ? 'packet response' : 'packet'
+  });
+  svg.appendChild(circle);
+
+  const points = nodeIds.map(id => center(getNode(id))).filter(Boolean);
+  let segment = 0;
+  let frame = 0;
+  const framesPerSegment = 24;
+
+  function step() {
+    if (segment >= points.length - 1) {
+      circle.remove();
+      onDone && onDone();
+      return;
+    }
+    const a = points[segment];
+    const b = points[segment + 1];
+    const t = frame / framesPerSegment;
+    const p = interpolate(a, b, t);
+    circle.setAttribute('cx', p.x);
+    circle.setAttribute('cy', p.y);
+    frame++;
+    if (frame > framesPerSegment) {
+      frame = 0;
+      segment++;
+    }
+    requestAnimationFrame(step);
+  }
+
+  const timer = setTimeout(step, delay);
+  animationTimers.push(timer);
+}
+
+function appendLog(text) {
+  const line = document.createElement('div');
+  line.textContent = text;
+  logBox.appendChild(line);
+  logBox.scrollTop = logBox.scrollHeight;
+}
+
+function updateDistribution() {
+  const entries = Object.entries(nodeLoads).map(([id,count]) => {
+    const node = getNode(id);
+    return `${node ? node.label : id}: ${count}`;
+  });
+  distributionPill.textContent = entries.length ? entries.join('｜') : '尚未模擬';
+}
+
+function runSimulation() {
+  renderArchitecture();
+  const count = Math.max(1, Math.min(200, Number(trafficCount.value) || 1));
+  const layer = getSelectedLayer();
+  appendLog(`開始模擬：${currentArchitecture.title}`);
+  appendLog(`平衡位置：${layer.label}；演算法：${balanceAlgorithm.options[balanceAlgorithm.selectedIndex].textContent}；流量：${count} 筆`);
+
+  for (let index = 1; index <= count; index++) {
+    const target = chooseTarget(layer.targets, index);
+    const finalTarget = routeToFinalTarget(target);
+    const requestPath = shortestPath('client', target);
+    const finalPath = shortestPath(target, finalTarget).slice(1);
+    const fullRequestPath = [...requestPath, ...finalPath];
+    const responsePath = [...fullRequestPath].reverse();
+    const startDelay = index * 130;
+
+    const targetNode = getNode(target);
+    appendLog(`#${String(index).padStart(3,'0')} Request → ${targetNode ? targetNode.label : target}`);
+
+    animateAlongPath(fullRequestPath, '#60a5fa', false, startDelay, () => {
+      requestDone++;
+      requestStat.textContent = requestDone;
+      animateAlongPath(responsePath, '#34d399', true, 80, () => {
+        responseDone++;
+        responseStat.textContent = responseDone;
+        if (responseDone === count) {
+          appendLog('全部 Response 已回到 User。');
+          updateDistribution();
+        }
+      });
+    });
+  }
+  updateDistribution();
+}
+
+architectureSelect.addEventListener('change', renderArchitecture);
+balanceLayer.addEventListener('change', renderArchitecture);
+runButton.addEventListener('click', runSimulation);
+resetButton.addEventListener('click', renderArchitecture);
+
+renderArchitecture();
+</script>
+</body>
+</html>

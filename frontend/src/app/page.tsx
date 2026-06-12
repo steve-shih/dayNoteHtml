@@ -20,6 +20,7 @@ type Note = {
   upload_time: string;
   is_url?: boolean;
   url?: string;
+  title?: string;
 };
 
 export default function Home() {
@@ -474,7 +475,7 @@ export default function Home() {
                   >
                     <List.Item.Meta
                       avatar={item.is_url ? <LinkOutlined style={{ fontSize: 24, color: '#1677ff' }} /> : <FileTextOutlined style={{ fontSize: 24, color: '#1677ff' }} />}
-                      title={<Text ellipsis style={{ width: isMobile ? '60vw' : 200 }}>{item.original_filename}</Text>}
+                      title={<Text ellipsis style={{ width: isMobile ? '60vw' : 200 }}>{item.title || item.original_filename}</Text>}
                       description={
                         <Space direction="vertical" size={0}>
                           <Tag bordered={false} color="blue">{item.category}</Tag>
@@ -498,7 +499,25 @@ export default function Home() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     {isMobile && <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => setActiveNote(null)} style={{ color: '#fff' }} />}
                     <div>
-                      <Title level={5} style={{ margin: 0, wordBreak: 'break-all' }}>{activeNote.original_filename}</Title>
+                      <Title 
+                        level={5} 
+                        style={{ margin: 0, wordBreak: 'break-all' }}
+                        editable={{
+                          onChange: async (newTitle) => {
+                            if (!newTitle.trim()) return;
+                            try {
+                              await axios.put(`/api/notes/${activeNote.id}`, { title: newTitle });
+                              setActiveNote({ ...activeNote, title: newTitle });
+                              fetchNotes(activeCategory === "all" ? null : activeCategory);
+                              message.success("Title updated!");
+                            } catch (e) {
+                              message.error("Failed to update title");
+                            }
+                          }
+                        }}
+                      >
+                        {activeNote.title || activeNote.original_filename}
+                      </Title>
                       <Text type="secondary" style={{ fontSize: 12 }}>
                         Uploaded on {new Date(activeNote.upload_time).toLocaleString()}
                       </Text>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LeetCode 常見演算法與資料結構互動動畫</title>
+<style>
+    :root {
+        --bg: #0f172a;
+        --panel: #111827;
+        --panel2: #1f2937;
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --accent: #38bdf8;
+        --accent2: #a78bfa;
+        --ok: #34d399;
+        --warn: #fbbf24;
+        --bad: #fb7185;
+        --line: #334155;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        background: radial-gradient(circle at top, #1e293b 0, #0f172a 45%, #020617 100%);
+        color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", Arial, sans-serif;
+    }
+    header {
+        padding: 28px 24px 14px;
+        border-bottom: 1px solid var(--line);
+        position: sticky;
+        top: 0;
+        background: rgba(15, 23, 42, 0.92);
+        backdrop-filter: blur(10px);
+        z-index: 20;
+    }
+    h1 { margin: 0 0 8px; font-size: 28px; }
+    .subtitle { color: var(--muted); line-height: 1.7; }
+    .layout {
+        display: grid;
+        grid-template-columns: 270px 1fr;
+        gap: 18px;
+        padding: 18px;
+    }
+    aside {
+        position: sticky;
+        top: 112px;
+        height: calc(100vh - 130px);
+        overflow: auto;
+        background: rgba(17, 24, 39, 0.86);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 14px;
+    }
+    aside button {
+        width: 100%; text-align: left; margin: 5px 0; padding: 11px 12px;
+        border: 1px solid transparent; border-radius: 12px; color: var(--text);
+        background: transparent; cursor: pointer; font-size: 14px;
+    }
+    aside button.active, aside button:hover { background: #1f2937; border-color: #475569; }
+    main { display: grid; gap: 18px; }
+    section.card {
+        background: rgba(17, 24, 39, 0.9);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 18px;
+        box-shadow: 0 12px 35px rgba(0,0,0,0.22);
+    }
+    .hide { display: none; }
+    h2 { margin: 0 0 10px; font-size: 24px; }
+    h3 { margin: 18px 0 8px; color: #bfdbfe; }
+    .grid2 { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 16px; }
+    .controls {
+        display: grid; grid-template-columns: repeat(4, minmax(130px, 1fr)); gap: 10px;
+        background: #0b1220; padding: 12px; border-radius: 14px; border: 1px solid #263244;
+        margin: 12px 0;
+    }
+    label { color: var(--muted); font-size: 13px; display:block; margin-bottom: 4px; }
+    input, select, textarea {
+        width: 100%; padding: 9px 10px; border-radius: 10px; border: 1px solid #475569;
+        background: #020617; color: var(--text); outline: none;
+    }
+    textarea { min-height: 68px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .btns { display:flex; gap:8px; flex-wrap:wrap; margin: 10px 0; }
+    .btn {
+        border: 1px solid #475569; background: #172033; color: var(--text); padding: 9px 13px;
+        border-radius: 10px; cursor: pointer;
+    }
+    .btn.primary { background: linear-gradient(135deg, #0284c7, #7c3aed); border: none; }
+    .btn:hover { filter: brightness(1.15); }
+    .stage {
+        min-height: 260px; background: #020617; border: 1px solid #263244; border-radius: 16px;
+        padding: 14px; overflow: auto; position: relative;
+    }
+    .explain { color: #cbd5e1; line-height: 1.75; }
+    .pill { display:inline-block; padding: 3px 8px; border-radius: 999px; background:#1e293b; color:#bae6fd; margin:2px; font-size:12px; }
+    .array { display:flex; align-items:end; gap:8px; padding: 30px 4px 8px; min-height: 120px; }
+    .cell {
+        min-width: 42px; height: 42px; display:flex; align-items:center; justify-content:center;
+        background:#1e293b; border:1px solid #475569; border-radius:10px; position:relative; transition:.25s;
+    }
+    .cell.active { background:#075985; transform: translateY(-8px); box-shadow: 0 0 20px rgba(56,189,248,.35); }
+    .cell.left { outline: 3px solid var(--ok); }
+    .cell.right { outline: 3px solid var(--bad); }
+    .cell.mid { outline: 3px solid var(--warn); }
+    .cell.done { background:#064e3b; }
+    .cell::after { content: attr(data-index); position:absolute; bottom:-21px; font-size:11px; color: var(--muted); }
+    .bar { width: 36px; display:flex; align-items:end; justify-content:center; border-radius:8px 8px 0 0; background:#334155; border:1px solid #475569; transition:.25s; }
+    .bar span { transform: translateY(-18px); font-size: 12px; }
+    .bar.active { background:#0284c7; transform: translateY(-6px); }
+    .node { position:absolute; width:46px; height:46px; border-radius:50%; background:#1e293b; border:2px solid #64748b; display:flex; align-items:center; justify-content:center; transition:.25s; z-index:2; }
+    .node.active { background:#0369a1; border-color:#7dd3fc; box-shadow:0 0 24px rgba(56,189,248,.45); transform: scale(1.12); }
+    .node.done { background:#065f46; border-color:#6ee7b7; }
+    svg.edges { position:absolute; inset:0; width:100%; height:100%; z-index:1; }
+    .log { background:#020617; border:1px solid #263244; border-radius:14px; padding:10px; color:#cbd5e1; min-height:74px; max-height:140px; overflow:auto; font-family: ui-monospace, monospace; font-size:13px; }
+    pre { background:#020617; border:1px solid #263244; border-radius:14px; padding:12px; overflow:auto; color:#d1fae5; font-size:13px; line-height:1.55; }
+    .codeGrid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .tagline { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0; }
+    .hashbox { display:grid; grid-template-columns: repeat(auto-fit, minmax(110px,1fr)); gap:8px; }
+    .bucket { border:1px solid #475569; background:#0b1220; border-radius:12px; padding:10px; min-height:50px; transition:.25s; }
+    .bucket.active { border-color:#38bdf8; box-shadow:0 0 15px rgba(56,189,248,.35); }
+    .stackcol { display:flex; flex-direction:column-reverse; gap:6px; align-items:center; min-height:210px; justify-content:flex-start; }
+    .stackitem { width:120px; padding:10px; text-align:center; border-radius:10px; background:#1e293b; border:1px solid #475569; transition:.25s; }
+    .queueLine { display:flex; gap:8px; align-items:center; min-height:100px; }
+    .foot { color:var(--muted); font-size:13px; line-height:1.7; }
+    @media (max-width: 980px) { .layout { grid-template-columns:1fr; } aside { position:static; height:auto; } .grid2,.codeGrid{grid-template-columns:1fr;} .controls{grid-template-columns:1fr 1fr;} }
+</style>
+</head>
+<body>
+<header>
+    <h1>LeetCode 常見演算法與資料結構互動動畫</h1>
+    <div class="subtitle">可調整資料、速度、目標值，底下附 Python 與 JavaScript 基本範例。適合面試前快速複習。</div>
+</header>
+<div class="layout">
+<aside id="menu"></aside>
+<main id="content"></main>
+</div>
+<script>
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const parseNumbers = (value) => value.split(',').map(x => Number(x.trim())).filter(x => !Number.isNaN(x));
+const getSpeed = (id) => Number(document.querySelector(`#${id} .speed`)?.value || 500);
+let currentAbort = 0;
+function abortAnimations(){ currentAbort++; }
+function isAbort(token){ return token !== currentAbort; }
+function renderArray(container, arr, states = {}){
+    container.innerHTML = `<div class="array">${arr.map((v,i)=>`<div class="cell ${states[i]||''}" data-index="${i}">${v}</div>`).join('')}</div>`;
+}
+function renderBars(container, arr, activeIndex = -1){
+    const max = Math.max(...arr, 1);
+    container.innerHTML = `<div class="array">${arr.map((v,i)=>`<div class="bar ${i===activeIndex?'active':''}" style="height:${45+v/max*140}px"><span>${v}</span></div>`).join('')}</div>`;
+}
+function setLog(id, msg){ const el=document.querySelector(`#${id} .log`); if(el){ el.innerHTML += msg + '<br>'; el.scrollTop = el.scrollHeight; }}
+function clearLog(id){ const el=document.querySelector(`#${id} .log`); if(el) el.innerHTML=''; }
+const algorithms = [
+{ id:'array', title:'Array / Prefix Sum 陣列與前綴和', tags:['Traversal','Prefix Sum','O(n)'], desc:'陣列題常考遍歷、統計、前綴和。前綴和適合快速查詢區間總和。', controls:`<label>資料<input class="numbers" value="2,4,1,7,3,6"></label><label>查詢左界<input class="leftIndex" type="number" value="1"></label><label>查詢右界<input class="rightIndex" type="number" value="4"></label><label>速度<input class="speed" type="range" min="100" max="1200" value="450"></label>`, run: async(id, token)=>{ const root=document.querySelector('#'+id); const arr=parseNumbers(root.querySelector('.numbers').value); const stage=root.querySelector('.stage'); clearLog(id); let prefix=[0]; for(let i=0;i<arr.length;i++){ if(isAbort(token))return; prefix.push(prefix[i]+arr[i]); renderArray(stage, arr, {[i]:'active'}); setLog(id,`prefix[${i+1}] = ${prefix[i]} + ${arr[i]} = ${prefix[i+1]}`); await sleep(getSpeed(id)); } const l=Number(root.querySelector('.leftIndex').value), r=Number(root.querySelector('.rightIndex').value); renderArray(stage, arr, Object.fromEntries(arr.map((_,i)=>[i, i>=l&&i<=r?'done':'']))); setLog(id,`區間總和 [${l}, ${r}] = prefix[${r+1}] - prefix[${l}] = ${prefix[r+1]-prefix[l]}`); }, js:`function rangeSum(nums, left, right) {\n  const prefix = [0];\n  for (let index = 0; index < nums.length; index++) {\n    prefix[index + 1] = prefix[index] + nums[index];\n  }\n  return prefix[right + 1] - prefix[left];\n}`, py:`def range_sum(nums, left, right):\n    prefix = [0]\n    for number in nums:\n        prefix.append(prefix[-1] + number)\n    return prefix[right + 1] - prefix[left]` },
+{ id:'hash', title:'HashMap / Set 雜湊表', tags:['Map','Set','O(1) 查找','Two Sum'], desc:'適合快速查找、去重、統計頻率。Two Sum 是最典型題。', controls:`<label>資料<input class="numbers" value="2,7,11,15"></label><label>Target<input class="target" type="number" value="9"></label><label>速度<input class="speed" type="range" min="100" max="1200" value="500"></label>`, run: async(id, token)=>{ const root=document.querySelector('#'+id); const arr=parseNumbers(root.querySelector('.numbers').value); const target=Number(root.querySelector('.target').value); const stage=root.querySelector('.stage'); clearLog(id); const map=new Map(); for(let i=0;i<arr.length;i++){ if(isAbort(token))return; const need=target-arr[i]; renderArray(stage, arr, {[i]:'active'}); setLog(id,`看 ${arr[i]}，需要 ${need}`); await sleep(getSpeed(id)); if(map.has(need)){ renderArray(stage, arr, {[i]:'done',[map.get(need)]:'done'}); setLog(id,`找到答案 index ${map.get(need)} 和 ${i}`); return; } map.set(arr[i], i); setLog(id,`放入 Map：${arr[i]} -> ${i}`); } setLog(id,'沒有找到'); }, js:`function twoSum(nums, target) {\n  const numberIndexMap = new Map();\n  for (let index = 0; index < nums.length; index++) {\n    const neededNumber = target - nums[index];\n    if (numberIndexMap.has(neededNumber)) {\n      return [numberIndexMap.get(neededNumber), index];\n    }\n    numberIndexMap.set(nums[index], index);\n  }\n  return [];\n}`, py:`def two_sum(nums, target):\n    number_index_map = {}\n    for index, number in enumerate(nums):\n        needed_number = target - number\n        if needed_number in number_index_map:\n            return [number_index_map[needed_number], index]\n        number_index_map[number] = index\n    return []` },
+{ id:'twopointers', title:'Two Pointers 雙指標', tags:['left/right','O(n)','Palindrome'], desc:'左右指標往中間靠攏，常用於回文、排序陣列、Container With Most Water。', controls:`<label>字串<input class="textInput" value="racecar"></label><label>速度<input class="speed" type="range" min="100" max="1200" value="500"></label>`, run: async(id, token)=>{ const root=document.querySelector('#'+id); const chars=root.querySelector('.textInput').value.split(''); const stage=root.querySelector('.stage'); clearLog(id); let l=0,r=chars.length-1; while(l<r){ if(isAbort(token))return; renderArray(stage, chars, {[l]:'left',[r]:'right'}); setLog(id,`比較 ${chars[l]} 與 ${chars[r]}`); await sleep(getSpeed(id)); if(chars[l]!==chars[r]){setLog(id,'不是回文');return;} l++; r--; } renderArray(stage, chars, Object.fromEntries(chars.map((_,i)=>[i,'done']))); setLog(id,'是回文'); }, js:`function isPalindrome(text) {\n  let leftIndex = 0;\n  let rightIndex = text.length - 1;\n  while (leftIndex < rightIndex) {\n    if (text[leftIndex] !== text[rightIndex]) return false;\n    leftIndex++;\n    rightIndex--;\n  }\n  return true;\n}`, py:`def is_palindrome(text):\n    left_index = 0\n    right_index = len(text) - 1\n    while left_index < right_index:\n        if text[left_index] != text[right_index]:\n            return False\n        left_index += 1\n        right_index -= 1\n    return True` },
+{ id:'sliding', title:'Sliding Window 滑動視窗', tags:['Window','Set','Longest Substring'], desc:'適合連續區間題，例如最長不重複子字串、固定長度最大平均。', controls:`<label>字串<input class="textInput" value="abcabcbb"></label><label>速度<input class="speed" type="range" min="100" max="1200" value="500"></label>`, run: async(id, token)=>{ const root=document.querySelector('#'+id); const chars=root.querySelector('.textInput').value.split(''); const stage=root.querySelector('.stage'); clearLog(id); let left=0,best=0; const seen=new Set(); for(let right=0; right<chars.length; right++){ while(seen.has(chars[right])){ seen.delete(chars[left]); left++; } seen.add(chars[right]); best=Math.max(best,right-left+1); const states={}; for(let i=left;i<=right;i++) states[i]='done'; states[left]='left'; states[right]='right'; renderArray(stage, chars, states); setLog(id,`window = [${left}, ${right}], best = ${best}`); await sleep(getSpeed(id)); if(isAbort(token))return; } }, js:`function lengthOfLongestSubstring(text) {\n  const usedCharacters = new Set();\n  let leftIndex = 0;\n  let bestLength = 0;\n  for (let rightIndex = 0; rightIndex < text.length; rightIndex++) {\n    while (usedCharacters.has(text[rightIndex])) {\n      usedCharacters.delete(text[leftIndex]);\n      leftIndex++;\n    }\n    usedCharacters.add(text[rightIndex]);\n    bestLength = Math.max(bestLength, rightIndex - leftIndex + 1);\n  }\n  return bestLength;\n}`, py:`def length_of_longest_substring(text):\n    used_characters = set()\n    left_index = 0\n    best_length = 0\n    for right_index, character in enumerate(text):\n        while character in used_characters:\n            used_characters.remove(text[left_index])\n            left_index += 1\n        used_characters.add(character)\n        best_length = max(best_length, right_index - left_index + 1)\n    return best_length` },
+{ id:'binary', title:'Binary Search 二分搜尋', tags:['Sorted Array','O(log n)'], desc:'資料已排序時使用，每次砍掉一半。', controls:`<label>已排序資料<input class="numbers" value="1,3,5,7,9,11,13"></label><label>Target<input class="target" type="number" value="9"></label><label>速度<input class="speed" type="range" min="100" max="1200" value="550"></label>`, run: async(id, token)=>{ const root=document.querySelector('#'+id); const arr=parseNumbers(root.querySelector('.numbers').value); const target=Number(root.querySelector('.target').value); const stage=root.querySelector('.stage'); clearLog(id); let l=0,r=arr.length-1; while(l<=r){ if(isAbort(token))return; let m=Math.floor((l+r)/2); renderArray(stage, arr, {[l]:'left',[m]:'mid',[r]:'right'}); setLog(id,`left=${l}, mid=${m}, right=${r}`); await sleep(getSpeed(id)); if(arr[m]===target){ renderArray(stage, arr, {[m]:'done'}); setLog(id,`找到 target at index ${m}`); return; } if(arr[m]<target) l=m+1; else r=m-1; } setLog(id,'找不到'); }, js:`function binarySearch(nums, target) {\n  let leftIndex = 0;\n  let rightIndex = nums.length - 1;\n  while (leftIndex <= rightIndex) {\n    const middleIndex = Math.floor((leftIndex + rightIndex) / 2);\n    if (nums[middleIndex] === target) return middleIndex;\n    if (nums[middleIndex] < target) leftIndex = middleIndex + 1;\n    else rightIndex = middleIndex - 1;\n  }\n  return -1;\n}`, py:`def binary_search(nums, target):\n    left_index = 0\n    right_index = len(nums) - 1\n    while left_index <= right_index:\n        middle_index = (left_index + right_index) // 2\n        if nums[middle_index] == target:\n            return middle_index\n        if nums[middle_index] < target:\n            left_index = middle_index + 1\n        else:\n            right_index = middle_index - 1\n    return -1` },
+{ id:'stack', title:'Stack 堆疊', tags:['LIFO','Valid Parentheses'], desc:'後進先出。括號匹配、單調棧、DFS 都常用。', controls:`<label>括號字串<input class="textInput" value="({[]})"></label><label>速度<input class="speed" type="range" min="100" max="1200" value="450"></label>`, run: async(id, token)=>{ const root=document.querySelector('#'+id); const text=root.querySelector('.textInput').value; const stage=root.querySelector('.stage'); clearLog(id); const stack=[]; const pairs={')':'(',']':'[','}':'{'}; for(const ch of text){ if(isAbort(token))return; if('([{'.includes(ch)) stack.push(ch); else if(stack.pop()!==pairs[ch]){setLog(id,'括號不合法'); return;} stage.innerHTML=`<div class="stackcol">${stack.map(x=>`<div class="stackitem">${x}</div>`).join('')}</div>`; setLog(id,`讀到 ${ch}，目前 stack = [${stack.join(',')}]`); await sleep(getSpeed(id)); } setLog(id,stack.length?'括號不合法':'括號合法'); }, js:`function isValidParentheses(text) {\n  const stack = [];\n  const pairMap = { ')': '(', ']': '[', '}': '{' };\n  for (const character of text) {\n    if ('([{'.includes(character)) stack.push(character);\n    else if (stack.pop() !== pairMap[character]) return false;\n  }\n  return stack.length === 0;\n}`, py:`def is_valid_parentheses(text):\n    stack = []\n    pair_map = {')': '(', ']': '[', '}': '{'}\n    for character in text:\n        if character in '([{':\n            stack.append(character)\n        elif not stack or stack.pop() != pair_map[character]:\n            return False\n    return len(stack) == 0` },
+{ id:'queue', title:'Queue / BFS 佇列', tags:['FIFO','BFS','Level Order'], desc:'先進先出。樹的層序遍歷、圖的最短步數常用。', controls:`<label>節點數<input class="count" type="number" value="7"></label><label>速度<input class="speed" type="range" min="100" max="1200" value="550"></label>`, run: async(id, token)=>{ const root=document.querySelector('#'+id); const n=Number(root.querySelector('.count').value); const stage=root.querySelector('.stage'); clearLog(id); const queue=[1], visited=[]; while(queue.length){ if(isAbort(token))return; const node=queue.shift(); visited.push(node); if(node*2<=n) queue.push(node*2); if(node*2+1<=n) queue.push(node*2+1); stage.innerHTML=`<p>Visited</p><div class="queueLine">${visited.map(x=>`<div class="cell done">${x}</div>`).join('')}</div><p>Queue</p><div class="queueLine">${queue.map(x=>`<div class="cell active">${x}</div>`).join('')}</div>`; setLog(id,`拜訪 ${node}，加入左右子節點`); await sleep(getSpeed(id)); } }, js:`function levelOrder(root) {\n  if (!root) return [];\n  const result = [];\n  const queue = [root];\n  while (queue.length > 0) {\n    const levelSize = queue.length;\n    const currentLevel = [];\n    for (let index = 0; index < levelSize; index++) {\n      const node = queue.shift();\n      currentLevel.push(node.val);\n      if (node.left) queue.push(node.left);\n      if (node.right) queue.push(node.right);\n    }\n    result.push(currentLevel);\n  }\n  return result;\n}`, py:`from collections import deque\n\ndef level_order(root):\n    if not root:\n        return []\n    result = []\n    queue = deque([root])\n    while queue:\n        current_level = []\n        for _ in range(len(queue)):\n            node = queue.popleft()\n            current_level.append(node.val)\n            if node.left:\n                queue.append(node.left)\n            if node.right:\n                queue.append(node.right)\n        result.append(current_level)\n    return result` },
+{ id:'tree', title:'Tree DFS：前序 / 中序 / 後序 / 最大深度', tags:['PreOrder','InOrder','PostOrder','Max Depth'], desc:'樹題核心。前序：根左右；中序：左根右；後序：左右根；最大深度用 DFS 遞迴。', controls:`<label>節點值<input class="textInput" value="1,2,3,4,5,6,7"></label><label>遍歷方式<select class="mode"><option value="pre">前序 PreOrder</option><option value="in">中序 InOrder</option><option value="post">後序 PostOrder</option><option value="depth">最大深度 Max Depth</option></select></label><label>速度<input class="speed" type="range" min="100" max="1200" value="600"></label>`, run: async(id, token)=>{ const root=document.querySelector('#'+id); const vals=root.querySelector('.textInput').value.split(',').map(x=>x.trim()).filter(Boolean); const mode=root.querySelector('.mode').value; const stage=root.querySelector('.stage'); clearLog(id); function draw(active=[], done=[]){ const w=720,h=300; stage.innerHTML=`<svg class="edges" viewBox="0 0 ${w} ${h}"></svg>`; const svg=stage.querySelector('svg'); const pos=[]; for(let i=0;i<vals.length;i++){ const level=Math.floor(Math.log2(i+1)); const indexInLevel=i-(2**level-1); const count=2**level; const x=(indexInLevel+1)*w/(count+1); const y=35+level*75; pos[i]={x,y}; if(i>0){ const p=Math.floor((i-1)/2); svg.innerHTML+=`<line x1="${pos[p].x}" y1="${pos[p].y}" x2="${x}" y2="${y}" stroke="#475569" stroke-width="2"/>`; } } pos.forEach((p,i)=>{ const c=active.includes(i)?'active':done.includes(i)?'done':''; stage.innerHTML+=`<div class="node ${c}" style="left:${p.x-23}px;top:${p.y-23}px">${vals[i]}</div>`; }); }
+ const order=[]; function dfs(i){ if(i>=vals.length)return 0; if(mode==='pre') order.push(i); const left=dfs(i*2+1); if(mode==='in') order.push(i); const right=dfs(i*2+2); if(mode==='post') order.push(i); return Math.max(left,right)+1; } const depth=dfs(0); if(mode==='depth'){ for(let i=0;i<vals.length;i++){ if(isAbort(token))return; draw([i], Array.from({length:i},(_,x)=>x)); setLog(id,`走訪節點 ${vals[i]}`); await sleep(getSpeed(id)); } setLog(id,`最大深度 = ${depth}`); return; } const done=[]; draw([],[]); for(const i of order){ if(isAbort(token))return; draw([i], done); setLog(id,`拜訪 ${vals[i]}`); await sleep(getSpeed(id)); done.push(i); } draw([],done); setLog(id,`順序：${order.map(i=>vals[i]).join(' → ')}`); }, js:`function preorder(root, result = []) {\n  if (!root) return result;\n  result.push(root.val);\n  preorder(root.left, result);\n  preorder(root.right, result);\n  return result;\n}\n\nfunction inorder(root, result = []) {\n  if (!root) return result;\n  inorder(root.left, result);\n  result.push(root.val);\n  inorder(root.right, result);\n  return result;\n}\n\nfunction postorder(root, result = []) {\n  if (!root) return result;\n  postorder(root.left, result);\n  postorder(root.right, result);\n  result.push(root.val);\n  return result;\n}\n\nfunction maxDepth(root) {\n  if (!root) return 0;\n  return Math.max(maxDepth(root.left), maxDepth(root.right)) + 1;\n}`, py:`def preorder(root, result=None):\n    if result is None:\n        result = []\n    if not root:\n        return result\n    result.append(root.val)\n    preorder(root.left, result)\n    preorder(root.right, result)\n    return result\n\ndef inorder(root, result=None):\n    if result is None:\n        result = []\n    if not root:\n        return result\n    inorder(root.left, result)\n    result.append(root.val)\n    inorder(root.right, result)\n    return result\n\ndef postorder(root, result=None):\n    if result is None:\n        result = []\n    if not root:\n        return result\n    postorder(root.left, result)\n    postorder(root.right, result)\n    result.append(root.val)\n    return result\n\ndef max_depth(root):\n    if not root:\n        return 0\n    return max(max_depth(root.left), max_depth(root.right)) + 1` },
+{ id:'graph', title:'Graph DFS / BFS 圖搜尋', tags:['Visited','DFS','BFS','Number of Islands'], desc:'圖要記 visited 避免無限循環。DFS 一路走到底，BFS 一層一層擴散。', controls:`<label>模式<select class="mode"><option value="dfs">DFS</option><option value="bfs">BFS</option></select></label><label>速度<input class="speed" type="range" min="100" max="1200" value="600"></label>`, run: async(id, token)=>{ const root=document.querySelector('#'+id); const mode=root.querySelector('.mode').value; const stage=root.querySelector('.stage'); clearLog(id); const nodes=['A','B','C','D','E','F']; const edges={A:['B','C'],B:['A','D','E'],C:['A','F'],D:['B'],E:['B','F'],F:['C','E']}; const pos={A:[90,70],B:[240,45],C:[240,150],D:[400,35],E:[410,105],F:[410,185]}; function draw(active, done){ stage.innerHTML='<svg class="edges" viewBox="0 0 560 250"></svg>'; const svg=stage.querySelector('svg'); const added=new Set(); for(const a of nodes){ for(const b of edges[a]){ const key=[a,b].sort().join('-'); if(added.has(key))continue; added.add(key); svg.innerHTML+=`<line x1="${pos[a][0]}" y1="${pos[a][1]}" x2="${pos[b][0]}" y2="${pos[b][1]}" stroke="#475569" stroke-width="2"/>`; }} nodes.forEach(n=>stage.innerHTML+=`<div class="node ${active===n?'active':done.has(n)?'done':''}" style="left:${pos[n][0]-23}px;top:${pos[n][1]-23}px">${n}</div>`); }
+ const done=new Set(); if(mode==='dfs'){ async function dfs(n){ if(done.has(n)||isAbort(token))return; done.add(n); draw(n,done); setLog(id,`DFS 拜訪 ${n}`); await sleep(getSpeed(id)); for(const next of edges[n]) await dfs(next); } await dfs('A'); } else { const q=['A']; done.add('A'); while(q.length){ if(isAbort(token))return; const n=q.shift(); draw(n,done); setLog(id,`BFS 拜訪 ${n}`); await sleep(getSpeed(id)); for(const next of edges[n]) if(!done.has(next)){done.add(next); q.push(next);} } } }, js:`function graphDfs(graph, startNode) {\n  const visitedNodes = new Set();\n  function dfs(currentNode) {\n    if (visitedNodes.has(currentNode)) return;\n    visitedNodes.add(currentNode);\n    for (const nextNode of graph[currentNode]) {\n      dfs(nextNode);\n    }\n  }\n  dfs(startNode);\n  return visitedNodes;\n}\n\nfunction graphBfs(graph, startNode) {\n  const visitedNodes = new Set([startNode]);\n  const queue = [startNode];\n  while (queue.length) {\n    const currentNode = queue.shift();\n    for (const nextNode of graph[currentNode]) {\n      if (!visitedNodes.has(nextNode)) {\n        visitedNodes.add(nextNode);\n        queue.push(nextNode);\n      }\n    }\n  }\n  return visitedNodes;\n}`, py:`from collections import deque\n\ndef graph_dfs(graph, start_node):\n    visited_nodes = set()\n    def dfs(current_node):\n        if current_node in visited_nodes:\n            return\n        visited_nodes.add(current_node)\n        for next_node in graph[current_node]:\n            dfs(next_node)\n    dfs(start_node)\n    return visited_nodes\n\ndef graph_bfs(graph, start_node):\n    visited_nodes = {start_node}\n    queue = deque([start_node])\n    while queue:\n        current_node = queue.popleft()\n        for next_node in graph[current_node]:\n            if next_node not in visited_nodes:\n                visited_nodes.add(next_node)\n                queue.append(next_node)\n    return visited_nodes` },
+{ id:'heapdp', title:'Heap / DP 堆積與動態規劃', tags:['Priority Queue','Top K','DP','Climbing Stairs'], desc:'Heap 處理 Top K / 第 K 大；DP 把大問題拆小問題。動畫示範 DP 爬樓梯。', controls:`<label>階數 n<input class="count" type="number" value="7"></label><label>速度<input class="speed" type="range" min="100" max="1200" value="500"></label>`, run: async(id, token)=>{ const root=document.querySelector('#'+id); const n=Number(root.querySelector('.count').value); const stage=root.querySelector('.stage'); clearLog(id); const dp=Array(n+1).fill(0); dp[0]=1; dp[1]=1; for(let i=2;i<=n;i++){ if(isAbort(token))return; dp[i]=dp[i-1]+dp[i-2]; renderArray(stage, dp.map((v,idx)=>`${idx}:${v}`), {[i]:'active',[i-1]:'done',[i-2]:'done'}); setLog(id,`dp[${i}] = dp[${i-1}] + dp[${i-2}] = ${dp[i]}`); await sleep(getSpeed(id)); } setLog(id,`答案 = ${dp[n]}`); }, js:`function climbStairs(totalSteps) {\n  if (totalSteps <= 1) return 1;\n  const ways = Array(totalSteps + 1).fill(0);\n  ways[0] = 1;\n  ways[1] = 1;\n  for (let step = 2; step <= totalSteps; step++) {\n    ways[step] = ways[step - 1] + ways[step - 2];\n  }\n  return ways[totalSteps];\n}\n\n// Heap 在 JS 通常需要自己實作 MinHeap / MaxHeap，\n// 面試常用於 Top K Frequent、Kth Largest。`, py:`def climb_stairs(total_steps):\n    if total_steps <= 1:\n        return 1\n    ways = [0] * (total_steps + 1)\n    ways[0] = 1\n    ways[1] = 1\n    for step in range(2, total_steps + 1):\n        ways[step] = ways[step - 1] + ways[step - 2]\n    return ways[total_steps]\n\n# Python Heap 範例\nimport heapq\n\ndef kth_largest(nums, k):\n    min_heap = []\n    for number in nums:\n        heapq.heappush(min_heap, number)\n        if len(min_heap) > k:\n            heapq.heappop(min_heap)\n    return min_heap[0]` }
+];
+function createCard(item){
+    return `<section class="card" id="${item.id}">
+        <h2>${item.title}</h2>
+        <div class="tagline">${item.tags.map(t=>`<span class="pill">${t}</span>`).join('')}</div>
+        <p class="explain">${item.desc}</p>
+        <div class="controls">${item.controls}</div>
+        <div class="btns"><button class="btn primary" onclick="startRun('${item.id}')">播放動畫</button><button class="btn" onclick="abortAnimations(); clearLog('${item.id}')">停止/清空 Log</button></div>
+        <div class="grid2"><div class="stage"></div><div><h3>執行 Log</h3><div class="log"></div></div></div>
+        <h3>基本範例程式</h3>
+        <div class="codeGrid"><div><div class="pill">JavaScript</div><pre>${escapeHtml(item.js)}</pre></div><div><div class="pill">Python</div><pre>${escapeHtml(item.py)}</pre></div></div>
+    </section>`;
+}
+function escapeHtml(s){ return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+const menu=document.getElementById('menu');
+const content=document.getElementById('content');
+menu.innerHTML=algorithms.map((a,i)=>`<button class="${i===0?'active':''}" onclick="showCard('${a.id}', this)">${a.title}</button>`).join('');
+content.innerHTML=algorithms.map(createCard).join('');
+algorithms.slice(1).forEach(a=>document.getElementById(a.id).classList.add('hide'));
+function showCard(id, btn){ abortAnimations(); document.querySelectorAll('section.card').forEach(x=>x.classList.add('hide')); document.getElementById(id).classList.remove('hide'); document.querySelectorAll('aside button').forEach(x=>x.classList.remove('active')); btn.classList.add('active'); }
+async function startRun(id){ abortAnimations(); const token=++currentAbort; const item=algorithms.find(x=>x.id===id); await item.run(id, token); }
+window.addEventListener('load',()=>{ document.querySelectorAll('.stage').forEach((s,i)=>{ const alg=algorithms[i]; if(alg.id==='tree') s.innerHTML='<p class="foot">按「播放動畫」後會顯示樹狀節點與走訪順序。</p>'; else s.innerHTML='<p class="foot">調整上方參數後，按「播放動畫」。</p>'; }); });
+</script>
+</body>
+</html>

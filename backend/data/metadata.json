@@ -9,21 +9,23 @@
     "123",
     "WEB URL NOTE",
     "玟璇健康",
-    "cat"
+    "cat",
+    "流量模擬器",
+    "algorithm"
   ],
   "notes": [
     {
       "id": "270e1f22-a9a3-4557-a5b4-001a785420b4",
       "original_filename": "GCP_.html",
       "stored_filename": "270e1f22-a9a3-4557-a5b4-001a785420b4.html",
-      "category": "未分類",
+      "category": "CS",
       "upload_time": "2026-06-03T21:23:32.215749"
     },
     {
       "id": "b61a3b83-8323-453b-acd5-050b24ea54d2",
       "original_filename": "SRE___DevOps_V3.html",
       "stored_filename": "b61a3b83-8323-453b-acd5-050b24ea54d2.html",
-      "category": "未分類",
+      "category": "CS",
       "upload_time": "2026-06-03T21:23:32.371045"
     },
     {
@@ -44,7 +46,7 @@
       "id": "72a875ed-555d-4572-a79e-ec6e739cec9a",
       "original_filename": "toeic_phrases_audio_examples.html",
       "stored_filename": "72a875ed-555d-4572-a79e-ec6e739cec9a.html",
-      "category": "123",
+      "category": "英文",
       "upload_time": "2026-06-03T21:23:32.573936"
     },
     {
@@ -58,7 +60,7 @@
       "id": "fd23655e-64ef-44ae-bcb0-e16a60baa911",
       "original_filename": "VOICETUBE",
       "stored_filename": "URL",
-      "category": "WEB URL NOTE",
+      "category": "英文",
       "upload_time": "2026-06-03T21:45:24.428009",
       "is_url": true,
       "url": "https://tw.voicetube.com/"
@@ -74,15 +76,8 @@
       "id": "5d4679de-e5ac-4c2a-8c7d-683c49538756",
       "original_filename": "preview_2.html",
       "stored_filename": "5d4679de-e5ac-4c2a-8c7d-683c49538756.html",
-      "category": "未分類",
+      "category": "CS",
       "upload_time": "2026-06-04T01:44:49.990652"
-    },
-    {
-      "id": "02233e13-a5f4-40c5-91d9-376dea95678c",
-      "original_filename": "preview.html",
-      "stored_filename": "02233e13-a5f4-40c5-91d9-376dea95678c.html",
-      "category": "玟璇健康",
-      "upload_time": "2026-06-04T15:01:11.194249"
     },
     {
       "id": "4d10e895-36c9-4402-af86-ce816ba20297",
@@ -97,14 +92,14 @@
       "id": "c656319a-09f5-44df-89a2-1fbac8aad9dd",
       "original_filename": "preview.html",
       "stored_filename": "c656319a-09f5-44df-89a2-1fbac8aad9dd.html",
-      "category": "未分類",
+      "category": "玟璇健康",
       "upload_time": "2026-06-05T14:02:58.950635"
     },
     {
       "id": "9da03ad8-da4c-4c45-b070-e68cb906ebb0",
       "original_filename": "preview_1.html",
       "stored_filename": "9da03ad8-da4c-4c45-b070-e68cb906ebb0.html",
-      "category": "未分類",
+      "category": "CS",
       "upload_time": "2026-06-05T14:03:34.140404"
     },
     {
@@ -118,21 +113,21 @@
       "id": "ab892ca6-0ea6-4095-8933-9a07006f9949",
       "original_filename": "12221.html",
       "stored_filename": "ab892ca6-0ea6-4095-8933-9a07006f9949.html",
-      "category": "未分類",
+      "category": "CS",
       "upload_time": "2026-06-05T14:40:22.128241"
     },
     {
       "id": "6868b086-b840-4f04-bfb0-a5f5478dbb38",
       "original_filename": "12222.html",
       "stored_filename": "6868b086-b840-4f04-bfb0-a5f5478dbb38.html",
-      "category": "未分類",
+      "category": "CS",
       "upload_time": "2026-06-05T14:40:35.091279"
     },
     {
       "id": "3e1ccd7b-e0d2-4ce0-b8f3-9af1a053269b",
       "original_filename": "99991111.html",
       "stored_filename": "3e1ccd7b-e0d2-4ce0-b8f3-9af1a053269b.html",
-      "category": "未分類",
+      "category": "CS",
       "upload_time": "2026-06-05T14:47:11.626853"
     },
     {
@@ -143,6 +138,148 @@
       "upload_time": "2026-06-06T18:37:45.884962",
       "is_url": true,
       "url": "https://feeding.ngrok.app/"
+    },
+    {
+      "id": "d264e24b-867e-44d5-b35d-8e2988826816",
+      "original_filename": "homelab_openstack_k8s_architecture.html",
+      "stored_filename": "d264e24b-867e-44d5-b35d-8e2988826816.html",
+      "category": "CS",
+      "upload_time": "2026-06-07T18:34:53.035173"
+    },
+    {
+      "id": "6c5aeba7-be24-49d4-a666-4f544a83fe90",
+      "original_filename": "gcp_openstack_comparison_navigator.html",
+      "stored_filename": "6c5aeba7-be24-49d4-a666-4f544a83fe90.html",
+      "category": "CS",
+      "upload_time": "2026-06-08T11:42:55.358332"
+    },
+    {
+      "id": "681e6991-2065-4149-8bd7-d8b506c4e0da",
+      "original_filename": "gcp_press_test.html",
+      "stored_filename": "681e6991-2065-4149-8bd7-d8b506c4e0da.html",
+      "category": "未分類",
+      "upload_time": "2026-06-09T10:30:57.854186"
+    },
+    {
+      "id": "dc95735a-a11a-4168-9883-d65c6f860fb5",
+      "original_filename": "company_architecture_traffic_simulator.html",
+      "stored_filename": "dc95735a-a11a-4168-9883-d65c6f860fb5.html",
+      "category": "未分類",
+      "upload_time": "2026-06-09T10:44:23.760570"
+    },
+    {
+      "id": "0c68150c-d36c-471e-983f-2fa551129ad8",
+      "original_filename": "devops_architecture_simulator_fixed.html",
+      "stored_filename": "0c68150c-d36c-471e-983f-2fa551129ad8.html",
+      "category": "流量模擬器",
+      "upload_time": "2026-06-09T10:58:40.467197"
+    },
+    {
+      "id": "bc9885c3-dce0-4db8-9b46-4c725601348b",
+      "original_filename": "devops_architecture_simulator.html",
+      "stored_filename": "bc9885c3-dce0-4db8-9b46-4c725601348b.html",
+      "category": "流量模擬器",
+      "upload_time": "2026-06-09T10:58:40.480121"
+    },
+    {
+      "id": "c26b9d6f-6452-4e17-aab0-467b2b716114",
+      "original_filename": "devops_sre_resource_simulator.html",
+      "stored_filename": "c26b9d6f-6452-4e17-aab0-467b2b716114.html",
+      "category": "流量模擬器",
+      "upload_time": "2026-06-09T10:58:40.515336"
+    },
+    {
+      "id": "4ac10f7f-0c40-4cc4-b4ad-91eae4562ce0",
+      "original_filename": "devops_architecture_simulator_5_levels.html",
+      "stored_filename": "4ac10f7f-0c40-4cc4-b4ad-91eae4562ce0.html",
+      "category": "流量模擬器",
+      "upload_time": "2026-06-09T10:58:40.528123"
+    },
+    {
+      "id": "33d0f5ee-f9b0-453b-a7b4-0173a2418858",
+      "original_filename": "company_architecture_traffic_simulator.html",
+      "stored_filename": "33d0f5ee-f9b0-453b-a7b4-0173a2418858.html",
+      "category": "流量模擬器",
+      "upload_time": "2026-06-09T10:58:40.559096"
+    },
+    {
+      "id": "6945adbe-fa01-463e-bcff-cebef6c270fc",
+      "original_filename": "pro_sre.html",
+      "stored_filename": "6945adbe-fa01-463e-bcff-cebef6c270fc.html",
+      "category": "流量模擬器",
+      "upload_time": "2026-06-09T11:06:17.750489"
+    },
+    {
+      "id": "40293a08-74da-4e3b-aaba-9cb546f9cfe4",
+      "original_filename": "leetcode_algorithms_interactive_4.html",
+      "stored_filename": "40293a08-74da-4e3b-aaba-9cb546f9cfe4.html",
+      "category": "algorithm",
+      "upload_time": "2026-06-09T11:25:14.542968"
+    },
+    {
+      "id": "d89748d9-a87c-4e94-97d2-82a80de9c0f8",
+      "original_filename": "ml_data_processing_algorithms_1.html",
+      "stored_filename": "d89748d9-a87c-4e94-97d2-82a80de9c0f8.html",
+      "category": "未分類",
+      "upload_time": "2026-06-09T13:44:15.381528"
+    },
+    {
+      "id": "214ee0bb-8be8-453a-b266-e0b230bc1ce4",
+      "original_filename": "login_api_full_network_layers.html",
+      "stored_filename": "214ee0bb-8be8-453a-b266-e0b230bc1ce4.html",
+      "category": "未分類",
+      "upload_time": "2026-06-09T17:40:50.419179"
+    },
+    {
+      "id": "fdbde4b7-9838-4bec-a286-43955fbc6678",
+      "original_filename": "login_api_layer_animation_1.html",
+      "stored_filename": "fdbde4b7-9838-4bec-a286-43955fbc6678.html",
+      "category": "未分類",
+      "upload_time": "2026-06-09T17:40:50.516445"
+    },
+    {
+      "id": "6903ea99-15bd-4424-9518-6d1b12214b02",
+      "original_filename": "login_api_layer_animation_2.html",
+      "stored_filename": "6903ea99-15bd-4424-9518-6d1b12214b02.html",
+      "category": "未分類",
+      "upload_time": "2026-06-09T17:40:50.517454"
+    },
+    {
+      "id": "71a06247-9d47-4612-8fa6-9971216bb1df",
+      "original_filename": "login_api_layer_animation.html",
+      "stored_filename": "71a06247-9d47-4612-8fa6-9971216bb1df.html",
+      "category": "未分類",
+      "upload_time": "2026-06-09T17:40:50.518984"
+    },
+    {
+      "id": "325ab2e5-8175-43cf-a794-3c6bc53e18fc",
+      "original_filename": "ai-usage-dashboard.html",
+      "stored_filename": "325ab2e5-8175-43cf-a794-3c6bc53e18fc.html",
+      "category": "未分類",
+      "upload_time": "2026-06-10T11:15:44.629857"
+    },
+    {
+      "id": "5fa48009-0828-4fcb-a3ac-429c211b484c",
+      "original_filename": "notellm",
+      "stored_filename": "URL",
+      "category": "WEB URL NOTE",
+      "upload_time": "2026-06-10T13:23:24.836299",
+      "is_url": true,
+      "url": "https://www.bnext.com.tw/article/91193/notebooklm-complete-guide-and-use-cases?utm_source=Facebook&utm_medium=text_post&fbclid=IwY2xjawSV08RleHRuA2FlbQIxMABicmlkETFiVHVpU090d21XUkRUcUhic3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHo9Tbc1M-rwJrbn6y5l_wWpG0psktZrjDo_IzyG2zZ1UY5n8vmsHXv2fvmVZ_aem_XgMTZS1wIlXUyEWYjoo8Fw"
+    },
+    {
+      "id": "6d83ab09-bb5c-4b44-8c4c-5e3ee285260e",
+      "original_filename": "pet_notes_github_pages_final.html",
+      "stored_filename": "6d83ab09-bb5c-4b44-8c4c-5e3ee285260e.html",
+      "category": "cat",
+      "upload_time": "2026-06-11T16:36:34.595054"
+    },
+    {
+      "id": "2b8daaa0-5307-42e8-b09a-e73145bc0ffe",
+      "original_filename": "oop_keywords_visual_guide.html",
+      "stored_filename": "2b8daaa0-5307-42e8-b09a-e73145bc0ffe.html",
+      "category": "CS",
+      "upload_time": "2026-06-11T17:38:27.308834"
     }
   ]
 }

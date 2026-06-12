@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DevOps / SRE 企業架構資源模擬器</title>
+<style>
+:root{
+  --bg:#07111f;--panel:#0d1b2f;--card:#10243e;--line:#4c6b94;--text:#eaf2ff;--muted:#a9bad0;
+  --blue:#42a5ff;--green:#39d98a;--red:#ff4d5e;--orange:#ffb020;--purple:#b78cff;--cyan:#4de3ff;
+}
+*{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at top,#10233d,#050b13 70%);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",Arial,sans-serif;}
+header{padding:18px 22px;border-bottom:1px solid #1f3553;background:rgba(7,17,31,.9);position:sticky;top:0;z-index:20;backdrop-filter:blur(10px)}
+h1{margin:0;font-size:22px}.subtitle{color:var(--muted);margin-top:6px;font-size:13px}.layout{display:grid;grid-template-columns:360px 1fr 340px;gap:14px;padding:14px;min-height:calc(100vh - 75px)}
+.panel{background:rgba(13,27,47,.88);border:1px solid #203855;border-radius:16px;padding:14px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.panel h2{font-size:16px;margin:0 0 12px}.section{border-top:1px solid #223a58;margin-top:12px;padding-top:12px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px} select,input,button{width:100%;border-radius:10px;border:1px solid #2d4a70;background:#071525;color:var(--text);padding:9px 10px;font-size:13px}
+button{cursor:pointer;background:linear-gradient(135deg,#1c4f85,#143a67);border-color:#326192;font-weight:700}button:hover{filter:brightness(1.15)}.danger{background:linear-gradient(135deg,#8b1e2c,#4c1119)}.success{background:linear-gradient(135deg,#188553,#0f5538)}.warn{background:linear-gradient(135deg,#9a6418,#56360e)}
+.arch-wrap{position:relative;min-height:720px;overflow:hidden}.canvas{position:relative;height:720px;background:linear-gradient(180deg,rgba(11,28,50,.9),rgba(4,10,18,.92));border:1px solid #203855;border-radius:18px;overflow:hidden}.svg-lines{position:absolute;inset:0;width:100%;height:100%;z-index:1}.node{position:absolute;z-index:3;width:150px;min-height:92px;background:linear-gradient(180deg,#143052,#0d2038);border:1px solid #385a85;border-radius:14px;padding:9px;box-shadow:0 10px 28px rgba(0,0,0,.35);transition:.25s}.node:hover{transform:translateY(-2px);border-color:#6da8e8}.node.selected{outline:3px solid var(--cyan)}.node.failed{border-color:var(--red);box-shadow:0 0 24px rgba(255,77,94,.8),0 10px 28px rgba(0,0,0,.35);animation:pulseRed .9s infinite}.node.warned{border-color:var(--orange);box-shadow:0 0 22px rgba(255,176,32,.55)}
+@keyframes pulseRed{0%,100%{filter:brightness(1)}50%{filter:brightness(1.45)}}.node-title{font-weight:800;font-size:13px}.node-type{font-size:11px;color:var(--muted);margin-top:2px}.badge{display:inline-block;margin-top:4px;font-size:10px;padding:2px 6px;border-radius:999px;background:#0a1728;border:1px solid #2b4d75;color:#bad6f7}.bars{margin-top:7px}.bar-row{margin-top:5px}.bar-label{display:flex;justify-content:space-between;font-size:10px;color:#c7d7eb}.bar{height:6px;background:#06111f;border-radius:999px;overflow:hidden;border:1px solid #1f3a5d}.bar>i{display:block;height:100%;width:20%;background:linear-gradient(90deg,var(--green),var(--blue))}.bar.warnbar>i{background:linear-gradient(90deg,var(--orange),#ff7a00)}.bar.dangerbar>i{background:linear-gradient(90deg,var(--red),#ff99a3)}
+.packet{position:absolute;z-index:8;width:10px;height:10px;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 15px currentColor}.request{background:var(--blue);color:var(--blue)}.response{background:var(--green);color:var(--green)}.drop{background:var(--red);color:var(--red)}
+.legend{display:flex;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin-bottom:10px}.dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px}.info-box{background:#08182a;border:1px solid #213a5a;border-radius:12px;padding:10px;margin-top:8px;color:#d7e7ff;font-size:12px;line-height:1.5}.event-log{height:210px;overflow:auto;background:#06101e;border:1px solid #203855;border-radius:12px;padding:10px;font-size:12px;color:#cfe0f5}.event-log div{border-bottom:1px dashed #1d314c;padding:5px 0}.resource-editor .row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}.pill{display:inline-block;padding:3px 8px;border-radius:999px;background:#071525;border:1px solid #2d4a70;font-size:11px;color:#cfe0f5;margin:2px}.modal{position:fixed;inset:0;background:rgba(0,0,0,.62);display:none;align-items:center;justify-content:center;z-index:50}.modal-card{width:min(720px,92vw);max-height:86vh;overflow:auto;background:#0b1b30;border:1px solid #31557e;border-radius:18px;padding:18px;box-shadow:0 30px 100px rgba(0,0,0,.6)}.modal h3{margin-top:0}.code{white-space:pre-wrap;background:#05101d;border:1px solid #203855;border-radius:12px;padding:10px;color:#d8ecff;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}.small{font-size:12px;color:var(--muted);line-height:1.55} .tabs{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:8px}.tabs button{font-size:11px;padding:7px 3px}.active-tab{outline:2px solid var(--cyan)}
+@media(max-width:1100px){.layout{grid-template-columns:1fr}.panel{min-height:auto}.canvas{height:760px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>DevOps / SRE 企業架構資源模擬器</h1>
+  <div class="subtitle">支援：小/中/大/超大架構、流量沿線動畫、負載平衡、故障紅光、修復教學、水平擴容、垂直升規、CPU / Memory 門檻警告。</div>
+</header>
+<div class="layout">
+  <aside class="panel">
+    <h2>架構與流量控制</h2>
+    <div class="tabs" id="levelTabs"></div>
+    <div class="grid2">
+      <div><label>流量筆數</label><input id="trafficCount" type="number" min="1" max="200" value="20"></div>
+      <div><label>動畫速度</label><select id="speed"><option value="2800">很慢</option><option value="1800" selected>慢</option><option value="1000">正常</option><option value="550">快</option></select></div>
+    </div>
+    <div class="grid2" style="margin-top:8px">
+      <div><label>平衡位置</label><select id="balanceAt"></select></div>
+      <div><label>平衡演算法</label><select id="algorithm"><option value="roundRobin">Round Robin</option><option value="random">Random</option><option value="leastConnection">Least Connection</option><option value="ipHash">IP Hash</option><option value="weighted">Weighted</option></select></div>
+    </div>
+    <div class="section grid2">
+      <button onclick="runTraffic()">開始流量模擬</button>
+      <button class="warn" onclick="stopTraffic()">停止動畫</button>
+      <button class="success" onclick="horizontalScale()">水平擴容 +1</button>
+      <button class="success" onclick="verticalScale()">垂直升規選中節點</button>
+      <button class="danger" onclick="failSelected()">故障選中節點</button>
+      <button class="success" onclick="repairSelected()">修復 / 重啟選中節點</button>
+    </div>
+    <div class="section">
+      <h2>資源告警設定</h2>
+      <div class="grid2">
+        <div><label>CPU 警告門檻 %</label><input id="globalCpuWarn" type="number" value="75"></div>
+        <div><label>Memory 警告門檻 %</label><input id="globalMemWarn" type="number" value="80"></div>
+      </div>
+      <button style="margin-top:8px" onclick="applyGlobalThresholds()">套用到所有節點</button>
+      <div class="info-box">點擊圖上的任何元件，可在右側調整 CPU / Memory 大小與使用量。超過門檻會橘色警告，故障會紅光。</div>
+    </div>
+    <div class="section small">
+      <b>建議學習順序：</b><br>1. 選 Lv3 傳統 Docker 中型公司。<br>2. 選 Nginx 做平衡點。<br>3. 製造 Docker / PM2 故障。<br>4. 看流量是否切到其他 App VM。<br>5. 用水平擴容與垂直升規觀察資源下降。
+    </div>
+  </aside>
+
+  <main class="arch-wrap">
+    <div class="legend"><span><i class="dot" style="background:var(--blue)"></i>Request</span><span><i class="dot" style="background:var(--green)"></i>Response</span><span><i class="dot" style="background:var(--orange)"></i>資源警告</span><span><i class="dot" style="background:var(--red)"></i>故障</span></div>
+    <div class="canvas" id="canvas"><svg class="svg-lines" id="svgLines"></svg></div>
+  </main>
+
+  <aside class="panel">
+    <h2>選中節點設定</h2>
+    <div id="selectedPanel" class="resource-editor small">請點選圖上的 VM / Nginx / Docker / PM2 / Pod / DB。</div>
+    <div class="section">
+      <h2>目前狀態</h2>
+      <div id="summary" class="info-box"></div>
+    </div>
+    <div class="section">
+      <h2>事件紀錄</h2>
+      <div id="log" class="event-log"></div>
+    </div>
+  </aside>
+</div>
+<div class="modal" id="modal"><div class="modal-card"><h3 id="modalTitle"></h3><div id="modalBody"></div><div class="grid2" style="margin-top:12px"><button class="success" onclick="repairFromModal()">一鍵修復 / 重啟</button><button onclick="closeModal()">關閉</button></div></div></div>
+<script>
+const levels = [
+ {id:'small', name:'Lv1 小公司', desc:'單台 VM：Nginx + PM2 + Node.js + DB。', nodes:[
+  n('user','User','Client',60,330,1,1), n('vm1','GCP VM','VM',300,270,4,8), n('nginx1','Nginx','Nginx',320,295,1,1,'vm1'), n('pm21','PM2','PM2',320,405,1,1,'vm1'), n('app1','Node.js App','App',320,515,2,2,'vm1'), n('db1','MongoDB','DB',570,390,2,4)
+ ], edges:[e('user','nginx1'),e('nginx1','pm21'),e('pm21','app1'),e('app1','db1')]},
+ {id:'smallNginx', name:'Lv2 獨立Nginx', desc:'Nginx 獨立 Public IP，後端 VM 私有 IP。', nodes:[
+  n('user','User','Client',45,330,1,1), n('nginxVm','Nginx VM','VM',250,280,2,2), n('nginx1','Nginx','Nginx',265,315,1,1,'nginxVm'), n('appVm1','App VM 1','VM',520,160,4,8), n('docker1','Docker','Docker',535,195,2,4,'appVm1'), n('pm21','PM2','PM2',535,285,1,1,'appVm1'), n('app1','Node API 1','App',535,375,2,2,'appVm1'), n('appVm2','App VM 2','VM',520,480,4,8), n('docker2','Docker','Docker',535,515,2,4,'appVm2'), n('pm22','PM2','PM2',535,605,1,1,'appVm2'), n('app2','Node API 2','App',535,695,2,2,'appVm2'), n('db1','DB VM','DB',780,345,4,16)
+ ], edges:[e('user','nginx1'),e('nginx1','app1'),e('nginx1','app2'),e('app1','db1'),e('app2','db1')]},
+ {id:'midTraditional', name:'Lv3 中型Docker', desc:'新增：多台 App VM，每台包含 Docker + PM2 + Node.js，由 Nginx / GCP LB 分流。', nodes:[
+  n('user','User','Client',35,330,1,1), n('lb','GCP LB','LoadBalancer',210,330,2,2), n('nginxVm','Nginx VM','VM',385,260,4,4), n('nginx1','Nginx','Nginx',400,305,2,2,'nginxVm'),
+  n('appVm1','App VM 1','VM',610,75,4,8), n('docker1','Docker','Docker',625,110,2,4,'appVm1'), n('pm21','PM2 Cluster','PM2',625,200,2,2,'appVm1'), n('app1','Node API 1','App',625,290,2,2,'appVm1'),
+  n('appVm2','App VM 2','VM',610,330,4,8), n('docker2','Docker','Docker',625,365,2,4,'appVm2'), n('pm22','PM2 Cluster','PM2',625,455,2,2,'appVm2'), n('app2','Node API 2','App',625,545,2,2,'appVm2'),
+  n('appVm3','App VM 3','VM',610,585,4,8), n('docker3','Docker','Docker',625,620,2,4,'appVm3'), n('pm23','PM2 Cluster','PM2',625,710,2,2,'appVm3'), n('app3','Node API 3','App',625,800,2,2,'appVm3'),
+  n('redis','Redis VM','Redis',835,200,2,4), n('db1','MongoDB VM','DB',835,470,6,24)
+ ], edges:[e('user','lb'),e('lb','nginx1'),e('nginx1','app1'),e('nginx1','app2'),e('nginx1','app3'),e('app1','redis'),e('app2','redis'),e('app3','redis'),e('app1','db1'),e('app2','db1'),e('app3','db1')]},
+ {id:'midCloud', name:'Lv4 中型雲原生', desc:'GCP LB + Managed Instance Group，多台 VM 直接承接流量。', nodes:[
+  n('user','User','Client',35,330,1,1), n('lb','GCP LB','LoadBalancer',220,330,4,4), n('vm1','MIG VM 1','VM',470,130,4,8), n('nginx1','Nginx+App','Nginx',485,180,2,4,'vm1'), n('vm2','MIG VM 2','VM',470,330,4,8), n('nginx2','Nginx+App','Nginx',485,380,2,4,'vm2'), n('vm3','MIG VM 3','VM',470,530,4,8), n('nginx3','Nginx+App','Nginx',485,580,2,4,'vm3'), n('sql','Cloud SQL','DB',760,330,8,32), n('store','Cloud Storage','Storage',760,520,2,2)
+ ], edges:[e('user','lb'),e('lb','nginx1'),e('lb','nginx2'),e('lb','nginx3'),e('nginx1','sql'),e('nginx2','sql'),e('nginx3','sql'),e('nginx1','store'),e('nginx2','store'),e('nginx3','store')]},
+ {id:'largeK8s', name:'Lv5 大公司K8s', desc:'GCP LB + GKE Ingress + Service + Pods。PM2 通常不需要。', nodes:[
+  n('user','User','Client',35,330,1,1), n('glb','Global LB','LoadBalancer',190,330,4,4), n('ing','K8s Ingress','Ingress',360,330,2,4), n('svc','K8s Service','Service',525,330,2,2), n('pod1','User Pod','Pod',690,140,2,4), n('pod2','Order Pod','Pod',690,330,2,4), n('pod3','Payment Pod','Pod',690,520,2,4), n('sql','Cloud SQL','DB',890,250,12,64), n('redis','Redis','Redis',890,450,4,16)
+ ], edges:[e('user','glb'),e('glb','ing'),e('ing','svc'),e('svc','pod1'),e('svc','pod2'),e('svc','pod3'),e('pod1','sql'),e('pod2','sql'),e('pod3','sql'),e('pod1','redis'),e('pod2','redis'),e('pod3','redis')]},
+ {id:'huge', name:'Lv6 超大專案', desc:'多 Cluster、多資料層、Queue、監控。', nodes:[
+  n('user','Global Users','Client',30,330,1,1), n('cdn','CDN/WAF','CDN',170,330,8,16), n('glb','Global LB','LoadBalancer',315,330,8,16), n('clusterA','GKE A','K8sCluster',500,180,32,128), n('clusterB','GKE B','K8sCluster',500,480,32,128), n('kafka','Kafka Cluster','Queue',720,180,24,96), n('redis','Redis Cluster','Redis',720,330,16,64), n('db','DB Cluster','DB',720,500,32,256), n('obs','Prometheus/Grafana','Monitoring',895,330,8,32)
+ ], edges:[e('user','cdn'),e('cdn','glb'),e('glb','clusterA'),e('glb','clusterB'),e('clusterA','kafka'),e('clusterB','kafka'),e('clusterA','redis'),e('clusterB','redis'),e('clusterA','db'),e('clusterB','db'),e('clusterA','obs'),e('clusterB','obs')]},
+ {id:'mega', name:'Lv7 超大複雜', desc:'Multi Region Active-Active + Service Mesh + 多資料中心。', nodes:[
+  n('user','Global Users','Client',30,330,1,1), n('dns','Geo DNS','DNS',150,330,8,16), n('waf','WAF/CDN','CDN',275,330,16,32), n('tw','Taiwan Region','Region',455,120,64,256), n('jp','Japan Region','Region',455,330,64,256), n('us','US Region','Region',455,540,64,256), n('mesh','Service Mesh','Mesh',650,330,24,96), n('event','Event Bus','Queue',815,190,32,128), n('globalDb','Global DB','DB',815,470,64,512), n('obs','Central Observability','Monitoring',980,330,16,64)
+ ], edges:[e('user','dns'),e('dns','waf'),e('waf','tw'),e('waf','jp'),e('waf','us'),e('tw','mesh'),e('jp','mesh'),e('us','mesh'),e('mesh','event'),e('mesh','globalDb'),e('mesh','obs')]}
+];
+function n(id,label,type,x,y,cpu,mem,parent=null){return {id,label,type,x,y,cpu,mem,cpuUsed:Math.round(cpu*35),memUsed:Math.round(mem*40),cpuWarn:75,memWarn:80,failed:false,parent,traffic:0,weight:1,connections:0}}
+function e(from,to){return {from,to}}
+let currentLevelId='midTraditional', nodes=[], edges=[], selectedId=null, trafficTimer=null, rrIndex=0, activePackets=[];
+const canvas=document.getElementById('canvas'), svg=document.getElementById('svgLines');
+function log(msg){const box=document.getElementById('log'); const div=document.createElement('div'); div.textContent=`${new Date().toLocaleTimeString()}｜${msg}`; box.prepend(div)}
+function initTabs(){const tabs=document.getElementById('levelTabs'); tabs.innerHTML=''; levels.forEach(level=>{const b=document.createElement('button'); b.textContent=level.name; b.onclick=()=>loadLevel(level.id); b.id='tab_'+level.id; tabs.appendChild(b)})}
+function loadLevel(id){currentLevelId=id; const level=levels.find(x=>x.id===id); nodes=JSON.parse(JSON.stringify(level.nodes)); edges=JSON.parse(JSON.stringify(level.edges)); selectedId=null; rrIndex=0; clearPackets(); render(); updateBalanceOptions(); log(`切換架構：${level.name}`)}
+function render(){canvas.querySelectorAll('.node').forEach(x=>x.remove()); svg.innerHTML=''; edges.forEach(edge=>drawLine(edge)); nodes.forEach(node=>drawNode(node)); updateSelectedPanel(); updateSummary(); document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active-tab')); const tab=document.getElementById('tab_'+currentLevelId); if(tab)tab.classList.add('active-tab')}
+function nodeCenter(node){return {x:node.x+75,y:node.y+46}}
+function drawLine(edge){const a=nodes.find(n=>n.id===edge.from), b=nodes.find(n=>n.id===edge.to); if(!a||!b)return; const ac=nodeCenter(a), bc=nodeCenter(b); const path=document.createElementNS('http://www.w3.org/2000/svg','path'); const dx=Math.abs(bc.x-ac.x); path.setAttribute('d',`M ${ac.x} ${ac.y} C ${ac.x+dx/2} ${ac.y}, ${bc.x-dx/2} ${bc.y}, ${bc.x} ${bc.y}`); path.setAttribute('stroke', '#4c6b94'); path.setAttribute('stroke-width','2'); path.setAttribute('fill','none'); path.setAttribute('opacity','.9'); path.setAttribute('id',`path_${edge.from}_${edge.to}`); svg.appendChild(path)}
+function drawNode(node){const d=document.createElement('div'); const cpuPct=Math.min(100,Math.round(node.cpuUsed/(node.cpu*100)*100)); const memPct=Math.min(100,Math.round(node.memUsed/(node.mem*1024)*100)); const warned=cpuPct>=node.cpuWarn||memPct>=node.memWarn; d.className='node'+(node.failed?' failed':'')+(warned&&!node.failed?' warned':'')+(node.id===selectedId?' selected':''); d.style.left=node.x+'px'; d.style.top=node.y+'px'; d.onclick=()=>{selectedId=node.id; render()}; d.innerHTML=`<div class="node-title">${node.label}</div><div class="node-type">${node.type}</div><span class="badge">${node.cpu} vCPU / ${node.mem} GB</span><span class="badge">流量 ${node.traffic}</span><div class="bars"><div class="bar-row"><div class="bar-label"><span>CPU</span><span>${cpuPct}%</span></div><div class="bar ${cpuPct>=90?'dangerbar':cpuPct>=node.cpuWarn?'warnbar':''}"><i style="width:${cpuPct}%"></i></div></div><div class="bar-row"><div class="bar-label"><span>MEM</span><span>${memPct}%</span></div><div class="bar ${memPct>=90?'dangerbar':memPct>=node.memWarn?'warnbar':''}"><i style="width:${memPct}%"></i></div></div></div>`; canvas.appendChild(d)}
+function updateBalanceOptions(){const sel=document.getElementById('balanceAt'); sel.innerHTML=''; nodes.filter(n=>['LoadBalancer','Nginx','Service','Ingress','CDN','DNS','Mesh'].includes(n.type)).forEach(n=>{const opt=document.createElement('option'); opt.value=n.id; opt.textContent=`${n.label} (${n.type})`; sel.appendChild(opt)}); if(!sel.value&&sel.options[0])sel.value=sel.options[0].value}
+function updateSelectedPanel(){const box=document.getElementById('selectedPanel'); const node=nodes.find(n=>n.id===selectedId); if(!node){box.innerHTML='請點選圖上的 VM / Nginx / Docker / PM2 / Pod / DB。';return} const cpuPct=Math.round(node.cpuUsed/(node.cpu*100)*100); const memPct=Math.round(node.memUsed/(node.mem*1024)*100); box.innerHTML=`<b>${node.label}</b> <span class="pill">${node.type}</span><span class="pill">${node.failed?'故障':'正常'}</span>
+ <div class="section"><div class="row"><div><label>CPU 大小 vCPU</label><input id="editCpu" type="number" value="${node.cpu}" min="1"></div><div><label>Memory 大小 GB</label><input id="editMem" type="number" value="${node.mem}" min="1"></div></div>
+ <div class="row"><div><label>CPU 使用量 單位: 1 vCPU=100</label><input id="editCpuUsed" type="number" value="${node.cpuUsed}" min="0"></div><div><label>Memory 使用量 MB</label><input id="editMemUsed" type="number" value="${node.memUsed}" min="0"></div></div>
+ <div class="row"><div><label>CPU 警告門檻 %</label><input id="editCpuWarn" type="number" value="${node.cpuWarn}" min="1" max="100"></div><div><label>Memory 警告門檻 %</label><input id="editMemWarn" type="number" value="${node.memWarn}" min="1" max="100"></div></div>
+ <div class="row"><div><label>Weighted 權重</label><input id="editWeight" type="number" value="${node.weight}" min="1" max="20"></div><div><label>目前連線數</label><input id="editConnections" type="number" value="${node.connections}" min="0"></div></div>
+ <button onclick="saveSelectedResource()">儲存節點設定</button></div>
+ <div class="info-box">目前 CPU ${cpuPct}%、Memory ${memPct}%。${cpuPct>=node.cpuWarn||memPct>=node.memWarn?' 已超過警告門檻。':' 未超過警告門檻。'}</div>`}
+function saveSelectedResource(){const node=nodes.find(n=>n.id===selectedId); if(!node)return; node.cpu=+editCpu.value; node.mem=+editMem.value; node.cpuUsed=+editCpuUsed.value; node.memUsed=+editMemUsed.value; node.cpuWarn=+editCpuWarn.value; node.memWarn=+editMemWarn.value; node.weight=+editWeight.value; node.connections=+editConnections.value; log(`更新資源：${node.label}`); render()}
+function updateSummary(){const level=levels.find(x=>x.id===currentLevelId); const failed=nodes.filter(n=>n.failed).length; const warned=nodes.filter(n=>!n.failed&&(n.cpuUsed/(n.cpu*100)*100>=n.cpuWarn||n.memUsed/(n.mem*1024)*100>=n.memWarn)).length; const totalTraffic=nodes.reduce((s,n)=>s+n.traffic,0); document.getElementById('summary').innerHTML=`<b>${level.name}</b><br>${level.desc}<br><br><span class="pill">節點 ${nodes.length}</span><span class="pill">線路 ${edges.length}</span><span class="pill">故障 ${failed}</span><span class="pill">資源警告 ${warned}</span><span class="pill">累積流量 ${totalTraffic}</span>`}
+function applyGlobalThresholds(){nodes.forEach(n=>{n.cpuWarn=+globalCpuWarn.value;n.memWarn=+globalMemWarn.value}); log('已套用全域 CPU / Memory 警告門檻'); render()}
+function failSelected(){const node=nodes.find(n=>n.id===selectedId); if(!node)return; node.failed=true; log(`故障：${node.label}`); showRepairModal(node); render()}
+function repairSelected(){const node=nodes.find(n=>n.id===selectedId); if(!node)return; repairNode(node)}
+function repairNode(node){node.failed=false; node.cpuUsed=Math.round(node.cpu*35); node.memUsed=Math.round(node.mem*420); log(`修復完成：${node.label}`); closeModal(); render()}
+function repairFromModal(){const node=nodes.find(n=>n.id===selectedId); if(node)repairNode(node)}
+function closeModal(){document.getElementById('modal').style.display='none'}
+function showRepairModal(node){selectedId=node.id; const cmd=repairCommands(node); document.getElementById('modalTitle').textContent=`${node.label} 故障處理建議`; document.getElementById('modalBody').innerHTML=`<div class="small"><b>故障類型：</b>${node.type}<br><b>影響：</b>${impactText(node)}<br><b>處理思路：</b>先確認監控與 log，再判斷是資源耗盡、程序掛掉、容器掛掉、VM 掛掉或網路問題。</div><div class="code">${cmd}</div>`; document.getElementById('modal').style.display='flex'; render()}
+function impactText(n){if(n.type==='Nginx'||n.type==='LoadBalancer')return '入口故障，可能造成大量服務無法進入。'; if(n.type==='Docker')return 'Container 無法服務，該 VM 內服務可能中斷。'; if(n.type==='PM2')return 'Node.js process 可能停止或 cluster 異常。'; if(n.type==='DB')return '資料讀寫可能失敗，前端 API 可能大量 500。'; if(n.type==='Pod')return 'K8s 應嘗試重建 Pod，短時間流量會轉到其他 Pod。'; return '該節點承接的流量或依賴會受影響。'}
+function repairCommands(n){const map={Nginx:'sudo nginx -t\nsudo systemctl restart nginx\nsudo journalctl -u nginx -n 100 --no-pager',Docker:'docker ps -a\ndocker logs <container> --tail=100\ndocker restart <container>',PM2:'pm2 status\npm2 logs --lines 100\npm2 restart all\npm2 save',VM:'gcloud compute instances describe <vm-name>\ngcloud compute ssh <vm-name>\nsudo reboot',DB:'mongosh\nrs.status()\ndb.serverStatus()\nsudo systemctl restart mongod',Pod:'kubectl get pods -A\nkubectl describe pod <pod>\nkubectl logs <pod> --tail=100\nkubectl rollout restart deployment/<name>',LoadBalancer:'檢查 health check\n檢查 backend service\n檢查 firewall rule\n確認後端 VM / NEG 是否 healthy'}; return map[n.type]||'檢查 log、資源使用率、網路連線與服務狀態。'}
+function horizontalScale(){const level=levels.find(x=>x.id===currentLevelId); const count=nodes.filter(n=>n.type==='App'||n.type==='Pod'||n.type==='VM').length; let base=nodes.find(n=>n.type==='App')||nodes.find(n=>n.type==='Pod')||nodes.find(n=>n.type==='VM'); if(!base)return; const id='scale'+Date.now(); const newNode=JSON.parse(JSON.stringify(base)); newNode.id=id; newNode.label=base.type+' Scale '+count; newNode.x=base.x+Math.floor(Math.random()*90)-45; newNode.y=Math.min(640,Math.max(70,base.y+120)); newNode.failed=false; newNode.traffic=0; nodes.push(newNode); const bal=document.getElementById('balanceAt').value; if(bal)edges.push(e(bal,id)); const db=nodes.find(n=>n.type==='DB'||n.type==='Redis'); if(db)edges.push(e(id,db.id)); log(`水平擴容：新增 ${newNode.label}`); render(); updateBalanceOptions()}
+function verticalScale(){const node=nodes.find(n=>n.id===selectedId); if(!node)return; node.cpu*=2; node.mem*=2; node.cpuUsed=Math.round(node.cpuUsed*0.65); node.memUsed=Math.round(node.memUsed*0.75); log(`垂直升規：${node.label} → ${node.cpu} vCPU / ${node.mem} GB`); render()}
+function stopTraffic(){if(trafficTimer)clearInterval(trafficTimer); trafficTimer=null; clearPackets(); log('停止流量動畫')}
+function clearPackets(){activePackets.forEach(p=>p.remove()); activePackets=[]}
+function runTraffic(){stopTraffic(); nodes.forEach(n=>{n.traffic=0}); const count=+trafficCount.value; let sent=0; const interval=Math.max(120,Math.floor(+speed.value/5)); trafficTimer=setInterval(()=>{if(sent>=count){clearInterval(trafficTimer);trafficTimer=null;setTimeout(updateSummary,500);return} sent++; dispatchOne(sent)},interval); log(`開始流量模擬：${count} 筆，演算法 ${algorithm.value}`); render()}
+function dispatchOne(seq){const balId=document.getElementById('balanceAt').value; const target=chooseTarget(balId, seq); if(!target){log('沒有可用後端，封包丟棄'); return} const path=findPath('user',target.id); if(!path.length)return; animatePath(path,'request',()=>{target.traffic++; target.connections++; target.cpuUsed+=Math.ceil(Math.random()*8); target.memUsed+=Math.ceil(Math.random()*24); const dbPath=findDbPath(target.id); if(dbPath.length){animatePath(dbPath,'request',()=>animatePath([...dbPath].reverse(),'response',()=>animatePath([...path].reverse(),'response',()=>{target.connections=Math.max(0,target.connections-1); render()})))}else{animatePath([...path].reverse(),'response',()=>{target.connections=Math.max(0,target.connections-1); render()})}})}
+function chooseTarget(balanceId, seq){const outgoing=edges.filter(ed=>ed.from===balanceId).map(ed=>nodes.find(n=>n.id===ed.to)).filter(Boolean).filter(n=>!n.failed); const candidates=outgoing.filter(n=>!['DB','Redis','Storage','Monitoring','Queue'].includes(n.type)); if(!candidates.length)return null; const alg=algorithm.value; if(alg==='random')return candidates[Math.floor(Math.random()*candidates.length)]; if(alg==='leastConnection')return [...candidates].sort((a,b)=>a.connections-b.connections)[0]; if(alg==='ipHash')return candidates[seq % Math.max(1,Math.min(2,candidates.length))]; if(alg==='weighted'){const pool=[]; candidates.forEach(c=>{for(let i=0;i<c.weight;i++)pool.push(c)}); return pool[rrIndex++%pool.length]} return candidates[rrIndex++%candidates.length]}
+function findPath(from,to){const visited=new Set(); const q=[[from,[from]]]; while(q.length){const [cur,path]=q.shift(); if(cur===to)return path; if(visited.has(cur))continue; visited.add(cur); edges.filter(e=>e.from===cur).forEach(ed=>{const next=nodes.find(n=>n.id===ed.to); if(next&&!next.failed)q.push([ed.to,[...path,ed.to]])})} return []}
+function findDbPath(from){const targets=nodes.filter(n=>['DB','Redis','Storage','Queue'].includes(n.type)&&!n.failed).map(n=>n.id); for(const t of targets){const p=findPath(from,t); if(p.length)return p} return []}
+function animatePath(pathIds, cls, done){let i=0; const next=()=>{if(i>=pathIds.length-1){done&&done();return} const edgePath=document.getElementById(`path_${pathIds[i]}_${pathIds[i+1]}`)||document.getElementById(`path_${pathIds[i+1]}_${pathIds[i]}`); if(!edgePath){i++;next();return} animateOnSvgPath(edgePath,cls,()=>{i++;next()})}; next()}
+function animateOnSvgPath(path, cls, done){const packet=document.createElement('div'); packet.className='packet '+cls; canvas.appendChild(packet); activePackets.push(packet); const len=path.getTotalLength(); const duration=+speed.value; const start=performance.now(); function frame(now){const t=Math.min(1,(now-start)/duration); const p=path.getPointAtLength(len*t); packet.style.left=p.x+'px'; packet.style.top=p.y+'px'; if(t<1)requestAnimationFrame(frame); else{packet.remove(); activePackets=activePackets.filter(x=>x!==packet); done&&done()}} requestAnimationFrame(frame)}
+initTabs(); loadLevel(currentLevelId);
+</script>
+</body>
+</html>

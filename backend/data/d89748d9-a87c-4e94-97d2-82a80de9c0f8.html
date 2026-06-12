@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>機器學習 / 深度學習資料處理演算法動畫大全</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111c33;
+      --panel2: #17223d;
+      --text: #e5e7eb;
+      --muted: #a9b4c7;
+      --accent: #38bdf8;
+      --accent2: #a78bfa;
+      --good: #34d399;
+      --warn: #fbbf24;
+      --bad: #fb7185;
+      --line: rgba(255,255,255,.12);
+      --shadow: 0 20px 60px rgba(0,0,0,.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", Arial, sans-serif;
+      background: radial-gradient(circle at 20% 0%, #18345f 0, transparent 38%), var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
+    header {
+      padding: 44px 24px 28px;
+      max-width: 1380px;
+      margin: auto;
+    }
+    h1 { font-size: clamp(30px, 4vw, 54px); margin: 0 0 12px; letter-spacing: -1px; }
+    h2 { font-size: 26px; margin: 0 0 14px; }
+    h3 { font-size: 20px; margin: 0 0 8px; color: #dbeafe; }
+    p { color: var(--muted); margin: 6px 0; }
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 24px;
+      align-items: stretch;
+    }
+    .hero-card, .card, .side, .nav {
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+    .hero-card { padding: 28px; }
+    .badges { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+    .badge {
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(56,189,248,.12);
+      color: #dff7ff;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+    }
+    main { max-width: 1380px; margin: auto; padding: 0 24px 64px; }
+    .layout { display: grid; grid-template-columns: 280px 1fr; gap: 22px; align-items: start; }
+    .nav { position: sticky; top: 14px; padding: 16px; max-height: calc(100vh - 28px); overflow: auto; }
+    .nav a { display: block; color: var(--muted); text-decoration: none; padding: 9px 10px; border-radius: 12px; font-size: 14px; }
+    .nav a:hover { background: rgba(255,255,255,.07); color: white; }
+    .section { margin: 22px 0 32px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    .card { padding: 20px; overflow: hidden; }
+    .card-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; border-bottom:1px solid var(--line); padding-bottom:12px; margin-bottom:14px; }
+    .type { font-size: 12px; color: white; background: rgba(167,139,250,.22); border:1px solid rgba(167,139,250,.45); padding: 5px 9px; border-radius: 999px; white-space:nowrap; }
+    .canvas { height: 230px; border-radius: 18px; background: #091225; border:1px solid rgba(255,255,255,.1); position:relative; overflow:hidden; margin: 14px 0; }
+    .controls { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin: 10px 0; }
+    button {
+      border: 0; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #07111f;
+      padding: 8px 12px; border-radius: 12px; font-weight: 700; cursor:pointer;
+    }
+    input[type="range"] { width: 140px; }
+    .small { font-size: 13px; color: var(--muted); }
+    pre { background: rgba(0,0,0,.34); border:1px solid var(--line); border-radius: 14px; padding: 12px; overflow:auto; font-size: 12px; color:#c7f9ff; }
+    .pipeline { display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }
+    .pipe { padding:10px 12px; background:rgba(52,211,153,.12); border:1px solid rgba(52,211,153,.35); border-radius:14px; color:#dcfce7; }
+    .table { width:100%; border-collapse: collapse; font-size:14px; overflow:hidden; border-radius:16px; }
+    .table th,.table td { border:1px solid var(--line); padding:10px; vertical-align:top; }
+    .table th { background:rgba(255,255,255,.07); color:#fff; }
+    .dot { position:absolute; width:10px; height:10px; border-radius:50%; background:#38bdf8; box-shadow:0 0 12px #38bdf8; transition: .6s ease; }
+    .bar { position:absolute; bottom:18px; width:20px; border-radius:8px 8px 0 0; background:linear-gradient(#38bdf8,#1d4ed8); transition:.6s ease; }
+    .line-seg { position:absolute; height:3px; background:rgba(255,255,255,.5); transform-origin:left center; border-radius:99px; }
+    .token { position:absolute; padding:7px 9px; border-radius:10px; background:rgba(56,189,248,.18); border:1px solid rgba(56,189,248,.45); font-size:12px; transition:.6s ease; }
+    .matrix-cell { position:absolute; border-radius:8px; display:grid; place-items:center; font-size:12px; background:rgba(167,139,250,.2); border:1px solid rgba(167,139,250,.35); transition:.6s ease; }
+    .image-cell { position:absolute; border-radius:8px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.12); transition:.6s ease; }
+    .caption { font-size: 13px; color: #cbd5e1; }
+    @media (max-width: 1050px) { .hero, .layout, .grid { grid-template-columns: 1fr; } .nav { position:relative; max-height:none; } }
+  </style>
+</head>
+<body>
+<header>
+  <div class="hero">
+    <div class="hero-card">
+      <h1>ML / DL 資料處理演算法動畫大全</h1>
+      <p>從原始資料到可訓練特徵：清理、編碼、縮放、切分、降維、資料增強、文字 Tokenization、影像預處理、時間序列切窗與不平衡資料處理。</p>
+      <div class="pipeline">
+        <div class="pipe">Raw Data</div><div class="pipe">Clean</div><div class="pipe">Encode</div><div class="pipe">Scale</div><div class="pipe">Split</div><div class="pipe">Augment</div><div class="pipe">Train Ready</div>
+      </div>
+      <div class="badges">
+        <span class="badge">互動動畫</span><span class="badge">參數效果</span><span class="badge">Python 範例</span><span class="badge">JavaScript 範例</span><span class="badge">面試 / 實務用途</span>
+      </div>
+    </div>
+    <div class="hero-card">
+      <h2>資料處理在做什麼？</h2>
+      <p>模型不是直接「理解資料」，而是吃進數值張量（Tensor）。資料處理就是把雜亂、缺漏、尺度不一、類別文字、圖片、文字、時間序列，轉成模型容易學習的格式。</p>
+      <p class="caption">核心目標：降低噪音、避免資料洩漏、穩定訓練、提升泛化能力。</p>
+    </div>
+  </div>
+</header>
+<main>
+  <div class="layout">
+    <nav class="nav">
+      <strong>分類導覽</strong>
+      <a href="#overview">總覽表</a>
+      <a href="#cleaning">資料清理</a>
+      <a href="#encoding">類別編碼</a>
+      <a href="#scaling">特徵縮放</a>
+      <a href="#split">資料切分</a>
+      <a href="#feature">特徵工程 / 降維</a>
+      <a href="#imbalance">不平衡資料</a>
+      <a href="#text">文字資料處理</a>
+      <a href="#image">影像資料處理</a>
+      <a href="#timeseries">時間序列處理</a>
+      <a href="#code">完整程式碼範例</a>
+    </nav>
+    <div>
+      <section id="overview" class="section card">
+        <h2>一張表看懂資料處理演算法</h2>
+        <table class="table">
+          <tr><th>類別</th><th>常見演算法 / 技術</th><th>用途</th><th>常見模型影響</th></tr>
+          <tr><td>資料清理</td><td>Missing Value Imputation、Outlier Detection、Deduplication</td><td>補缺值、移除極端值、去重</td><td>降低噪音，避免訓練偏移</td></tr>
+          <tr><td>類別編碼</td><td>Label Encoding、One-Hot Encoding、Target Encoding、Embedding</td><td>把文字類別轉數值</td><td>樹模型、線性模型、深度模型需求不同</td></tr>
+          <tr><td>縮放</td><td>StandardScaler、MinMaxScaler、RobustScaler、Log Transform</td><td>統一數值尺度</td><td>對 NN、KNN、SVM、Linear Model 很重要</td></tr>
+          <tr><td>切分</td><td>Train/Validation/Test Split、K-Fold、Stratified Split</td><td>驗證泛化能力</td><td>避免過度樂觀與資料洩漏</td></tr>
+          <tr><td>降維</td><td>PCA、t-SNE、UMAP、Autoencoder</td><td>壓縮特徵、視覺化</td><td>降低維度災難、加速訓練</td></tr>
+          <tr><td>資料增強</td><td>Flip、Crop、Noise、MixUp、CutMix、Back Translation</td><td>製造合理變化</td><td>提升泛化，減少 overfitting</td></tr>
+        </table>
+      </section>
+
+      <section id="cleaning" class="section">
+        <h2>一、資料清理 Data Cleaning</h2>
+        <div class="grid">
+          <article class="card algo" data-kind="missing">
+            <div class="card-top"><h3>缺失值補齊 Missing Value Imputation</h3><span class="type">清理</span></div>
+            <p>常見方法：平均數、中位數、眾數、KNN Imputer、模型預測補值。實務上中位數對極端值較穩。</p>
+            <div class="canvas"></div>
+            <div class="controls"><button>重新動畫</button><label class="small">補值策略 <input type="range" min="0" max="2" value="1"></label><span class="small output"></span></div>
+            <pre>from sklearn.impute import SimpleImputer
+imputer = SimpleImputer(strategy="median")
+X_fixed = imputer.fit_transform(X)</pre>
+          </article>
+          <article class="card algo" data-kind="outlier">
+            <div class="card-top"><h3>離群值偵測 Outlier Detection</h3><span class="type">清理</span></div>
+            <p>常見方法：Z-Score、IQR、Isolation Forest、Local Outlier Factor。適合先找異常資料，再決定刪除、截尾或保留。</p>
+            <div class="canvas"></div>
+            <div class="controls"><button>重新動畫</button><label class="small">門檻 <input type="range" min="1" max="3" value="2"></label><span class="small output"></span></div>
+            <pre>q1, q3 = df["price"].quantile([.25, .75])
+iqr = q3 - q1
+mask = df["price"].between(q1 - 1.5*iqr, q3 + 1.5*iqr)</pre>
+          </article>
+        </div>
+      </section>
+
+      <section id="encoding" class="section">
+        <h2>二、類別編碼 Categorical Encoding</h2>
+        <div class="grid">
+          <article class="card algo" data-kind="onehot">
+            <div class="card-top"><h3>One-Hot Encoding</h3><span class="type">編碼</span></div>
+            <p>將類別拆成多個 0/1 欄位。適合低基數類別，例如性別、城市、商品類型。</p>
+            <div class="canvas"></div>
+            <div class="controls"><button>重新動畫</button><span class="small output"></span></div>
+            <pre>pd.get_dummies(df, columns=["city"])</pre>
+          </article>
+          <article class="card algo" data-kind="embedding">
+            <div class="card-top"><h3>Embedding 類別向量化</h3><span class="type">深度學習</span></div>
+            <p>把高基數類別轉成可學習向量，例如 user_id、product_id、word_id。常用於推薦系統與 NLP。</p>
+            <div class="canvas"></div>
+            <div class="controls"><button>重新動畫</button><label class="small">維度 <input type="range" min="2" max="8" value="4"></label><span class="small output"></span></div>
+            <pre>embedding = torch.nn.Embedding(num_embeddings=10000, embedding_dim=32)
+vector = embedding(category_id)</pre>
+          </article>
+        </div>
+      </section>
+
+      <section id="scaling" class="section">
+        <h2>三、特徵縮放 Feature Scaling</h2>
+        <div class="grid">
+          <article class="card algo" data-kind="standard">
+            <div class="card-top"><h3>Standardization 標準化</h3><span class="type">縮放</span></div>
+            <p>轉成平均值 0、標準差 1。深度學習、線性模型、SVM、KNN 常需要。</p>
+            <div class="canvas"></div>
+            <div class="controls"><button>重新動畫</button><span class="small output"></span></div>
+            <pre>from sklearn.preprocessing import StandardScaler
+X_scaled = StandardScaler().fit_transform(X)</pre>
+          </article>
+          <article class="card algo" data-kind="minmax">
+            <div class="card-top"><h3>Min-Max Scaling</h3><span class="type">縮放</span></div>
+            <p>將資料壓到 0～1。適合已知上下界或影像像素正規化。</p>
+            <div class="canvas"></div>
+            <div class="controls"><button>重新動畫</button><span class="small output"></span></div>
+            <pre>X_scaled = (X - X.min()) / (X.max() - X.min())</pre>
+          </article>
+        </div>
+      </section>
+
+      <section id="split" class="section">
+        <h2>四、資料切分 Dataset Split</h2>
+        <div class="grid">
+          <article class="card algo" data-kind="split">
+            <div class="card-top"><h3>Train / Validation / Test Split</h3><span class="type">驗證</span></div>
+            <p>訓練集學習、驗證集調參、測試集做最終評估。最重要的是避免資料洩漏。</p>
+            <div class="canvas"></div>
+            <div class="controls"><button>重新動畫</button><label class="small">訓練比例 <input type="range" min="50" max="90" value="70"></label><span class="small output"></span></div>
+            <pre>train, test = train_test_split(df, test_size=0.2, random_state=42)</pre>
+          </article>
+          <article class="card algo" data-kind="kfold">
+            <div class="card-top"><h3>K-Fold Cross Validation</h3><span class="type">驗證</span></div>
+            <p>把資料切成 K 份，輪流當驗證集。資料量少時比單次切分穩定。</p>
+            <div class="canvas"></div>
+            <div class="controls"><button>重新動畫</button><label class="small">K <input type="range" min="3" max="8" value="5"></label><span class="small output"></span></div>
+            <pre>from sklearn.model_selection import KFold
+for train_idx, valid_idx in KFold(n_splits=5).split(X):
+    pass</pre>
+          </article>
+        </div>
+      </section>
+
+      <section id="feature" class="section">
+        <h2>五、特徵工程與降維 Feature Engineering / Dimensionality Reduction</h2>
+        <div class="grid">
+          <article class="card algo" data-kind="pca">
+            <div class="card-top"><h3>PCA 主成分分析</h3><span class="type">降維</span></div>
+            <p>找出資料變異最大的方向，把高維資料投影到低維空間。常用於壓縮、去噪、視覺化。</p>
+            <div class="canvas"></div>
+            <div class="controls"><button>重新動畫</button><label class="small">主成分角度 <input type="range" min="0" max="90" value="35"></label><span class="small output"></span></div>
+            <pre>from sklearn.decomposition import PCA
+X_2d = PCA(n_components=2).fit_transform(X)</pre>
+          </article>
+          <article class="card algo" data-kind="poly">
+            <div class="card-top"><h3>Polynomial Features 多項式特徵</h3><span class="type">特徵工程</span></div>
+            <p>把 x 轉成 x、x²、x³，讓線性模型能擬合非線性關係。</p>
+            <div class="canvas"></div>
+            <div class="controls"><button>重新動畫</button><label class="small">次方 <input type="range" min="1" max="4" value="2"></label><span class="small output"></span></div>
+            <pre>from sklearn.preprocessing import PolynomialFeatures
+X_poly = PolynomialFeatures(degree=2).fit_transform(X)</pre>
+          </article>
+        </div>
+      </section>
+
+      <section id="imbalance" class="section">
+        <h2>六、不平衡資料 Imbalanced Data</h2>
+        <div class="grid">
+          <article class="card algo" data-kind="smote">
+            <div class="card-top"><h3>SMOTE 合成少數類樣本</h3><span class="type">分類資料</span></div>
+            <p>在少數類樣本之間插值產生新樣本。適合分類問題，但不能在切分前做，否則會資料洩漏。</p>
+            <div class="canvas"></div>
+            <div class="controls"><button>重新動畫</button><label class="small">合成數 <input type="range" min="1" max="12" value="6"></label><span class="small output"></span></div>
+            <pre>from imblearn.over_sampling import SMOTE
+X_resampled, y_resampled = SMOTE().fit_resample(X_train, y_train)</pre>
+          </article>
+          <article class="card algo" data-kind="classweight">
+            <div class="card-top"><h3>Class Weight 類別權重</h3><span class="type">訓練策略</span></div>
+            <p>不改資料量，而是提高少數類錯誤成本。常用於 Logistic Regression、XGBoost、PyTorch loss。</p>
+            <div class="canvas"></div>
+            <div class="controls"><button>重新動畫</button><label class="small">少數類權重 <input type="range" min="1" max="10" value="5"></label><span class="small output"></span></div>
+            <pre>loss_fn = torch.nn.CrossEntropyLoss(weight=class_weights)</pre>
+          </article>
+        </div>
+      </section>
+
+      <section id="text" class="section">
+        <h2>七、文字資料處理 NLP Preprocessing</h2>
+        <div class="grid">
+          <article class="card algo" data-kind="token">
+            <div class="card-top"><h3>Tokenization 斷詞 / 分詞</h3><span class="type">NLP</span></div>
+            <p>把句子拆成 token。傳統 NLP 可能用單字，Transformer 常用 BPE / WordPiece / SentencePiece。</p>
+            <div class="canvas"></div>
+            <div class="controls"><button>重新動畫</button><span class="small output"></span></div>
+            <pre>tokens = tokenizer("我喜歡機器學習", return_tensors="pt")</pre>
+          </article>
+          <article class="card algo" data-kind="tfidf">
+            <div class="card-top"><h3>TF-IDF 文字向量化</h3><span class="type">NLP</span></div>
+            <p>常見於傳統 ML。常出現但不是每篇都有的詞，權重會比較高。</p>
+            <div class="canvas"></div>
+            <div class="controls"><button>重新動畫</button><span class="small output"></span></div>
+            <pre>from sklearn.feature_extraction.text import TfidfVectorizer
+X = TfidfVectorizer().fit_transform(texts)</pre>
+          </article>
+        </div>
+      </section>
+
+      <section id="image" class="section">
+        <h2>八、影像資料處理 Image Preprocessing / Augmentation</h2>
+        <div class="grid">
+          <article class="card algo" data-kind="imageaug">
+            <div class="card-top"><h3>影像增強 Flip / Crop / Rotate</h3><span class="type">CV</span></div>
+            <p>在不改變標籤的前提下製造變化，讓模型不要死背位置、角度、亮度。</p>
+            <div class="canvas"></div>
+            <div class="controls"><button>重新動畫</button><label class="small">旋轉角度 <input type="range" min="0" max="45" value="15"></label><span class="small output"></span></div>
+            <pre>transforms.Compose([
+    transforms.RandomHorizontalFlip(),
+    transforms.RandomRotation(15),
+    transforms.ToTensor()
+])</pre>
+          </article>
+          <article class="card algo" data-kind="normalizeimg">
+            <div class="card-top"><h3>Image Normalization 像素正規化</h3><span class="type">CV</span></div>
+            <p>把 0～255 像素轉成 0～1 或依通道做 mean/std normalization，讓 CNN 訓練更穩。</p>
+            <div class="canvas"></div>
+            <div class="controls"><button>重新動畫</button><span class="small output"></span></div>
+            <pre>image = image / 255.0
+image = (image - mean) / std</pre>
+          </article>
+        </div>
+      </section>
+
+      <section id="timeseries" class="section">
+        <h2>九、時間序列處理 Time Series Preprocessing</h2>
+        <div class="grid">
+          <article class="card algo" data-kind="window">
+            <div class="card-top"><h3>Sliding Window 滑動視窗</h3><span class="type">時間序列</span></div>
+            <p>用前 N 個時間點預測下一個值。常用於股價、流量、感測器、伺服器監控。</p>
+            <div class="canvas"></div>
+            <div class="controls"><button>重新動畫</button><label class="small">視窗大小 <input type="range" min="3" max="8" value="5"></label><span class="small output"></span></div>
+            <pre>def make_window(values, window_size):
+    X, y = [], []
+    for i in range(len(values) - window_size):
+        X.append(values[i:i+window_size])
+        y.append(values[i+window_size])
+    return X, y</pre>
+          </article>
+          <article class="card algo" data-kind="rolling">
+            <div class="card-top"><h3>Rolling Statistics 移動平均 / 統計特徵</h3><span class="type">時間序列</span></div>
+            <p>把最近 N 天平均、最大、最小、標準差當成新特徵，常用於表格型時間序列。</p>
+            <div class="canvas"></div>
+            <div class="controls"><button>重新動畫</button><label class="small">天數 <input type="range" min="2" max="8" value="4"></label><span class="small output"></span></div>
+            <pre>df["rolling_mean_7"] = df["value"].rolling(7).mean()</pre>
+          </article>
+        </div>
+      </section>
+
+      <section id="code" class="section card">
+        <h2>完整 Pipeline 範例</h2>
+        <p>正式專案要注意：<b>所有 fit 都只能在 train 做</b>，再 transform validation/test，否則會資料洩漏（Data Leakage）。</p>
+        <pre>from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.impute import SimpleImputer
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+
+numeric_features = ["age", "income", "visit_count"]
+categorical_features = ["city", "device"]
+
+numeric_pipeline = Pipeline([
+    ("imputer", SimpleImputer(strategy="median")),
+    ("scaler", StandardScaler())
+])
+
+categorical_pipeline = Pipeline([
+    ("imputer", SimpleImputer(strategy="most_frequent")),
+    ("onehot", OneHotEncoder(handle_unknown="ignore"))
+])
+
+preprocess = ColumnTransformer([
+    ("numeric", numeric_pipeline, numeric_features),
+    ("categorical", categorical_pipeline, categorical_features)
+])
+
+model = Pipeline([
+    ("preprocess", preprocess),
+    ("classifier", RandomForestClassifier(random_state=42))
+])
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.2, stratify=y)
+model.fit(X_train, y_train)
+score = model.score(X_test, y_test)</pre>
+      </section>
+    </div>
+  </div>
+</main>
+<script>
+const rand = (min, max) => Math.random() * (max - min) + min;
+const clear = el => el.innerHTML = '';
+function dot(parent, x, y, color='#38bdf8', size=10) {
+  const d = document.createElement('div'); d.className='dot'; d.style.left=x+'px'; d.style.top=y+'px'; d.style.background=color; d.style.width=size+'px'; d.style.height=size+'px'; parent.appendChild(d); return d;
+}
+function bar(parent, x, h, color) { const b=document.createElement('div'); b.className='bar'; b.style.left=x+'px'; b.style.height=h+'px'; if(color) b.style.background=color; parent.appendChild(b); return b; }
+function text(parent, s, x, y, cls='token') { const t=document.createElement('div'); t.className=cls; t.textContent=s; t.style.left=x+'px'; t.style.top=y+'px'; parent.appendChild(t); return t; }
+function line(parent, x, y, len, angle, color='rgba(255,255,255,.55)') { const l=document.createElement('div'); l.className='line-seg'; l.style.left=x+'px'; l.style.top=y+'px'; l.style.width=len+'px'; l.style.transform=`rotate(${angle}deg)`; l.style.background=color; parent.appendChild(l); return l; }
+function matrix(parent, val, x, y, w=42, h=34) { const c=document.createElement('div'); c.className='matrix-cell'; c.textContent=val; c.style.left=x+'px'; c.style.top=y+'px'; c.style.width=w+'px'; c.style.height=h+'px'; parent.appendChild(c); return c; }
+function getCanvas(card){ return card.querySelector('.canvas'); }
+function getOutput(card){ return card.querySelector('.output'); }
+function animate(card){
+  const kind = card.dataset.kind; const canvas=getCanvas(card); const output=getOutput(card); clear(canvas); if(output) output.textContent='';
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  if(kind==='missing'){
+    const vals=[50,90,null,130,70,null,115,95]; const strategy=+card.querySelector('input')?.value || 1; const fill=[65,95,100][strategy];
+    vals.forEach((v,i)=>{ const x=28+i*(w-60)/7; if(v===null){ text(canvas,'?',x,120); setTimeout(()=>text(canvas,fill,x,60),500+i*80); } else bar(canvas,x,v); });
+    output.textContent=['平均數','中位數','模型預測'][strategy]+'補值';
+  }
+  if(kind==='outlier'){
+    const threshold=+card.querySelector('input')?.value || 2;
+    for(let i=0;i<34;i++) dot(canvas, rand(50,w-80), rand(70,155), '#38bdf8', 9);
+    const count = 5-threshold; for(let i=0;i<count;i++) dot(canvas, rand(w-110,w-40), rand(25,65), '#fb7185', 13);
+    line(canvas, 40, 60, w-80, 0, 'rgba(251,113,133,.5)'); line(canvas, 40, 175, w-80, 0, 'rgba(251,113,133,.5)');
+    output.textContent='門檻越嚴，標記的 outlier 越多';
+  }
+  if(kind==='onehot'){
+    ['Taipei','Tokyo','Seoul'].forEach((c,i)=>text(canvas,c,30,35+i*50)); ['Taipei','Tokyo','Seoul'].forEach((c,i)=>matrix(canvas,c,180+i*70,20,62,30));
+    ['Taipei','Tokyo','Seoul'].forEach((c,r)=>{ for(let col=0;col<3;col++){ setTimeout(()=>matrix(canvas,r===col?'1':'0',180+col*70,70+r*38,62,30),300+r*200+col*80); }});
+    output.textContent='類別 → 多欄 0/1';
+  }
+  if(kind==='embedding'){
+    const dim=+card.querySelector('input')?.value || 4; ['user_17','user_91','user_203'].forEach((u,i)=>text(canvas,u,25,35+i*55));
+    for(let r=0;r<3;r++){ for(let c=0;c<dim;c++){ setTimeout(()=>matrix(canvas,(Math.random()*2-1).toFixed(1),160+c*48,30+r*55,42,32),200+r*160+c*40); }}
+    output.textContent='Embedding 維度：'+dim;
+  }
+  if(kind==='standard' || kind==='minmax'){
+    const data=[30,120,60,180,90,150,70]; data.forEach((v,i)=>bar(canvas,35+i*45,v));
+    setTimeout(()=>{ clear(canvas); data.forEach((v,i)=>bar(canvas,35+i*45, kind==='standard'? rand(55,140) : (v/180)*160)); line(canvas,20,150,w-40,0,'rgba(52,211,153,.55)'); },750);
+    output.textContent= kind==='standard' ? '中心化 + 標準差縮放' : '壓縮到 0～1';
+  }
+  if(kind==='split'){
+    const ratio=+card.querySelector('input')?.value || 70; const n=24; for(let i=0;i<n;i++){ const color=i<n*ratio/100?'#34d399':(i<n*.9?'#fbbf24':'#fb7185'); dot(canvas,30+i*(w-60)/n,105,color,14); }
+    text(canvas,'Train',35,35); text(canvas,'Validation',w*0.63,35); text(canvas,'Test',w*0.83,35); output.textContent=`Train ${ratio}% / 其餘驗證測試`;
+  }
+  if(kind==='kfold'){
+    const k=+card.querySelector('input')?.value || 5; for(let row=0;row<k;row++){ for(let col=0;col<k;col++){ matrix(canvas,col===row?'Valid':'Train',30+col*(w-70)/k,25+row*32,(w-90)/k,24); }} output.textContent='K = '+k;
+  }
+  if(kind==='pca'){
+    const angle=+card.querySelector('input')?.value || 35; for(let i=0;i<38;i++){ const x=rand(70,w-90), y=120+(x-w/2)*.35+rand(-28,28); dot(canvas,x,y,'#38bdf8',8); } line(canvas,w/2-110,h/2,220,angle,'#34d399'); output.textContent='投影到最大變異方向';
+  }
+  if(kind==='poly'){
+    const degree=+card.querySelector('input')?.value || 2; for(let i=0;i<20;i++){ const x=30+i*(w-60)/20; const y= h-40 - Math.pow(i/20, degree)*150; dot(canvas,x,y,'#38bdf8',8); } output.textContent='degree = '+degree;
+  }
+  if(kind==='smote'){
+    const synthetic=+card.querySelector('input')?.value || 6; for(let i=0;i<30;i++) dot(canvas,rand(40,w-80),rand(45,170),'#38bdf8',8); for(let i=0;i<5;i++) dot(canvas,rand(w-130,w-70),rand(70,140),'#fb7185',12); for(let i=0;i<synthetic;i++) setTimeout(()=>dot(canvas,rand(w-150,w-50),rand(65,155),'#fbbf24',10),i*120); output.textContent='合成少數類：'+synthetic+' 筆';
+  }
+  if(kind==='classweight'){
+    const weight=+card.querySelector('input')?.value || 5; bar(canvas,70,70,'linear-gradient(#38bdf8,#1d4ed8)'); bar(canvas,180,25*weight,'linear-gradient(#fb7185,#be123c)'); text(canvas,'多數類',55,175); text(canvas,'少數類權重 x'+weight,150,175); output.textContent='提高少數類錯誤成本';
+  }
+  if(kind==='token'){
+    const sentence=text(canvas,'我喜歡機器學習',40,35); const tokens=['我','喜歡','機器','學習']; tokens.forEach((t,i)=>setTimeout(()=>text(canvas,t,60+i*80,125),400+i*160)); output.textContent='Sentence → Tokens → IDs';
+  }
+  if(kind==='tfidf'){
+    ['貓','狗','AI','學習','資料'].forEach((t,i)=>text(canvas,t,35+i*70,40)); [35,80,150,110,95].forEach((v,i)=>setTimeout(()=>bar(canvas,45+i*70,v),300+i*100)); output.textContent='詞頻 × 逆文件頻率';
+  }
+  if(kind==='imageaug'){
+    const angle=+card.querySelector('input')?.value || 15; const img=document.createElement('div'); img.className='image-cell'; img.style.width='120px'; img.style.height='120px'; img.style.left='55px'; img.style.top='45px'; img.style.background='linear-gradient(135deg,#38bdf8,#a78bfa)'; canvas.appendChild(img); setTimeout(()=>{ img.style.left='230px'; img.style.transform=`rotate(${angle}deg) scaleX(-1)`; },400); output.textContent='Flip + Rotate '+angle+'°';
+  }
+  if(kind==='normalizeimg'){
+    for(let r=0;r<4;r++) for(let c=0;c<6;c++){ const v=Math.floor(rand(0,255)); const cell=matrix(canvas,v,35+c*48,25+r*42,42,34); setTimeout(()=>cell.textContent=(v/255).toFixed(2),700); } output.textContent='0～255 → 0～1';
+  }
+  if(kind==='window'){
+    const size=+card.querySelector('input')?.value || 5; const values=Array.from({length:13},(_,i)=>90+Math.sin(i*.8)*45+rand(-10,10)); values.forEach((v,i)=>dot(canvas,25+i*(w-60)/12,h-v,'#38bdf8',8)); for(let i=0;i<values.length-1;i++) line(canvas,25+i*(w-60)/12,h-values[i]+4,(w-60)/12,Math.atan2(values[i]-values[i+1],(w-60)/12)*180/Math.PI,'rgba(56,189,248,.55)'); const box=document.createElement('div'); box.style.position='absolute'; box.style.left='20px'; box.style.top='35px'; box.style.width=(size*(w-60)/12)+'px'; box.style.height='150px'; box.style.border='2px solid #34d399'; box.style.borderRadius='12px'; box.style.transition='.8s ease'; canvas.appendChild(box); setTimeout(()=>box.style.left=(w/2)+'px',700); output.textContent='Window size = '+size;
+  }
+  if(kind==='rolling'){
+    const days=+card.querySelector('input')?.value || 4; const values=[70,100,60,130,90,140,110,160,120]; values.forEach((v,i)=>bar(canvas,25+i*42,v)); setTimeout(()=>{ for(let i=days-1;i<values.length;i++){ const avg=values.slice(i-days+1,i+1).reduce((a,b)=>a+b)/days; dot(canvas,25+i*42, h-18-avg, '#34d399',10); }},500); output.textContent='Rolling window = '+days+' 天';
+  }
+}
+document.querySelectorAll('.algo').forEach(card=>{
+  card.querySelector('button')?.addEventListener('click',()=>animate(card));
+  card.querySelector('input')?.addEventListener('input',()=>animate(card));
+  animate(card);
+});
+</script>
+</body>
+</html>

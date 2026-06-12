@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>登入 API 每一層資料長相動畫</title>
+  <style>
+    :root {
+      --background: #07111f;
+      --panel: rgba(15, 23, 42, .9);
+      --panelSoft: rgba(30, 41, 59, .82);
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --line: #334155;
+      --accent: #38bdf8;
+      --good: #22c55e;
+      --warn: #facc15;
+      --bad: #fb7185;
+      --purple: #a78bfa;
+      --orange: #fb923c;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", Arial, sans-serif;
+      background: radial-gradient(circle at top left, #123b73 0, #07111f 34%, #020617 100%);
+      color: var(--text);
+    }
+    header { padding: 28px 32px 18px; border-bottom: 1px solid rgba(148,163,184,.22); }
+    h1 { margin: 0 0 8px; font-size: 30px; }
+    h2, h3 { margin-top: 0; }
+    .subtitle { color: var(--muted); line-height: 1.7; max-width: 1120px; }
+    .layout { display: grid; grid-template-columns: 360px 1fr; gap: 18px; padding: 18px; }
+    .panel { background: var(--panel); border: 1px solid rgba(148,163,184,.24); border-radius: 18px; box-shadow: 0 20px 70px rgba(0,0,0,.34); }
+    .side { padding: 16px; position: sticky; top: 12px; height: calc(100vh - 24px); overflow: auto; }
+    .main { padding: 18px; min-height: 80vh; }
+    .stepButton { width: 100%; text-align: left; border: 1px solid rgba(148,163,184,.24); background: rgba(30,41,59,.75); color: var(--text); border-radius: 14px; padding: 12px; margin-bottom: 8px; cursor: pointer; transition: .18s; }
+    .stepButton:hover, .stepButton.active { border-color: var(--accent); background: rgba(14,165,233,.18); transform: translateX(3px); }
+    .stepButton small { display: block; color: var(--muted); margin-top: 4px; line-height: 1.45; }
+    .controls { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0 16px; }
+    button.action { border: 0; border-radius: 999px; padding: 10px 15px; background: linear-gradient(135deg,#67e8f9,#38bdf8); color:#001018; font-weight: 900; cursor: pointer; }
+    button.action.secondary { background: #334155; color: var(--text); border: 1px solid #475569; }
+    .switches { display: grid; gap: 8px; margin: 12px 0; }
+    label.toggle { display: flex; gap: 8px; align-items: flex-start; color: var(--muted); font-size: 14px; line-height: 1.5; }
+    input[type="checkbox"] { margin-top: 3px; accent-color: #38bdf8; }
+    .progressWrap { height: 12px; border-radius: 999px; background: #020617; border: 1px solid #334155; overflow: hidden; }
+    .progress { height: 100%; width: 0%; background: linear-gradient(90deg,#22c55e,#38bdf8,#a78bfa); transition: width .35s ease; }
+    .scene { margin-top: 18px; min-height: 330px; border-radius: 18px; border: 1px solid rgba(148,163,184,.24); background: linear-gradient(180deg,rgba(30,41,59,.72),rgba(15,23,42,.9)); position: relative; overflow: hidden; padding: 22px; }
+    .rail { position: absolute; left: 40px; right: 40px; top: 168px; height: 3px; background: linear-gradient(90deg,#334155,#38bdf8,#334155); }
+    .nodes { display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 2; margin-top: 78px; }
+    .node { width: 96px; height: 96px; border-radius: 24px; border: 1px solid rgba(148,163,184,.35); background: #0f172a; display: flex; align-items: center; justify-content: center; text-align: center; padding: 8px; font-size: 13px; font-weight: 900; box-shadow: 0 12px 35px rgba(0,0,0,.3); }
+    .node.active { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(56,189,248,.14), 0 0 32px rgba(56,189,248,.45); }
+    .packet { position: absolute; top: 129px; left: 44px; z-index: 3; width: 150px; min-height: 78px; border-radius: 16px; background: linear-gradient(135deg,#0ea5e9,#22c55e); color: #001018; display: flex; align-items: center; justify-content: center; text-align: center; padding: 10px; font-weight: 950; box-shadow: 0 18px 45px rgba(14,165,233,.35); transition: left .55s ease, background .35s, color .35s; animation: pulse 1.15s infinite alternate; }
+    @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.035); } }
+    .dataGrid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 16px; margin-top: 18px; }
+    .card { background: rgba(2,6,23,.64); border: 1px solid rgba(148,163,184,.22); border-radius: 16px; padding: 16px; }
+    .card h3 { margin-bottom: 8px; color: #bfdbfe; }
+    pre { white-space: pre-wrap; word-break: break-word; margin: 0; background: #020617; border: 1px solid #1e293b; border-radius: 14px; padding: 14px; color: #dbeafe; line-height: 1.55; font-size: 13px; overflow: auto; max-height: 430px; }
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .chip { border: 1px solid rgba(148,163,184,.28); border-radius: 999px; padding: 7px 10px; color: var(--muted); background: rgba(15,23,42,.75); font-size: 13px; }
+    .chip.good { color: #bbf7d0; border-color: rgba(34,197,94,.45); }
+    .chip.warn { color: #fef08a; border-color: rgba(250,204,21,.45); }
+    .chip.bad { color: #fecdd3; border-color: rgba(251,113,133,.45); }
+    .explain { color: var(--muted); line-height: 1.8; }
+    table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 14px; }
+    th, td { border-bottom: 1px solid rgba(148,163,184,.18); padding: 11px; text-align: left; vertical-align: top; }
+    th { color: #bfdbfe; background: rgba(30,41,59,.65); }
+    td { color: #dbeafe; }
+    .miniTitle { color: #e0f2fe; font-weight: 900; margin: 16px 0 8px; }
+    .warningBox { border: 1px solid rgba(251,113,133,.5); background: rgba(127,29,29,.25); border-radius: 16px; padding: 14px; color: #fecdd3; line-height: 1.7; }
+    .okBox { border: 1px solid rgba(34,197,94,.45); background: rgba(20,83,45,.22); border-radius: 16px; padding: 14px; color: #bbf7d0; line-height: 1.7; }
+    @media (max-width: 980px) { .layout, .dataGrid { grid-template-columns: 1fr; } .side { position: static; height: auto; } .node { width: 76px; height: 76px; font-size: 11px; } .packet { width: 118px; font-size: 12px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>登入 API：從瀏覽器到伺服器的每一層資料長相</h1>
+    <div class="subtitle">範例：前端送出帳號、密碼、驗證碼。動畫會展示資料如何從 JSON 變 HTTP、被 TLS 加密、切成 TCP Segment、包成 IP Packet、經過網路設備、到 Nginx / Backend / Database 判斷，最後回傳 Token 或錯誤。</div>
+  </header>
+
+  <div class="layout">
+    <aside class="panel side">
+      <h3>流程層級</h3>
+      <div id="stepList"></div>
+      <div class="controls">
+        <button class="action" onclick="play()">自動播放</button>
+        <button class="action secondary" onclick="previousStep()">上一層</button>
+        <button class="action secondary" onclick="nextStep()">下一層</button>
+      </div>
+      <div class="progressWrap"><div class="progress" id="progress"></div></div>
+
+      <h3 style="margin-top:18px;">輔助選項</h3>
+      <div class="switches">
+        <label class="toggle"><input type="checkbox" id="httpsToggle" checked onchange="render()"> 使用 HTTPS / TLS：Header + Body 被加密</label>
+        <label class="toggle"><input type="checkbox" id="captchaToggle" checked onchange="render()"> 啟用驗證碼：captchaId + captchaAnswer</label>
+        <label class="toggle"><input type="checkbox" id="wafToggle" checked onchange="render()"> 啟用 WAF / Rate Limit：阻擋暴力登入與異常 IP</label>
+        <label class="toggle"><input type="checkbox" id="redisToggle" checked onchange="render()"> 啟用 Redis：驗證碼、登入失敗次數、Session 快取</label>
+        <label class="toggle"><input type="checkbox" id="jwtToggle" checked onchange="render()"> 回傳 JWT：accessToken + refreshToken</label>
+      </div>
+    </aside>
+
+    <main class="panel main">
+      <h2 id="title"></h2>
+      <div class="explain" id="summary"></div>
+      <div class="scene">
+        <div class="rail"></div>
+        <div class="packet" id="packet">Login JSON</div>
+        <div class="nodes" id="nodes"></div>
+      </div>
+      <div class="dataGrid">
+        <section class="card">
+          <h3>這一層看到的資料長相</h3>
+          <pre id="dataView"></pre>
+        </section>
+        <section class="card">
+          <h3>這一層技術與輔助機制</h3>
+          <div id="techView"></div>
+          <div class="chips" id="chips"></div>
+        </section>
+      </div>
+
+      <section class="card" style="margin-top:16px;">
+        <h3>登入 API 整體拆解</h3>
+        <table>
+          <thead><tr><th>位置</th><th>看得到什麼</th><th>安全重點</th></tr></thead>
+          <tbody>
+            <tr><td>瀏覽器 DevTools</td><td>URL、Method、Request Payload、Response</td><td>不要把密碼存在 localStorage；正式站必須 HTTPS。</td></tr>
+            <tr><td>網路中間人</td><td>若 HTTPS：通常只能看到 IP、Port、封包大小、部分握手資訊</td><td>HTTP 明文會暴露帳號密碼；HTTPS 可保護 Header 與 Body。</td></tr>
+            <tr><td>Nginx / API Gateway</td><td>解密後完整 HTTP Request</td><td>做 Rate Limit、WAF、Log Masking、IP 黑白名單。</td></tr>
+            <tr><td>Backend</td><td>帳號、密碼、驗證碼、Header、Cookie</td><td>密碼只拿來比對 bcrypt / argon2 hash，不存明文。</td></tr>
+            <tr><td>Database</td><td>userId、passwordHash、role、status</td><td>查詢需參數化，避免 injection；敏感欄位加密或遮罩。</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+<script>
+const nodeNames = ["Browser", "HTTP", "TLS", "TCP", "IP", "Network", "Nginx", "Backend", "DB", "Response"];
+
+function options() {
+  return {
+    https: document.getElementById("httpsToggle").checked,
+    captcha: document.getElementById("captchaToggle").checked,
+    waf: document.getElementById("wafToggle").checked,
+    redis: document.getElementById("redisToggle").checked,
+    jwt: document.getElementById("jwtToggle").checked
+  };
+}
+
+const steps = [
+  {
+    title: "1. 前端表單：使用者輸入帳號、密碼、驗證碼",
+    short: "JS 物件 / Form State",
+    packet: "Form Data",
+    node: 0,
+    summary: "資料一開始只是瀏覽器記憶體中的表單狀態，尚未離開使用者電腦。",
+    data: o => `const loginPayload = {\n  account: "steve@example.com",\n  password: "MyPassword123!",${o.captcha ? `\n  captchaId: "captcha_20260609_abcd",\n  captchaAnswer: "7KQ9",` : ""}\n  deviceId: "browser_fingerprint_hash",\n  rememberMe: false\n};`,
+    tech: o => ["HTML Form", "JavaScript fetch / axios", "Input Validation", "Password Field", "Browser DevTools"],
+    chips: o => ["密碼此時仍是明文", "只能存在記憶體", "不要寫入 console log"]
+  },
+  {
+    title: "2. HTTP Application Layer：變成 RESTful Login Request",
+    short: "HTTP Request",
+    packet: "HTTP\nHeader + JSON",
+    node: 1,
+    summary: "fetch 會把 JS 物件轉成 HTTP Request，包含 Method、Path、Headers、JSON Body。",
+    data: o => `POST /api/auth/login HTTP/1.1\nHost: api.example.com\nContent-Type: application/json\nAccept: application/json\nUser-Agent: Chrome/148\nOrigin: https://app.example.com${o.waf ? `\nX-Request-Id: req_8f32a9` : ""}\n\n{\n  "account": "steve@example.com",\n  "password": "MyPassword123!",${o.captcha ? `\n  "captchaId": "captcha_20260609_abcd",\n  "captchaAnswer": "7KQ9",` : ""}\n  "deviceId": "browser_fingerprint_hash",\n  "rememberMe": false\n}`,
+    tech: o => ["RESTful API", "HTTP Header", "JSON Body", "CORS", "Content-Type", "Origin / Referer"],
+    chips: o => ["Header + Body 尚未加密前可讀", "CORS 是瀏覽器安全限制", "POST 不代表加密"]
+  },
+  {
+    title: "3. TLS / HTTPS：HTTP 被加密成 TLS Record",
+    short: "TLS Encryption",
+    packet: o => o.https ? "TLS\nEncrypted" : "HTTP\nPlain Text",
+    node: 2,
+    summary: "HTTPS 會把 HTTP Header 與 Body 加密。若沒 HTTPS，帳號密碼在網路路徑上可能被看見。",
+    data: o => o.https ? `TLS 1.3 Record\nContent-Type: Application Data\nVersion: 0x0303\nEncrypted Payload:\n  17 03 03 02 8a 9f 21 c0 7d e4 ...\n\n外部看不到：\n- account\n- password\n- captchaAnswer\n- Authorization / Cookie\n\n仍可能看得到或推測：\n- 目標 IP\n- Port 443\n- 封包大小\n- 連線時間\n- 部分 SNI / DNS 資訊` : `未使用 HTTPS，HTTP 以明文傳輸：\n\nPOST /api/auth/login HTTP/1.1\n{\n  "account": "steve@example.com",\n  "password": "MyPassword123!"\n}\n\n危險：中間網路設備、惡意 Wi-Fi、代理伺服器可能看見帳密。`,
+    tech: o => ["TLS 1.2 / TLS 1.3", "Certificate", "Public Key / Private Key", "ECDHE", "AES-GCM / ChaCha20-Poly1305", "HSTS"],
+    chips: o => o.https ? ["Header + Body 被加密", "防竊聽", "防竄改"] : ["危險：帳密明文", "正式環境不可用", "應強制 HTTPS"]
+  },
+  {
+    title: "4. TCP Transport Layer：可靠傳輸與切段",
+    short: "TCP Segment",
+    packet: "TCP\nSegments",
+    node: 3,
+    summary: "TLS 資料會被 TCP 切成多個 Segment，透過 Sequence / ACK 保證順序與重傳。",
+    data: o => `TCP Segment #1\nSource Port: 53128\nDestination Port: 443\nSequence Number: 1001\nACK Number: 7601\nFlags: PSH, ACK\nPayload: ${o.https ? "TLS encrypted bytes" : "HTTP plain text bytes"}\n\nTCP Segment #2\nSource Port: 53128\nDestination Port: 443\nSequence Number: 2461\nACK Number: 7601\nFlags: PSH, ACK\nPayload: continued bytes`,
+    tech: o => ["TCP 3-Way Handshake", "Sequence Number", "ACK", "Retransmission", "Flow Control", "Congestion Control"],
+    chips: o => ["確保資料完整到達", "Port 443", "掉包會重傳"]
+  },
+  {
+    title: "5. IP Network Layer：加上來源與目的地 IP",
+    short: "IP Packet",
+    packet: "IP\nPacket",
+    node: 4,
+    summary: "TCP Segment 外面再包 IP Header，網路設備依照 Destination IP 決定路由。",
+    data: o => `IP Packet\nSource IP: 192.168.1.23\nDestination IP: 34.80.123.10\nProtocol: TCP\nTTL: 64\n\nPayload:\n  TCP Segment {\n    Destination Port: 443,\n    Payload: ${o.https ? "TLS encrypted bytes" : "HTTP plain text bytes"}\n  }`,
+    tech: o => ["IPv4 / IPv6", "Routing", "NAT", "TTL", "ICMP", "Subnet"],
+    chips: o => ["IP 只管送到哪", "不理解 JSON", "不理解密碼"]
+  },
+  {
+    title: "6. 網路設備：Router / NAT / Firewall / WAF / Load Balancer",
+    short: "Network Devices",
+    packet: "Network\nHops",
+    node: 5,
+    summary: "封包可能經過家用路由器、ISP、雲端 Load Balancer、防火牆或 WAF。多數 L3/L4 設備看不到 HTTPS 內文。",
+    data: o => `Possible Path\nClient 192.168.1.23\n  → Home Router NAT: 220.xxx.xxx.xxx\n  → ISP Router\n  → Cloud Edge\n  → ${o.waf ? "WAF / DDoS Protection\n  → " : ""}Load Balancer 34.80.123.10\n  → Server 10.140.0.86\n\n${o.waf ? `WAF / Rate Limit Example:\n- Same IP login failed > 5 times / min → block 5 min\n- Suspicious User-Agent → challenge\n- SQL Injection pattern → reject` : `WAF disabled:\n- 仍可由後端做基本 rate limit\n- 但邊界防護較弱`}`,
+    tech: o => ["Router", "NAT", "Firewall", "DDoS Protection", "WAF", "Load Balancer", "CDN", "API Gateway"],
+    chips: o => o.waf ? ["可擋暴力登入", "可擋異常 IP", "可做地區限制"] : ["邊界防護較少", "後端壓力較大", "建議至少限流"]
+  },
+  {
+    title: "7. Nginx / API Gateway：解密、反向代理、轉發",
+    short: "Reverse Proxy",
+    packet: "Nginx\nProxy",
+    node: 6,
+    summary: "如果 TLS 終止在 Nginx 或 Load Balancer，這裡會看到解密後的完整 HTTP Request，然後轉發給後端服務。",
+    data: o => `Nginx receives:\nPOST /api/auth/login HTTP/1.1\nHost: api.example.com\nX-Forwarded-For: 220.xxx.xxx.xxx\nX-Real-IP: 220.xxx.xxx.xxx\nX-Request-Id: req_8f32a9\n\nproxy_pass http://auth-service:3000;\n\nImportant Log Masking:\naccount=steve@example.com\npassword=******\ncaptchaAnswer=******`,
+    tech: o => ["Nginx", "Reverse Proxy", "SSL Termination", "proxy_pass", "X-Forwarded-For", "Access Log", "Rate Limit"],
+    chips: o => ["可看見解密後內容", "密碼必須遮罩", "可轉發到多台後端"]
+  },
+  {
+    title: "8. Backend Middleware：解析 Body、驗證 CORS、驗證碼、JWT / Session",
+    short: "Middleware",
+    packet: "Backend\nParsed Req",
+    node: 7,
+    summary: "Node.js / Java / Python 後端會解析 JSON Body，跑過 CORS、Logger、Rate Limit、Captcha、Validation 等中介層。",
+    data: o => `request.method = "POST"\nrequest.path = "/api/auth/login"\nrequest.ip = "220.xxx.xxx.xxx"\nrequest.body = {\n  account: "steve@example.com",\n  password: "MyPassword123!",${o.captcha ? `\n  captchaId: "captcha_20260609_abcd",\n  captchaAnswer: "7KQ9",` : ""}\n  deviceId: "browser_fingerprint_hash",\n  rememberMe: false\n}\n\nMiddleware Pipeline:\n1. requestId()\n2. cors()\n3. jsonBodyParser()\n4. rateLimitByIpAndAccount()${o.captcha ? `\n5. verifyCaptcha(captchaId, captchaAnswer)` : ""}\n6. validateLoginDto()\n7. authController.login()`,
+    tech: o => ["Express / NestJS / FastAPI", "Middleware", "DTO Validation", "CORS", "Rate Limit", "Captcha Verification", "Request Logger"],
+    chips: o => ["Body 變成物件", "檢查格式", "錯誤會提早回傳"]
+  },
+  {
+    title: "9. Service / Database：比對密碼 Hash、角色、狀態與登入規則",
+    short: "Business + DB",
+    packet: "DB\nCheck",
+    node: 8,
+    summary: "真正的登入判斷在 Service。密碼不應該解密，而是把使用者輸入的密碼拿去跟資料庫中的 hash 比對。",
+    data: o => `Database User Record:\n{\n  id: "user_123",\n  account: "steve@example.com",\n  passwordHash: "$argon2id$v=19$m=65536,t=3,p=4$...",\n  role: "admin",\n  status: "active",\n  failedLoginCount: 0,\n  lastLoginAt: "2026-06-09T06:20:00+08:00"\n}\n\nService Decision:\n- account exists? yes\n- status active? yes\n- captcha valid? ${o.captcha ? "yes" : "skipped"}\n- password match hash? yes\n- role allowed? yes\n${o.redis ? `\nRedis Used For:\n- captcha:captcha_20260609_abcd → 7KQ9\n- login_fail:steve@example.com → 0\n- session:user_123 → active` : ""}`,
+    tech: o => ["Service Layer", "Repository", "MongoDB / PostgreSQL", "Redis", "bcrypt / argon2", "Transaction", "Audit Log"],
+    chips: o => ["密碼只比對 Hash", "不可存明文密碼", "失敗次數要記錄"]
+  },
+  {
+    title: "10. Response：產生 Token / Cookie 並原路加密回傳",
+    short: "HTTP Response",
+    packet: "Response\nJSON",
+    node: 9,
+    summary: "登入成功後回傳 access token、refresh token 或 Set-Cookie；失敗則回傳 401 / 403 / 429 等錯誤。Response 也會經 TLS 加密後回到瀏覽器。",
+    data: o => o.jwt ? `HTTP/1.1 200 OK\nContent-Type: application/json\nCache-Control: no-store\nSet-Cookie: refreshToken=REFRESH_TOKEN; HttpOnly; Secure; SameSite=Lax\n\n{\n  "success": true,\n  "accessToken": "eyJhbGciOiJIUzI1NiIs...",\n  "expiresIn": 900,\n  "user": {\n    "id": "user_123",\n    "name": "Steve",\n    "role": "admin"\n  }\n}\n\nCommon Error Examples:\n401 Invalid account or password\n403 Account disabled\n422 Captcha invalid\n429 Too many login attempts` : `HTTP/1.1 200 OK\nContent-Type: application/json\nSet-Cookie: sessionId=sess_abc123; HttpOnly; Secure; SameSite=Lax\n\n{\n  "success": true,\n  "user": {\n    "id": "user_123",\n    "name": "Steve",\n    "role": "admin"\n  }\n}`,
+    tech: o => ["HTTP Status Code", "JWT", "HttpOnly Cookie", "Secure Cookie", "SameSite", "Cache-Control", "Error Handler"],
+    chips: o => ["Response 也會被 TLS 加密", "Token 要有過期時間", "登入錯誤訊息不要太明確"]
+  }
+];
+
+let currentIndex = 0;
+let timer = null;
+
+function buildStepList() {
+  const list = document.getElementById("stepList");
+  list.innerHTML = steps.map((step, index) => `
+    <button class="stepButton" onclick="goTo(${index})" id="step-${index}">
+      ${step.title}
+      <small>${step.short}</small>
+    </button>
+  `).join("");
+}
+
+function buildNodes(activeNode) {
+  const nodes = document.getElementById("nodes");
+  nodes.innerHTML = nodeNames.map((name, index) => `<div class="node ${index === activeNode ? "active" : ""}">${name}</div>`).join("");
+}
+
+function render() {
+  const option = options();
+  const step = steps[currentIndex];
+  const title = document.getElementById("title");
+  const summary = document.getElementById("summary");
+  const dataView = document.getElementById("dataView");
+  const techView = document.getElementById("techView");
+  const chips = document.getElementById("chips");
+  const packet = document.getElementById("packet");
+  const progress = document.getElementById("progress");
+
+  title.textContent = step.title;
+  summary.textContent = step.summary;
+  dataView.textContent = step.data(option);
+
+  const techItems = step.tech(option);
+  techView.innerHTML = `<ul class="explain">${techItems.map(item => `<li>${item}</li>`).join("")}</ul>`;
+  chips.innerHTML = step.chips(option).map(item => `<span class="chip ${item.includes("危險") ? "bad" : item.includes("建議") ? "warn" : "good"}">${item}</span>`).join("");
+
+  const label = typeof step.packet === "function" ? step.packet(option) : step.packet;
+  packet.innerHTML = label.replace(/\n/g, "<br>");
+  packet.style.left = `calc(${step.node * 10.5}% + 44px)`;
+  if (currentIndex === 2 && !option.https) {
+    packet.style.background = "linear-gradient(135deg,#fb7185,#facc15)";
+    packet.style.color = "#220000";
+  } else if (currentIndex >= 2 && option.https) {
+    packet.style.background = "linear-gradient(135deg,#7c3aed,#38bdf8)";
+    packet.style.color = "#f8fafc";
+  } else {
+    packet.style.background = "linear-gradient(135deg,#0ea5e9,#22c55e)";
+    packet.style.color = "#001018";
+  }
+
+  buildNodes(step.node);
+  progress.style.width = `${((currentIndex + 1) / steps.length) * 100}%`;
+
+  document.querySelectorAll(".stepButton").forEach((button, index) => button.classList.toggle("active", index === currentIndex));
+}
+
+function goTo(index) {
+  currentIndex = index;
+  render();
+}
+
+function nextStep() {
+  currentIndex = (currentIndex + 1) % steps.length;
+  render();
+}
+
+function previousStep() {
+  currentIndex = (currentIndex - 1 + steps.length) % steps.length;
+  render();
+}
+
+function play() {
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
+    return;
+  }
+  timer = setInterval(() => nextStep(), 1400);
+}
+
+buildStepList();
+render();
+</script>
+</body>
+</html>

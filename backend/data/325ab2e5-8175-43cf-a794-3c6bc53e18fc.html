@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 模型使用量儀表板</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #0a0d14;
+      --surface: #111620;
+      --surface2: #1a2033;
+      --border: rgba(255,255,255,0.08);
+      --text: #e8ecf4;
+      --text-muted: #6b7a99;
+      --purple: #7c3aed;
+      --purple-light: #a78bfa;
+      --blue: #2563eb;
+      --blue-light: #60a5fa;
+      --green: #059669;
+      --green-light: #34d399;
+      --orange: #d97706;
+      --orange-light: #fbbf24;
+      --red: #dc2626;
+      --red-light: #f87171;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .header-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--purple), var(--blue));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+
+    h1 { font-size: 22px; font-weight: 700; }
+    h1 span { color: var(--purple-light); }
+
+    .header-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+    .refresh-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      transition: background .2s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .refresh-btn:hover { background: #24304a; }
+
+    /* ── API Key config ── */
+    .config-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin-bottom: 28px;
+    }
+    .config-card h3 { font-size: 14px; color: var(--text-muted); margin-bottom: 14px; letter-spacing: .5px; text-transform: uppercase; }
+    .config-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+    .config-group { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 220px; }
+    .config-group label { font-size: 12px; color: var(--text-muted); }
+    .config-group input {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .config-group input:focus { border-color: var(--purple-light); }
+    .fetch-btn {
+      background: linear-gradient(135deg, var(--purple), var(--blue));
+      color: #fff;
+      border: none;
+      padding: 9px 22px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      white-space: nowrap;
+      transition: opacity .2s;
+    }
+    .fetch-btn:hover { opacity: .85; }
+    .fetch-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* ── Stats Grid ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: transform .2s, border-color .2s;
+    }
+    .stat-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.15); }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--accent, linear-gradient(90deg, var(--purple), var(--blue)));
+      border-radius: 14px 14px 0 0;
+    }
+
+    .stat-card.purple { --accent: linear-gradient(90deg, #7c3aed, #a78bfa); }
+    .stat-card.blue   { --accent: linear-gradient(90deg, #2563eb, #60a5fa); }
+    .stat-card.green  { --accent: linear-gradient(90deg, #059669, #34d399); }
+    .stat-card.orange { --accent: linear-gradient(90deg, #d97706, #fbbf24); }
+
+    .stat-label { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+    .stat-value { font-size: 28px; font-weight: 700; letter-spacing: -1px; }
+    .stat-sub { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+    .stat-icon { position: absolute; top: 18px; right: 18px; font-size: 22px; opacity: .3; }
+
+    /* ── Two column layout ── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+    @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px 24px;
+    }
+    .panel-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+    .badge-purple { background: rgba(124,58,237,.25); color: var(--purple-light); }
+    .badge-blue   { background: rgba(37,99,235,.25);  color: var(--blue-light); }
+
+    /* ── Model Row ── */
+    .model-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .model-row:last-child { border-bottom: none; }
+    .model-info { flex: 1; }
+    .model-name { font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+    .model-tokens { font-size: 12px; color: var(--text-muted); }
+    .model-bar-wrap { flex: 1; margin: 0 16px; }
+    .model-bar-bg {
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .model-bar {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 1s cubic-bezier(.4,0,.2,1);
+    }
+    .model-pct { font-size: 13px; font-weight: 600; min-width: 42px; text-align: right; }
+
+    /* ── Chart ── */
+    .chart-wrap { position: relative; height: 220px; }
+
+    /* ── Status dot ── */
+    .status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green-light); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+    /* ── Error / Loading states ── */
+    .loading { text-align: center; padding: 40px; color: var(--text-muted); }
+    .error-msg {
+      background: rgba(220,38,38,.1);
+      border: 1px solid rgba(220,38,38,.3);
+      color: var(--red-light);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+    .info-msg {
+      background: rgba(37,99,235,.1);
+      border: 1px solid rgba(37,99,235,.3);
+      color: var(--blue-light);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--purple-light);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .updated-time { font-size: 12px; color: var(--text-muted); }
+
+    /* ── Cheat Sheet ── */
+    .cheat-sheet-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; margin-bottom:28px; }
+    .cheat-card {
+      background:rgba(255,255,255,0.02); border:1px solid var(--border);
+      border-radius:12px; padding:16px; position:relative; overflow:hidden;
+    }
+    .cheat-card::before {
+      content:''; position:absolute; top:0; left:0; width:4px; height:100%;
+    }
+    .cheat-card.antigravity::before { background:var(--purple-light); }
+    .cheat-card.vscode::before { background:var(--blue-light); }
+    .cheat-card.claude-cli::before { background:var(--orange-light); }
+    .cheat-title { font-size:14px; font-weight:700; color:var(--text); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+    .cheat-step { font-size:12px; color:var(--text-muted); line-height:1.6; margin:6px 0; padding-left:14px; position:relative; }
+    .cheat-step::before { content:'•'; position:absolute; left:0; color:var(--text-muted); }
+    .cheat-code {
+      background:rgba(255,255,255,0.06); color:var(--text);
+      font-family:'Courier New',Courier,monospace; padding:2px 6px;
+      border-radius:4px; font-size:11px; font-weight:600;
+    }
+
+    /* ── Live controls ── */
+    .live-bar {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 16px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .live-bar label { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+    .live-bar select {
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); padding: 5px 10px; border-radius: 6px;
+      font-family: 'Inter', sans-serif; font-size: 12px; outline: none;
+    }
+    .live-toggle {
+      background: rgba(5,150,105,.2); border: 1px solid rgba(52,211,153,.3);
+      color: var(--green-light); padding: 5px 14px; border-radius: 6px;
+      cursor: pointer; font-size: 12px; font-weight: 600;
+      font-family: 'Inter', sans-serif; transition: all .2s;
+    }
+    .live-toggle.off {
+      background: rgba(220,38,38,.1); border-color: rgba(248,113,113,.3);
+      color: var(--red-light);
+    }
+    .countdown { font-size: 12px; color: var(--text-muted); min-width: 90px; }
+    .delta-badge {
+      font-size: 11px; padding: 2px 8px; border-radius: 20px;
+      background: rgba(52,211,153,.2); color: var(--green-light);
+      font-weight: 600; display: none;
+    }
+    @keyframes flash { 0%,100%{opacity:1} 50%{opacity:.2} }
+    .flash { animation: flash .5s ease 3; }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<div class="header">
+  <div class="header-title">
+    <div class="logo">🤖</div>
+    <div>
+      <h1>AI <span>使用量</span>儀表板</h1>
+      <div class="header-sub">Antigravity &amp; VS Code · Anthropic API</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div class="status"><span class="dot"></span><span id="updated-label">尚未載入</span></div>
+    <button class="refresh-btn" onclick="fetchUsage()">⟳ 重新整理</button>
+  </div>
+</div>
+
+<!-- ── Quota Cheat Sheet ── -->
+<div class="cheat-sheet-grid">
+  <div class="cheat-card antigravity">
+    <div class="cheat-title">🪐 Antigravity 官方額度查詢</div>
+    <div class="cheat-step"><b>方法 1 (GUI 查詢)：</b> 點選右上角 ⚙️ Settings → 進入 <span class="cheat-code">Advanced Settings</span> → 點選 <span class="cheat-code">Models</span>，即可看見各模型的剩餘額度與重置時間。</div>
+    <div class="cheat-step"><b>方法 2 (CLI 查詢)：</b> 在終端機/ Agent 對話框中輸入命令 <span class="cheat-code">/credits</span> 即可開啟即時額度面板。</div>
+  </div>
+  <div class="cheat-card vscode">
+    <div class="cheat-title">💻 VS Code Copilot 額度查詢</div>
+    <div class="cheat-step"><b>方法 1 (狀態列)：</b> 點擊 VS Code 右下角的 Copilot 圖示，即可直接看見目前額度狀態。</div>
+    <div class="cheat-step"><b>方法 2 (命令面板)：</b> 按 <span class="cheat-code">Cmd+Shift+P</span> 搜尋 <span class="cheat-code">Copilot: Show Usage</span>。</div>
+    <div class="cheat-step"><b>方法 3 (Web 查詢)：</b> 開啟瀏覽器造訪 <a href="https://github.com/settings/copilot" target="_blank" style="color:var(--blue-light);text-decoration:underline;">github.com/settings/copilot</a>。</div>
+  </div>
+  <div class="cheat-card claude-cli">
+    <div class="cheat-title">🟤 Claude Code CLI 查詢</div>
+    <div class="cheat-step">在本機終端機中，輸入啟動指令 <span class="cheat-code">claude</span>。</div>
+    <div class="cheat-step">進入互動模式後，輸入斜線指令 <span class="cheat-code">/credits</span> 即可查詢目前 API 點數與使用狀態。</div>
+  </div>
+</div>
+
+<!-- ── Config ── -->
+<div class="config-card">
+  <h3>⚙️ API 設定</h3>
+  <div class="config-row">
+    <div class="config-group">
+      <label>Anthropic API Key</label>
+      <input type="password" id="apiKey" placeholder="sk-ant-..." />
+    </div>
+    <div class="config-group" style="max-width:160px;">
+      <label>查詢月份</label>
+      <input type="month" id="queryMonth" />
+    </div>
+    <button class="fetch-btn" id="fetchBtn" onclick="fetchUsage()">📊 載入使用量</button>
+  </div>
+  <div id="msgArea"></div>
+  <!-- Live polling bar -->
+  <div class="live-bar">
+    <label>⚡ 即時偵測</label>
+    <select id="pollInterval">
+      <option value="30">每 30 秒</option>
+      <option value="60" selected>每 1 分鐘</option>
+      <option value="120">每 2 分鐘</option>
+      <option value="300">每 5 分鐘</option>
+    </select>
+    <button class="live-toggle off" id="liveToggle" onclick="toggleLive()">● 停止監控</button>
+    <span class="countdown" id="countdown">—</span>
+    <span class="delta-badge" id="deltaBadge">＋新增 token！</span>
+  </div>
+  <div class="info-msg" style="margin-top:12px;">
+    ⚠️ API Key 僅在本機瀏覽器使用，不會傳送至任何伺服器。由於 Anthropic 的 Usage API 有 CORS 限制，請確保使用支援 CORS 的環境，或透過本機 Proxy 運行。
+  </div>
+</div>
+
+<!-- ── Stats Grid ── -->
+<div class="stats-grid">
+  <div class="stat-card purple">
+    <span class="stat-icon">📨</span>
+    <div class="stat-label">總 Input Tokens</div>
+    <div class="stat-value" id="totalInput">—</div>
+    <div class="stat-sub" id="totalInputSub">等待載入...</div>
+  </div>
+  <div class="stat-card blue">
+    <span class="stat-icon">📤</span>
+    <div class="stat-label">總 Output Tokens</div>
+    <div class="stat-value" id="totalOutput">—</div>
+    <div class="stat-sub" id="totalOutputSub">等待載入...</div>
+  </div>
+  <div class="stat-card green">
+    <span class="stat-icon">🔢</span>
+    <div class="stat-label">API 請求次數</div>
+    <div class="stat-value" id="totalRequests">—</div>
+    <div class="stat-sub" id="totalRequestsSub">等待載入...</div>
+  </div>
+  <div class="stat-card orange">
+    <span class="stat-icon">💰</span>
+    <div class="stat-label">本月估算費用 (USD)</div>
+    <div class="stat-value" id="totalCost">—</div>
+    <div class="stat-sub" id="totalCostSub">基於 Sonnet 4.5 定價估算</div>
+  </div>
+</div>
+
+<!-- ── Two column ── -->
+<div class="two-col">
+
+  <!-- Antigravity -->
+  <div class="panel">
+    <div class="panel-title">🪐 Antigravity <span class="badge badge-purple">本月</span></div>
+    <div id="antigravityModels">
+      <div class="loading">請先載入資料...</div>
+    </div>
+  </div>
+
+  <!-- VS Code -->
+  <div class="panel">
+    <div class="panel-title">💻 VS Code Extension <span class="badge badge-blue">本月</span></div>
+    <div id="vscodeModels">
+      <div class="loading">請先載入資料...</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Chart ── -->
+<div class="panel" style="margin-bottom:28px;">
+  <div class="panel-title">📈 每日 Token 使用趨勢</div>
+  <div class="chart-wrap">
+    <canvas id="usageChart"></canvas>
+  </div>
+</div>
+
+<!-- ── Pricing Table ── -->
+<div class="panel" style="margin-bottom:28px;">
+  <div class="panel-title">💸 AI 模型費用總覽 <span class="badge badge-purple">2026.06</span></div>
+  <style>
+    .price-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .price-table th {
+      text-align:left; padding:10px 14px;
+      background:var(--surface2); color:var(--text-muted);
+      font-size:11px; letter-spacing:.5px; text-transform:uppercase;
+      border-bottom:1px solid var(--border);
+    }
+    .price-table td { padding:11px 14px; border-bottom:1px solid rgba(255,255,255,0.04); vertical-align:middle; }
+    .price-table tr:last-child td { border-bottom:none; }
+    .price-table tr:hover td { background:rgba(255,255,255,0.02); }
+    .provider-badge {
+      display:inline-block; padding:2px 8px; border-radius:4px;
+      font-size:11px; font-weight:600; white-space:nowrap;
+    }
+    .pb-anthropic { background:rgba(205,127,50,.2);  color:#e8975a; }
+    .pb-google    { background:rgba(66,133,244,.2);   color:#60a5fa; }
+    .pb-openai    { background:rgba(16,163,127,.2);   color:#34d399; }
+    .pb-deepseek  { background:rgba(124,58,237,.2);   color:#a78bfa; }
+    .pb-xai       { background:rgba(220,220,220,.1);  color:#d4d4d4; }
+    .pb-mistral   { background:rgba(251,146,60,.2);   color:#fb923c; }
+    .tier-tag {
+      display:inline-block; padding:1px 6px; border-radius:4px;
+      font-size:10px; font-weight:500; margin-left:6px;
+    }
+    .tier-flagship { background:rgba(220,38,38,.2);  color:#f87171; }
+    .tier-balanced { background:rgba(37,99,235,.2);  color:#60a5fa; }
+    .tier-fast     { background:rgba(5,150,105,.2);  color:#34d399; }
+    .price-val { font-weight:600; font-variant-numeric:tabular-nums; }
+    .price-note { font-size:11px; color:var(--text-muted); margin-top:2px; }
+    .cheap { color:var(--green-light); }
+    .mid   { color:var(--orange-light); }
+    .high  { color:var(--red-light); }
+    .divider-row td { background:var(--surface2); color:var(--text-muted); font-size:11px; font-weight:600; letter-spacing:.4px; padding:7px 14px; }
+  </style>
+  <div style="overflow-x:auto;">
+  <table class="price-table">
+    <thead>
+      <tr>
+        <th>模型</th>
+        <th>供應商</th>
+        <th>Input ($/MTok)</th>
+        <th>Output ($/MTok)</th>
+        <th>特色</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Anthropic -->
+      <tr class="divider-row"><td colspan="5">🟤 Anthropic Claude</td></tr>
+      <tr>
+        <td><b>Claude Fable 5</b><span class="tier-tag tier-flagship">Flagship</span></td>
+        <td><span class="provider-badge pb-anthropic">Anthropic</span></td>
+        <td><span class="price-val high">$10.00</span></td>
+        <td><span class="price-val high">$50.00</span></td>
+        <td><div class="price-note">最新旗艦，2026.06 發布</div></td>
+      </tr>
+      <tr>
+        <td><b>Claude Opus 4.7</b><span class="tier-tag tier-flagship">Flagship</span></td>
+        <td><span class="provider-badge pb-anthropic">Anthropic</span></td>
+        <td><span class="price-val high">$5.00</span></td>
+        <td><span class="price-val high">$25.00</span></td>
+        <td><div class="price-note">支援 Prompt Cache 折扣</div></td>
+      </tr>
+      <tr>
+        <td><b>Claude Sonnet 4.6</b><span class="tier-tag tier-balanced">Balanced</span></td>
+        <td><span class="provider-badge pb-anthropic">Anthropic</span></td>
+        <td><span class="price-val mid">$3.00</span></td>
+        <td><span class="price-val mid">$15.00</span></td>
+        <td><div class="price-note">Antigravity 預設使用</div></td>
+      </tr>
+      <tr>
+        <td><b>Claude Haiku 3.5</b><span class="tier-tag tier-fast">Fast</span></td>
+        <td><span class="provider-badge pb-anthropic">Anthropic</span></td>
+        <td><span class="price-val cheap">$0.80</span></td>
+        <td><span class="price-val cheap">$4.00</span></td>
+        <td><div class="price-note">低延遲輕量任務首選</div></td>
+      </tr>
+      <!-- Google -->
+      <tr class="divider-row"><td colspan="5">🔵 Google Gemini</td></tr>
+      <tr>
+        <td><b>Gemini 3.5 Flash</b><span class="tier-tag tier-fast">Fast</span></td>
+        <td><span class="provider-badge pb-google">Google</span></td>
+        <td><span class="price-val mid">$1.50</span></td>
+        <td><span class="price-val mid">$9.00</span></td>
+        <td><div class="price-note">支援 Context Caching</div></td>
+      </tr>
+      <tr>
+        <td><b>Gemini 2.5 Pro</b><span class="tier-tag tier-balanced">Balanced</span></td>
+        <td><span class="provider-badge pb-google">Google</span></td>
+        <td><span class="price-val cheap">$1.25</span></td>
+        <td><span class="price-val mid">$10.00</span></td>
+        <td><div class="price-note">200K context window</div></td>
+      </tr>
+      <tr>
+        <td><b>Gemini 1.5 Flash</b><span class="tier-tag tier-fast">Fast</span></td>
+        <td><span class="provider-badge pb-google">Google</span></td>
+        <td><span class="price-val cheap">$0.075</span></td>
+        <td><span class="price-val cheap">$0.30</span></td>
+        <td><div class="price-note">超低成本、AI Studio 免費配額</div></td>
+      </tr>
+      <!-- OpenAI -->
+      <tr class="divider-row"><td colspan="5">🟢 OpenAI / ChatGPT</td></tr>
+      <tr>
+        <td><b>o3-pro</b><span class="tier-tag tier-flagship">Flagship</span></td>
+        <td><span class="provider-badge pb-openai">OpenAI</span></td>
+        <td><span class="price-val high">$20.00</span></td>
+        <td><span class="price-val high">$80.00</span></td>
+        <td><div class="price-note">最強推理，慢且極貴</div></td>
+      </tr>
+      <tr>
+        <td><b>o3</b><span class="tier-tag tier-balanced">Reasoning</span></td>
+        <td><span class="provider-badge pb-openai">OpenAI</span></td>
+        <td><span class="price-val mid">$2.00</span></td>
+        <td><span class="price-val mid">$8.00</span></td>
+        <td><div class="price-note">Batch API 享 5 折</div></td>
+      </tr>
+      <tr>
+        <td><b>GPT-4o</b><span class="tier-tag tier-balanced">Balanced</span></td>
+        <td><span class="provider-badge pb-openai">OpenAI</span></td>
+        <td><span class="price-val cheap">$2.50</span></td>
+        <td><span class="price-val mid">$10.00</span></td>
+        <td><div class="price-note">多模態，支援視覺/音訊</div></td>
+      </tr>
+      <tr>
+        <td><b>GPT-4.1 mini</b><span class="tier-tag tier-fast">Fast</span></td>
+        <td><span class="provider-badge pb-openai">OpenAI</span></td>
+        <td><span class="price-val cheap">$0.40</span></td>
+        <td><span class="price-val cheap">$1.60</span></td>
+        <td><div class="price-note">輕量高速</div></td>
+      </tr>
+      <tr>
+        <td><b>GPT-4o mini</b><span class="tier-tag tier-fast">Fast</span></td>
+        <td><span class="provider-badge pb-openai">OpenAI</span></td>
+        <td><span class="price-val cheap">$0.15</span></td>
+        <td><span class="price-val cheap">$0.60</span></td>
+        <td><div class="price-note">CP 值極高</div></td>
+      </tr>
+      <!-- DeepSeek -->
+      <tr class="divider-row"><td colspan="5">🟣 DeepSeek</td></tr>
+      <tr>
+        <td><b>DeepSeek R1</b><span class="tier-tag tier-balanced">Reasoning</span></td>
+        <td><span class="provider-badge pb-deepseek">DeepSeek</span></td>
+        <td><span class="price-val cheap">$0.55</span></td>
+        <td><span class="price-val cheap">$2.19</span></td>
+        <td><div class="price-note">開源推理模型，性價比超高</div></td>
+      </tr>
+      <tr>
+        <td><b>DeepSeek V3</b><span class="tier-tag tier-fast">Fast</span></td>
+        <td><span class="provider-badge pb-deepseek">DeepSeek</span></td>
+        <td><span class="price-val cheap">$0.27</span></td>
+        <td><span class="price-val cheap">$1.10</span></td>
+        <td><div class="price-note">全球最低價旗艦之一</div></td>
+      </tr>
+      <!-- xAI -->
+      <tr class="divider-row"><td colspan="5">⚫ xAI Grok</td></tr>
+      <tr>
+        <td><b>Grok 3</b><span class="tier-tag tier-flagship">Flagship</span></td>
+        <td><span class="provider-badge pb-xai">xAI</span></td>
+        <td><span class="price-val mid">$3.00</span></td>
+        <td><span class="price-val mid">$15.00</span></td>
+        <td><div class="price-note">即時 X (Twitter) 資料存取</div></td>
+      </tr>
+      <!-- Mistral -->
+      <tr class="divider-row"><td colspan="5">🟠 Mistral</td></tr>
+      <tr>
+        <td><b>Mistral Large 2</b><span class="tier-tag tier-balanced">Balanced</span></td>
+        <td><span class="provider-badge pb-mistral">Mistral</span></td>
+        <td><span class="price-val cheap">$2.00</span></td>
+        <td><span class="price-val cheap">$6.00</span></td>
+        <td><div class="price-note">歐洲合規，多語言強</div></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+  <div style="margin-top:12px;font-size:11px;color:var(--text-muted);">
+    📅 定價資料更新日期：2026-06-10 ·
+    MTok = 1,000,000 tokens ·
+    <a href="https://www.anthropic.com/pricing" target="_blank" style="color:var(--purple-light);">Anthropic</a> ·
+    <a href="https://ai.google.dev/pricing" target="_blank" style="color:var(--blue-light);">Google</a> ·
+    <a href="https://openai.com/api/pricing/" target="_blank" style="color:var(--green-light);">OpenAI</a>
+  </div>
+</div>
+
+<!-- ── Subscription Table ── -->
+<div class="panel" style="margin-bottom:28px;">
+  <div class="panel-title">🎫 會員訂閱方案對照 <span class="badge badge-blue">2026.06</span></div>
+  <style>
+    .sub-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .sub-table th {
+      text-align:left; padding:10px 14px;
+      background:var(--surface2); color:var(--text-muted);
+      font-size:11px; letter-spacing:.5px; text-transform:uppercase;
+      border-bottom:1px solid var(--border);
+    }
+    .sub-table td { padding:11px 14px; border-bottom:1px solid rgba(255,255,255,0.04); vertical-align:top; }
+    .sub-table tr:last-child td { border-bottom:none; }
+    .sub-table tr:hover td { background:rgba(255,255,255,0.02); }
+    .sub-table .divider-row td { background:var(--surface2); color:var(--text-muted); font-size:11px; font-weight:600; letter-spacing:.4px; padding:7px 14px; }
+    /* ── Selectable plan row ── */
+    .plan-row { cursor:pointer; transition: background .15s; }
+    .plan-row td { border-left:3px solid transparent; transition: border-color .2s, background .2s; }
+    .plan-row:hover td { background:rgba(255,255,255,0.03) !important; }
+    .plan-row.selected td { background:rgba(52,211,153,0.07) !important; border-left-color:var(--green-light); }
+    .plan-row.selected .plan-name::before { content: '✔ '; color:var(--green-light); }
+    .select-hint { font-size:11px; color:var(--text-muted); padding:4px 0; }
+    /* ── TWD note ── */
+    .twd { display:block; font-size:11px; color:var(--text-muted); font-weight:400; margin-top:2px; }
+    /* ── My Plans panel ── */
+    .my-plans-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; margin-bottom:14px; }
+    .my-plan-chip {
+      background:rgba(52,211,153,.1); border:1px solid rgba(52,211,153,.3);
+      border-radius:8px; padding:10px 14px;
+    }
+    .my-plan-chip .chip-name { font-size:13px; font-weight:600; color:var(--green-light); }
+    .my-plan-chip .chip-price { font-size:12px; color:var(--text-muted); margin-top:3px; }
+    .plans-total { font-size:18px; font-weight:700; color:var(--green-light); }
+    .export-btn {
+      background:var(--surface2); border:1px solid var(--border);
+      color:var(--text); padding:7px 16px; border-radius:7px;
+      cursor:pointer; font-size:12px; font-family:'Inter',sans-serif;
+      transition: background .2s;
+    }
+    .export-btn:hover { background:#24304a; }
+    .rate-input {
+      background:var(--surface2); border:1px solid var(--border);
+      color:var(--text); padding:5px 9px; border-radius:6px;
+      font-size:12px; font-family:'Inter',sans-serif; width:80px;
+    }
+    .plan-name { font-weight:600; font-size:14px; }
+    .plan-price { font-weight:700; font-size:15px; }
+    .plan-note { font-size:11px; color:var(--text-muted); margin-top:3px; }
+    .feature-list { font-size:12px; color:var(--text-muted); line-height:1.7; }
+    .feature-list li { list-style:none; }
+    .feature-list li::before { content:'✓ '; color:var(--green-light); }
+    .tier-free { color:#6b7a99; }
+    .tier-entry { color:var(--blue-light); }
+    .tier-power { color:var(--orange-light); }
+    .tier-ultra { color:var(--red-light); }
+  </style>
+  <div style="overflow-x:auto;">
+  <table class="sub-table" id="sub-table">
+    <thead>
+      <tr>
+        <th>服務</th>
+        <th>方案</th>
+        <th>月費 (USD)</th>
+        <th>主要功能</th>
+        <th>適合對象</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- ChatGPT -->
+      <tr class="divider-row"><td colspan="5">🟢 OpenAI ChatGPT</td></tr>
+      <tr>
+        <td><span class="provider-badge pb-openai">OpenAI</span></td>
+        <td><span class="plan-name">ChatGPT Free</span></td>
+        <td><span class="plan-price tier-free">$0</span></td>
+        <td><ul class="feature-list"><li>GPT-4o 有限使用</li><li>基本對話功能</li></ul></td>
+        <td><div class="plan-note">輕度使用者</div></td>
+      </tr>
+      <tr>
+        <td><span class="provider-badge pb-openai">OpenAI</span></td>
+        <td><span class="plan-name">ChatGPT Plus</span></td>
+        <td><span class="plan-price tier-entry">$20</span><div class="plan-note">/月</div></td>
+        <td><ul class="feature-list"><li>GPT-5.5 + o1 推理模型</li><li>進階數據分析、圖片生成</li><li>自訂 GPTs</li></ul></td>
+        <td><div class="plan-note">個人/知識工作者</div></td>
+      </tr>
+      <tr>
+        <td><span class="provider-badge pb-openai">OpenAI</span></td>
+        <td><span class="plan-name">ChatGPT Pro</span></td>
+        <td><span class="plan-price tier-power">$100</span><div class="plan-note">/月 (5x quota)</div></td>
+        <td><ul class="feature-list"><li>5x 更高使用上限</li><li>優先存取最新模型</li><li>o3-pro 存取權</li></ul></td>
+        <td><div class="plan-note">重度用戶、研究者</div></td>
+      </tr>
+      <tr>
+        <td><span class="provider-badge pb-openai">OpenAI</span></td>
+        <td><span class="plan-name">ChatGPT Pro Max</span></td>
+        <td><span class="plan-price tier-ultra">$200</span><div class="plan-note">/月 (20x quota)</div></td>
+        <td><ul class="feature-list"><li>近乎無限制存取</li><li>Sora 視訊生成</li><li>超長 context window</li></ul></td>
+        <td><div class="plan-note">企業/創作者</div></td>
+      </tr>
+      <!-- Claude -->
+      <tr class="divider-row"><td colspan="5">🟤 Anthropic Claude</td></tr>
+      <tr>
+        <td><span class="provider-badge pb-anthropic">Anthropic</span></td>
+        <td><span class="plan-name">Claude Free</span></td>
+        <td><span class="plan-price tier-free">$0</span></td>
+        <td><ul class="feature-list"><li>Sonnet 4.6 有限使用</li><li>基本 Projects 功能</li></ul></td>
+        <td><div class="plan-note">一般使用者</div></td>
+      </tr>
+      <tr>
+        <td><span class="provider-badge pb-anthropic">Anthropic</span></td>
+        <td><span class="plan-name">Claude Pro</span></td>
+        <td><span class="plan-price tier-entry">$20</span><div class="plan-note">/月</div></td>
+        <td><ul class="feature-list"><li>Opus 4.7 + Sonnet 4.6</li><li>Projects 無限制</li><li>Claude Code 存取</li></ul></td>
+        <td><div class="plan-note">個人開發者/研究者</div></td>
+      </tr>
+      <tr>
+        <td><span class="provider-badge pb-anthropic">Anthropic</span></td>
+        <td><span class="plan-name">Claude Max 5x</span></td>
+        <td><span class="plan-price tier-power">$100</span><div class="plan-note">/月</div></td>
+        <td><ul class="feature-list"><li>5x 更高使用量</li><li>優先排隊</li><li>長任務 Agentic 模式</li></ul></td>
+        <td><div class="plan-note">重度 AI 用戶</div></td>
+      </tr>
+      <tr>
+        <td><span class="provider-badge pb-anthropic">Anthropic</span></td>
+        <td><span class="plan-name">Claude Max 20x</span></td>
+        <td><span class="plan-price tier-ultra">$200</span><div class="plan-note">/月</div></td>
+        <td><ul class="feature-list"><li>20x 最高使用量</li><li>旗艦模型優先存取</li></ul></td>
+        <td><div class="plan-note">AI 重度依賴者</div></td>
+      </tr>
+      <!-- Google -->
+      <tr class="divider-row"><td colspan="5">🔵 Google Gemini</td></tr>
+      <tr>
+        <td><span class="provider-badge pb-google">Google</span></td>
+        <td><span class="plan-name">Gemini Free</span></td>
+        <td><span class="plan-price tier-free">$0</span></td>
+        <td><ul class="feature-list"><li>Gemini 1.5 Flash 免費</li><li>AI Studio 免費配額</li></ul></td>
+        <td><div class="plan-note">輕度使用者/開發者</div></td>
+      </tr>
+      <tr>
+        <td><span class="provider-badge pb-google">Google</span></td>
+        <td><span class="plan-name">Gemini Advanced (AI Pro)</span></td>
+        <td><span class="plan-price tier-entry">$19.99</span><div class="plan-note">/月</div></td>
+        <td><ul class="feature-list"><li>Gemini 2.5 Pro 完整存取</li><li>Gmail/Docs 整合</li><li>Google One 2TB 儲存</li></ul></td>
+        <td><div class="plan-note">Google 生態系用戶</div></td>
+      </tr>
+      <tr>
+        <td><span class="provider-badge pb-google">Google</span></td>
+        <td><span class="plan-name">AI Ultra</span></td>
+        <td><span class="plan-price tier-power">$100</span><div class="plan-note">/月 (5x / 20TB)</div></td>
+        <td><ul class="feature-list"><li>5x 更高使用量</li><li>20TB 雲端儲存</li><li>最新 Gemini 旗艦</li></ul></td>
+        <td><div class="plan-note">進階工作者</div></td>
+      </tr>
+      <tr>
+        <td><span class="provider-badge pb-google">Google</span></td>
+        <td><span class="plan-name">AI Ultra Max</span></td>
+        <td><span class="plan-price tier-ultra">$200</span><div class="plan-note">/月 (20x)</div></td>
+        <td><ul class="feature-list"><li>20x 最高使用量</li><li>YouTube Premium 含</li><li>Gemini 旗艦完整存取</li></ul></td>
+        <td><div class="plan-note">企業/創作者</div></td>
+      </tr>
+      <!-- xAI Grok -->
+      <tr class="divider-row"><td colspan="5">⚫ xAI Grok (SuperGrok)</td></tr>
+      <tr>
+        <td><span class="provider-badge pb-xai">xAI</span></td>
+        <td><span class="plan-name">SuperGrok Lite</span></td>
+        <td><span class="plan-price tier-free">$10</span><div class="plan-note">/月</div></td>
+        <td><ul class="feature-list"><li>Grok 基本存取</li><li>X 整合功能</li></ul></td>
+        <td><div class="plan-note">X 平台用戶</div></td>
+      </tr>
+      <tr>
+        <td><span class="provider-badge pb-xai">xAI</span></td>
+        <td><span class="plan-name">SuperGrok</span></td>
+        <td><span class="plan-price tier-entry">$30</span><div class="plan-note">/月</div></td>
+        <td><ul class="feature-list"><li>Grok 3 完整存取</li><li>即時 X 資料</li><li>圖片生成</li></ul></td>
+        <td><div class="plan-note">X 重度用戶</div></td>
+      </tr>
+      <tr>
+        <td><span class="provider-badge pb-xai">xAI</span></td>
+        <td><span class="plan-name">SuperGrok Heavy</span></td>
+        <td><span class="plan-price tier-ultra">$300</span><div class="plan-note">/月</div></td>
+        <td><ul class="feature-list"><li>優先路由、最大配額</li><li>企業級 SLA</li></ul></td>
+        <td><div class="plan-note">企業/高頻用戶</div></td>
+      </tr>
+      <!-- Cursor -->
+      <tr class="divider-row"><td colspan="5">⌨️ Cursor (AI 程式編輯器)</td></tr>
+      <tr>
+        <td><span class="provider-badge" style="background:rgba(255,255,255,.1);color:#d4d4d4;">Cursor</span></td>
+        <td><span class="plan-name">Hobby (Free)</span></td>
+        <td><span class="plan-price tier-free">$0</span></td>
+        <td><ul class="feature-list"><li>有限 Agent 請求</li><li>Tab 補全</li></ul></td>
+        <td><div class="plan-note">試用/學習用</div></td>
+      </tr>
+      <tr>
+        <td><span class="provider-badge" style="background:rgba(255,255,255,.1);color:#d4d4d4;">Cursor</span></td>
+        <td><span class="plan-name">Pro</span></td>
+        <td><span class="plan-price tier-entry">$20</span><div class="plan-note">/月 ($20 credits)</div></td>
+        <td><ul class="feature-list"><li>無限 Tab 補全</li><li>Agent 模式</li><li>Claude / GPT-4o 存取</li></ul></td>
+        <td><div class="plan-note">個人開發者</div></td>
+      </tr>
+      <tr>
+        <td><span class="provider-badge" style="background:rgba(255,255,255,.1);color:#d4d4d4;">Cursor</span></td>
+        <td><span class="plan-name">Pro+</span></td>
+        <td><span class="plan-price tier-power">$60</span><div class="plan-note">/月 (3x credits)</div></td>
+        <td><ul class="feature-list"><li>3x Agent 配額</li><li>旗艦模型優先</li></ul></td>
+        <td><div class="plan-note">重度開發者</div></td>
+      </tr>
+      <tr>
+        <td><span class="provider-badge" style="background:rgba(255,255,255,.1);color:#d4d4d4;">Cursor</span></td>
+        <td><span class="plan-name">Ultra</span></td>
+        <td><span class="plan-price tier-ultra">$200</span><div class="plan-note">/月</div></td>
+        <td><ul class="feature-list"><li>最高配額</li><li>企業級功能</li></ul></td>
+        <td><div class="plan-note">AI 輔助工程師</div></td>
+      </tr>
+      <!-- GitHub Copilot -->
+      <tr class="divider-row"><td colspan="5">🐙 GitHub Copilot</td></tr>
+      <tr>
+        <td><span class="provider-badge" style="background:rgba(255,255,255,.08);color:#c0c0c0;">GitHub</span></td>
+        <td><span class="plan-name">Copilot Pro</span></td>
+        <td><span class="plan-price tier-entry">$10</span><div class="plan-note">/月 (+ 用量計費)</div></td>
+        <td><ul class="feature-list"><li>VS Code 整合</li><li>AI Credits 制度</li><li>GPT-4o / Sonnet</li></ul></td>
+        <td><div class="plan-note">個人開發者</div></td>
+      </tr>
+      <tr>
+        <td><span class="provider-badge" style="background:rgba(255,255,255,.08);color:#c0c0c0;">GitHub</span></td>
+        <td><span class="plan-name">Copilot Business</span></td>
+        <td><span class="plan-price tier-power">$19</span><div class="plan-note">/用戶/月</div></td>
+        <td><ul class="feature-list"><li>團隊管理</li><li>企業合規</li><li>無程式碼留存</li></ul></td>
+        <td><div class="plan-note">開發團隊</div></td>
+      </tr>
+      <!-- DeepSeek -->
+      <tr class="divider-row"><td colspan="5">🟣 DeepSeek</td></tr>
+      <tr>
+        <td><span class="provider-badge pb-deepseek">DeepSeek</span></td>
+        <td><span class="plan-name">Chat (免費)</span></td>
+        <td><span class="plan-price tier-free">$0</span></td>
+        <td><ul class="feature-list"><li>R1 / V3 完整對話</li><li>無使用量限制（尖峰除外）</li></ul></td>
+        <td><div class="plan-note">所有用戶（無訂閱制）</div></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+  <div style="margin-top:12px;font-size:11px;color:var(--text-muted);">
+    📅 訂閱定價更新：2026-06-10 · 實際費用依地區與匯率而異 ·
+    <a href="https://openai.com/chatgpt/pricing/" target="_blank" style="color:var(--green-light);">ChatGPT</a> ·
+    <a href="https://www.anthropic.com/pricing" target="_blank" style="color:#e8975a;">Claude</a> ·
+    <a href="https://one.google.com/about/plans" target="_blank" style="color:var(--blue-light);">Google</a> ·
+    <a href="https://www.cursor.com/pricing" target="_blank" style="color:#d4d4d4;">Cursor</a>
+  </div>
+</div>
+
+<!-- ── My Plans Summary ── -->
+<div class="panel" style="margin-bottom:28px;">
+  <div class="panel-title" style="justify-content:space-between;">
+    <span>✅ 我的方案 <span class="badge badge-purple" id="planCount">0 項已選】</span></span>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <label style="font-size:12px;color:var(--text-muted);">USD→TWD</label>
+      <input class="rate-input" id="rateInput" type="number" value="31.5" step="0.1" min="1" />
+      <button class="export-btn" onclick="exportJSON()">⬇️ 匯出 JSON</button>
+    </div>
+  </div>
+  <div id="myPlansEmpty" style="font-size:13px;color:var(--text-muted);padding:20px 0;">
+    ➡️ 點擊上方「會員訂閱方案對照」中的任意一行來標記目前訂閱的方案。
+  </div>
+  <div class="my-plans-grid" id="myPlansGrid"></div>
+  <div id="myPlansTotal" style="display:none;padding-top:14px;border-top:1px solid var(--border);margin-top:6px;">
+    <span style="font-size:13px;color:var(--text-muted);">每月總費用：</span>
+    <span class="plans-total" id="totalUSD">$0</span>
+    <span style="font-size:13px;color:var(--text-muted);margin-left:8px;">≈</span>
+    <span class="plans-total" id="totalTWD" style="color:var(--orange-light);">NT$0</span>
+  </div>
+</div>
+
+<script>
+  // ── Init default month ──
+  const now = new Date();
+  document.getElementById('queryMonth').value =
+    `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+  // ── Try load from localStorage ──
+  const savedKey = localStorage.getItem('anthropic_api_key');
+  if (savedKey) document.getElementById('apiKey').value = savedKey;
+
+  let usageChart = null;
+
+  // ── Live polling state ──
+  let pollTimer = null;
+  let countdownTimer = null;
+  let secondsLeft = 0;
+  let prevTotInput = 0;
+  let prevTotOutput = 0;
+  let isLive = false;
+
+  function toggleLive() {
+    if (isLive) stopLive();
+    else startLive();
+  }
+
+  function startLive() {
+    const apiKey = document.getElementById('apiKey').value.trim();
+    if (!apiKey) { msg('請先輸入 API Key 才能啟動即時監控', 'error'); return; }
+    isLive = true;
+    const btn = document.getElementById('liveToggle');
+    btn.textContent = '⏹ 停止監控';
+    btn.classList.remove('off');
+    schedulePoll();
+  }
+
+  function stopLive() {
+    isLive = false;
+    clearTimeout(pollTimer);
+    clearInterval(countdownTimer);
+    const btn = document.getElementById('liveToggle');
+    btn.textContent = '● 停止監控';
+    btn.classList.add('off');
+    document.getElementById('countdown').textContent = '— 已停止';
+  }
+
+  function schedulePoll() {
+    if (!isLive) return;
+    const interval = parseInt(document.getElementById('pollInterval').value);
+    secondsLeft = interval;
+    updateCountdown();
+    clearInterval(countdownTimer);
+    countdownTimer = setInterval(() => {
+      secondsLeft--;
+      updateCountdown();
+      if (secondsLeft <= 0) clearInterval(countdownTimer);
+    }, 1000);
+    pollTimer = setTimeout(async () => {
+      await fetchUsage();
+      schedulePoll();
+    }, interval * 1000);
+  }
+
+  function updateCountdown() {
+    const el = document.getElementById('countdown');
+    if (!isLive) return;
+    el.textContent = `下次更新：${secondsLeft}s`;
+  }
+
+  function showDelta(newIn, newOut) {
+    const deltaIn = newIn - prevTotInput;
+    const deltaOut = newOut - prevTotOutput;
+    if ((deltaIn > 0 || deltaOut > 0) && (prevTotInput > 0 || prevTotOutput > 0)) {
+      const badge = document.getElementById('deltaBadge');
+      badge.textContent = `＋${((deltaIn + deltaOut) / 1000).toFixed(1)}K tokens`;
+      badge.style.display = 'inline-block';
+      badge.classList.remove('flash');
+      void badge.offsetWidth; // reflow
+      badge.classList.add('flash');
+    }
+    prevTotInput = newIn;
+    prevTotOutput = newOut;
+  }
+
+  // Pricing per 1M tokens (MTok) in USD – Sonnet 4.5 as default
+  const PRICING = {
+    'claude-sonnet-4-5': { input: 3.0, output: 15.0 },
+    'claude-sonnet-4-6': { input: 3.0, output: 15.0 },
+    'claude-3-5-sonnet': { input: 3.0, output: 15.0 },
+    'claude-3-haiku':    { input: 0.25, output: 1.25 },
+    'claude-opus-4':     { input: 15.0, output: 75.0 },
+    default:             { input: 3.0, output: 15.0 },
+  };
+
+  function getPricing(model) {
+    const key = Object.keys(PRICING).find(k => model && model.toLowerCase().includes(k));
+    return key ? PRICING[key] : PRICING.default;
+  }
+
+  function fmtNum(n) {
+    if (n >= 1_000_000) return (n / 1_000_000).toFixed(2) + 'M';
+    if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
+    return n.toString();
+  }
+
+  function msg(text, type = 'error') {
+    const el = document.getElementById('msgArea');
+    el.innerHTML = text ? `<div class="${type}-msg">${text}</div>` : '';
+  }
+
+  async function fetchUsage() {
+    const apiKey = document.getElementById('apiKey').value.trim();
+    const monthVal = document.getElementById('queryMonth').value;
+    if (!apiKey) { msg('請先輸入 Anthropic API Key', 'error'); return; }
+    if (!monthVal) { msg('請選擇查詢月份', 'error'); return; }
+
+    localStorage.setItem('anthropic_api_key', apiKey);
+    msg('');
+
+    const btn = document.getElementById('fetchBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> 載入中...';
+
+    const [year, month] = monthVal.split('-').map(Number);
+    const startDate = `${year}-${String(month).padStart(2,'0')}-01`;
+    const lastDay = new Date(year, month, 0).getDate();
+    const endDate = `${year}-${String(month).padStart(2,'0')}-${lastDay}`;
+
+    try {
+      // Fetch all usage pages
+      const allData = await fetchAllUsage(apiKey, startDate, endDate);
+      renderDashboard(allData, monthVal);
+      document.getElementById('updated-label').textContent = '已更新 ' + new Date().toLocaleTimeString('zh-TW');
+    } catch (err) {
+      console.error(err);
+      msg(`❌ 載入失敗：${err.message}`, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '📊 載入使用量';
+    }
+  }
+
+  async function fetchAllUsage(apiKey, startDate, endDate) {
+    const results = [];
+    let nextPage = null;
+
+    do {
+      const params = new URLSearchParams({
+        start_time: `${startDate}T00:00:00Z`,
+        end_time: `${endDate}T23:59:59Z`,
+        limit: 100,
+        granularity: 'day',
+        group_by: 'model',
+      });
+      if (nextPage) params.set('page_token', nextPage);
+
+      const resp = await fetch(`https://api.anthropic.com/v1/usage?${params}`, {
+        headers: {
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err?.error?.message || `HTTP ${resp.status}`);
+      }
+
+      const json = await resp.json();
+      results.push(...(json.data || []));
+      nextPage = json.has_more ? json.next_page_token : null;
+    } while (nextPage);
+
+    return results;
+  }
+
+  function renderDashboard(data, monthVal) {
+    if (!data.length) {
+      msg('本月查無使用量資料', 'info');
+      ['antigravityModels', 'vscodeModels'].forEach(id => {
+        document.getElementById(id).innerHTML = '<div class="loading">無資料</div>';
+      });
+      return;
+    }
+
+    // ── Aggregate by model ──
+    const byModel = {};
+    const byDate = {};
+
+    data.forEach(item => {
+      const model = item.model || 'unknown';
+      if (!byModel[model]) byModel[model] = { input: 0, output: 0, requests: 0 };
+      byModel[model].input    += item.input_tokens      || 0;
+      byModel[model].output   += item.output_tokens     || 0;
+      byModel[model].requests += item.request_count     || 0;
+
+      // by date
+      const date = (item.timestamp || '').substring(0, 10);
+      if (date) {
+        if (!byDate[date]) byDate[date] = { input: 0, output: 0 };
+        byDate[date].input  += item.input_tokens  || 0;
+        byDate[date].output += item.output_tokens || 0;
+      }
+    });
+
+    // ── Totals ──
+    let totInput = 0, totOutput = 0, totReq = 0, totCost = 0;
+    Object.entries(byModel).forEach(([model, d]) => {
+      totInput  += d.input;
+      totOutput += d.output;
+      totReq    += d.requests;
+      const p = getPricing(model);
+      totCost += (d.input / 1e6) * p.input + (d.output / 1e6) * p.output;
+    });
+
+    showDelta(totInput, totOutput);
+    document.getElementById('totalInput').textContent    = fmtNum(totInput);
+    document.getElementById('totalOutput').textContent   = fmtNum(totOutput);
+    document.getElementById('totalRequests').textContent = fmtNum(totReq);
+    document.getElementById('totalCost').textContent     = '$' + totCost.toFixed(4);
+    document.getElementById('totalInputSub').textContent  = totInput.toLocaleString() + ' tokens';
+    document.getElementById('totalOutputSub').textContent = totOutput.toLocaleString() + ' tokens';
+    document.getElementById('totalRequestsSub').textContent = totReq.toLocaleString() + ' 次';
+
+    // ── Model list ──
+    const sortedModels = Object.entries(byModel).sort((a, b) => (b[1].input + b[1].output) - (a[1].input + a[1].output));
+    const maxTok = sortedModels[0] ? sortedModels[0][1].input + sortedModels[0][1].output : 1;
+
+    function modelRows(models) {
+      if (!models.length) return '<div class="loading">無相關資料</div>';
+      return models.map(([model, d], i) => {
+        const total = d.input + d.output;
+        const pct = Math.round((total / maxTok) * 100);
+        const colors = ['#a78bfa','#60a5fa','#34d399','#fbbf24','#f87171'];
+        const color = colors[i % colors.length];
+        const cost = getPricing(model);
+        const modelCost = ((d.input / 1e6) * cost.input + (d.output / 1e6) * cost.output).toFixed(4);
+        return `
+          <div class="model-row">
+            <div class="model-info">
+              <div class="model-name">${model}</div>
+              <div class="model-tokens">In: ${fmtNum(d.input)} · Out: ${fmtNum(d.output)} · ~$${modelCost}</div>
+            </div>
+            <div class="model-bar-wrap">
+              <div class="model-bar-bg">
+                <div class="model-bar" style="width:${pct}%;background:${color};"></div>
+              </div>
+            </div>
+            <div class="model-pct" style="color:${color}">${pct}%</div>
+          </div>`;
+      }).join('');
+    }
+
+    // Since we can't distinguish Antigravity vs VS Code from API alone,
+    // split by common usage patterns: show all models in Antigravity,
+    // and VS Code note.
+    document.getElementById('antigravityModels').innerHTML = modelRows(sortedModels);
+    document.getElementById('vscodeModels').innerHTML = `
+      <div class="info-msg" style="margin-bottom:12px;">
+        ℹ️ Anthropic API 不會標注請求來源（Antigravity / VS Code）。如需區分，請為兩個工具使用不同的 API Key。
+      </div>
+      ${modelRows(sortedModels)}
+    `;
+
+    // ── Chart ──
+    const sortedDates = Object.keys(byDate).sort();
+    const inputData = sortedDates.map(d => Math.round(byDate[d].input / 1000));
+    const outputData = sortedDates.map(d => Math.round(byDate[d].output / 1000));
+
+    if (usageChart) usageChart.destroy();
+    const ctx = document.getElementById('usageChart').getContext('2d');
+    usageChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: sortedDates.map(d => d.substring(5)),
+        datasets: [
+          {
+            label: 'Input Tokens (K)',
+            data: inputData,
+            backgroundColor: 'rgba(124,58,237,0.6)',
+            borderColor: '#a78bfa',
+            borderWidth: 1,
+            borderRadius: 4,
+          },
+          {
+            label: 'Output Tokens (K)',
+            data: outputData,
+            backgroundColor: 'rgba(37,99,235,0.6)',
+            borderColor: '#60a5fa',
+            borderWidth: 1,
+            borderRadius: 4,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: '#e8ecf4', font: { family: 'Inter' } } },
+          tooltip: { backgroundColor: '#1a2033', titleColor: '#e8ecf4', bodyColor: '#6b7a99', borderColor: 'rgba(255,255,255,0.08)', borderWidth: 1 },
+        },
+        scales: {
+          x: { ticks: { color: '#6b7a99', font: { family: 'Inter', size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+          y: { ticks: { color: '#6b7a99', font: { family: 'Inter', size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        },
+      },
+    });
+  }
+
+  // Auto-start live if key already saved
+  if (savedKey) {
+    setTimeout(() => { fetchUsage().then(() => startLive()); }, 500);
+  }
+
+  // ────────────────────────────────────────
+  // TWD 轉換 + 方案選擇
+  // ────────────────────────────────────────
+  function getRate() {
+    return parseFloat(document.getElementById('rateInput').value) || 31.5;
+  }
+
+  function injectTWD() {
+    const rate = getRate();
+    // API pricing table: .price-val
+    document.querySelectorAll('.price-val').forEach(el => {
+      const usd = parseFloat(el.textContent.replace('$', ''));
+      if (isNaN(usd)) return;
+      let twd = el.nextElementSibling;
+      if (!twd || !twd.classList.contains('twd')) {
+        twd = document.createElement('span');
+        twd.className = 'twd';
+        el.parentNode.insertBefore(twd, el.nextSibling);
+      }
+      twd.textContent = `≈ NT$${Math.round(usd * rate).toLocaleString()}`;
+    });
+    // Subscription table: .plan-price
+    document.querySelectorAll('.plan-price').forEach(el => {
+      const txt = el.textContent.replace('$','').trim();
+      const usd = parseFloat(txt);
+      if (isNaN(usd)) return;
+      let twd = el.querySelector('.twd');
+      if (!twd) {
+        twd = document.createElement('span');
+        twd.className = 'twd';
+        el.appendChild(twd);
+      }
+      twd.textContent = `≈ NT$${Math.round(usd * rate).toLocaleString()}`;
+    });
+    updateSummary();
+  }
+
+  document.getElementById('rateInput').addEventListener('input', injectTWD);
+
+  // ── Plan definitions (for summary) ──
+  const PLAN_META = {}; // populated from DOM
+
+  // ── Load selected plans from localStorage ──
+  let selectedPlans = new Set(JSON.parse(localStorage.getItem('ai_selected_plans') || '[]'));
+
+  function savePlans() {
+    localStorage.setItem('ai_selected_plans', JSON.stringify([...selectedPlans]));
+  }
+
+  function updateSummary() {
+    const rate = getRate();
+    const grid = document.getElementById('myPlansGrid');
+    const empty = document.getElementById('myPlansEmpty');
+    const totalDiv = document.getElementById('myPlansTotal');
+    const countBadge = document.getElementById('planCount');
+
+    grid.innerHTML = '';
+    if (selectedPlans.size === 0) {
+      empty.style.display = '';
+      totalDiv.style.display = 'none';
+      countBadge.textContent = '0 項已選';
+      return;
+    }
+    empty.style.display = 'none';
+    totalDiv.style.display = '';
+    countBadge.textContent = `${selectedPlans.size} 項已選`;
+
+    let totalUSD = 0;
+    selectedPlans.forEach(id => {
+      const meta = PLAN_META[id];
+      if (!meta) return;
+      totalUSD += meta.price;
+      const chip = document.createElement('div');
+      chip.className = 'my-plan-chip';
+      chip.innerHTML = `<div class="chip-name">${meta.name}</div><div class="chip-price">$${meta.price}/月 ≈ NT$${Math.round(meta.price * rate).toLocaleString()}</div>`;
+      grid.appendChild(chip);
+    });
+
+    document.getElementById('totalUSD').textContent = `$${totalUSD}`;
+    document.getElementById('totalTWD').textContent = `NT$${Math.round(totalUSD * rate).toLocaleString()}`;
+  }
+
+  function initSubTable() {
+    const table = document.getElementById('sub-table');
+    if (!table) return;
+    // Add hint row below thead
+    const hint = table.querySelector('thead tr');
+    if (hint) {
+      const th = document.createElement('th');
+      th.colSpan = 5;
+      th.style.cssText = 'background:rgba(52,211,153,.05);color:var(--green-light);font-size:10px;padding:4px 14px;';
+      th.textContent = '✔ 點擊任意一行可標記為「目前訂閱」，再次點擊即取消';
+      const hintRow = document.createElement('tr');
+      hintRow.appendChild(th);
+      hint.parentNode.insertBefore(hintRow, hint.nextSibling);
+    }
+
+    // Iterate all tbody rows
+    table.querySelectorAll('tbody tr').forEach((row, idx) => {
+      if (row.classList.contains('divider-row')) return;
+      // Build plan ID from service + plan name cells
+      const cells = row.querySelectorAll('td');
+      if (cells.length < 3) return;
+      const service = cells[0].textContent.trim().replace(/\s+/g, '_');
+      const planName = cells[1].querySelector('.plan-name')?.textContent.trim() || '';
+      const priceText = cells[2].querySelector('.plan-price')?.textContent || '';
+      const usd = parseFloat(priceText.replace('$','').trim()) || 0;
+
+      const id = `${service}__${planName}`.replace(/[^a-zA-Z0-9_\u4e00-\u9fff]/g, '_');
+      PLAN_META[id] = { name: `${planName}`, price: usd };
+
+      row.classList.add('plan-row');
+      row.dataset.planId = id;
+
+      // Restore selection
+      if (selectedPlans.has(id)) row.classList.add('selected');
+
+      row.addEventListener('click', () => {
+        if (selectedPlans.has(id)) {
+          selectedPlans.delete(id);
+          row.classList.remove('selected');
+        } else {
+          selectedPlans.add(id);
+          row.classList.add('selected');
+        }
+        savePlans();
+        updateSummary();
+      });
+    });
+    updateSummary();
+  }
+
+  function exportJSON() {
+    const rate = getRate();
+    const plans = [...selectedPlans].map(id => ({
+      id,
+      name: PLAN_META[id]?.name || id,
+      monthlyUSD: PLAN_META[id]?.price || 0,
+      monthlyTWD: Math.round((PLAN_META[id]?.price || 0) * rate),
+    }));
+    const totalUSD = plans.reduce((s, p) => s + p.monthlyUSD, 0);
+    const payload = {
+      lastUpdated: new Date().toISOString().substring(0, 10),
+      usdToTwd: rate,
+      selectedPlans: plans,
+      totalMonthlyUSD: totalUSD,
+      totalMonthlyTWD: Math.round(totalUSD * rate),
+      note: '此檔案由 ai-usage-dashboard.html 自動管理，記錄目前訂閱的 AI 方案',
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'ai-plans.json';
+    a.click();
+  }
+
+  // Init after DOM ready
+  window.addEventListener('DOMContentLoaded', () => {
+    injectTWD();
+    initSubTable();
+  });
+  // If DOM already ready
+  if (document.readyState !== 'loading') {
+    injectTWD();
+    initSubTable();
+  }
+</script>
+</body>
+</html>

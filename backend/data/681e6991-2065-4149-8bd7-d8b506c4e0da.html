@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GCP 自動升規與壓力測試計劃</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --card: #ffffff;
+      --ink: #182230;
+      --muted: #667085;
+      --line: #d0d5dd;
+      --blue: #2563eb;
+      --green: #16a34a;
+      --orange: #f97316;
+      --red: #dc2626;
+      --purple: #7c3aed;
+      --dark: #111827;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.7;
+    }
+    header {
+      background: linear-gradient(135deg, #111827, #1d4ed8);
+      color: #fff;
+      padding: 48px 28px;
+    }
+    header .wrap, main { max-width: 1180px; margin: 0 auto; }
+    h1 { margin: 0 0 10px; font-size: 34px; letter-spacing: .5px; }
+    h2 { margin-top: 0; font-size: 24px; border-left: 6px solid var(--blue); padding-left: 12px; }
+    h3 { color: #1f2937; margin-bottom: 8px; }
+    .subtitle { color: #dbeafe; max-width: 900px; }
+    main { padding: 28px; }
+    .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 18px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, .06);
+      margin-bottom: 18px;
+    }
+    .col-4 { grid-column: span 4; }
+    .col-6 { grid-column: span 6; }
+    .col-8 { grid-column: span 8; }
+    .col-12 { grid-column: span 12; }
+    .pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      margin: 3px 4px 3px 0;
+      background: #eef2ff;
+      color: #3730a3;
+    }
+    .ok { background: #dcfce7; color: #166534; }
+    .warn { background: #ffedd5; color: #9a3412; }
+    .danger { background: #fee2e2; color: #991b1b; }
+    .info { background: #dbeafe; color: #1e40af; }
+    code, pre {
+      font-family: "SFMono-Regular", Consolas, Menlo, monospace;
+    }
+    pre {
+      background: #0b1220;
+      color: #e5e7eb;
+      padding: 16px;
+      border-radius: 14px;
+      overflow-x: auto;
+      font-size: 14px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+    th, td { border: 1px solid var(--line); padding: 10px 12px; vertical-align: top; }
+    th { background: #f1f5f9; text-align: left; }
+    .diagram {
+      background: #f8fafc;
+      border: 1px dashed #94a3b8;
+      border-radius: 18px;
+      padding: 18px;
+      overflow-x: auto;
+    }
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 920px;
+    }
+    .box {
+      min-width: 130px;
+      text-align: center;
+      background: white;
+      border: 2px solid #cbd5e1;
+      border-radius: 14px;
+      padding: 12px;
+      font-weight: 700;
+    }
+    .arrow { font-size: 26px; color: #64748b; }
+    .box.blue { border-color: var(--blue); color: var(--blue); }
+    .box.green { border-color: var(--green); color: var(--green); }
+    .box.orange { border-color: var(--orange); color: var(--orange); }
+    .box.red { border-color: var(--red); color: var(--red); }
+    .box.purple { border-color: var(--purple); color: var(--purple); }
+    .timeline { counter-reset: phase; }
+    .phase {
+      position: relative;
+      padding-left: 56px;
+      margin: 20px 0;
+    }
+    .phase::before {
+      counter-increment: phase;
+      content: counter(phase);
+      position: absolute;
+      left: 0; top: 0;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--blue);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+    }
+    .checklist li { margin-bottom: 8px; }
+    .small { color: var(--muted); font-size: 14px; }
+    footer { text-align: center; color: var(--muted); padding: 30px; }
+    @media (max-width: 820px) {
+      .col-4, .col-6, .col-8, .col-12 { grid-column: span 12; }
+      h1 { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>GCP 自動升規、壓力測試與防爆費用測試計劃</h1>
+    <div class="subtitle">目標：驗證網站或 API 在流量上升時能自動水平擴充、健康檢查自動替換壞機、更新時分台滾動重啟，同時用 Cloud Armor 與費用上限避免壓測造成爆量費用。</div>
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <h2>一、測試總目標</h2>
+    <div class="grid">
+      <div class="col-4">
+        <h3>效能目標</h3>
+        <span class="pill info">壓測</span><span class="pill info">RPS</span><span class="pill info">P95 延遲</span>
+        <p>確認服務在正常流量、尖峰流量、異常流量下都能維持可接受的回應速度。</p>
+      </div>
+      <div class="col-4">
+        <h3>升規目標</h3>
+        <span class="pill ok">MIG</span><span class="pill ok">Autoscaling</span><span class="pill ok">Rolling Update</span>
+        <p>驗證 Managed Instance Group 會依 CPU 或 HTTP 負載自動增加 VM，並能一台一台更新。</p>
+      </div>
+      <div class="col-4">
+        <h3>防守目標</h3>
+        <span class="pill danger">Cloud Armor</span><span class="pill danger">Rate Limit</span><span class="pill danger">Budget Alert</span>
+        <p>避免同 IP 惡意或誤操作壓測打爆服務，也避免自動升規造成大量費用。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>二、建議 GCP 架構</h2>
+    <div class="diagram">
+      <div class="flow">
+        <div class="box">User / 壓測機</div>
+        <div class="arrow">→</div>
+        <div class="box blue">HTTPS Load Balancer</div>
+        <div class="arrow">→</div>
+        <div class="box red">Cloud Armor</div>
+        <div class="arrow">→</div>
+        <div class="box purple">Backend Service</div>
+        <div class="arrow">→</div>
+        <div class="box green">MIG 多台 VM</div>
+        <div class="arrow">→</div>
+        <div class="box orange">Docker / Nginx / PM2 / Node.js</div>
+      </div>
+    </div>
+    <table>
+      <tr><th>元件</th><th>用途</th><th>測試重點</th></tr>
+      <tr><td>HTTPS Load Balancer</td><td>統一入口，分流到多台 VM</td><td>確認流量平均分配、健康檢查失敗會移除壞 VM</td></tr>
+      <tr><td>Cloud Armor</td><td>防火牆、Rate Limit、IP 封鎖</td><td>同 IP 高頻請求是否被限制或拒絕</td></tr>
+      <tr><td>Managed Instance Group</td><td>水平擴充、自動修復、滾動更新</td><td>CPU 高時加機器、壞機會重建、更新不中斷</td></tr>
+      <tr><td>Budget / Quota</td><td>費用警示與硬性資源上限</td><td>避免壓測造成超額費用</td></tr>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>三、升規策略設計</h2>
+    <table>
+      <tr><th>策略</th><th>建議設定</th><th>原因</th></tr>
+      <tr><td>水平擴充 Horizontal Scaling</td><td>min=2、max=5、CPU target=60%~70%</td><td>正式環境優先用多台 VM 分散風險，max 必須設定，避免費用無限上升。</td></tr>
+      <tr><td>垂直擴充 Vertical Scaling</td><td>不做即時自動升級，改用新 Instance Template + Rolling Update</td><td>VM 規格變更通常涉及重建或替換，不適合當成即時防線。</td></tr>
+      <tr><td>Autohealing</td><td>Health Check: <code>/health</code></td><td>服務異常時，MIG 可自動重建 VM。</td></tr>
+      <tr><td>Rolling Update</td><td>max unavailable=1、max surge=1</td><td>更新時一次只動一台，保留服務可用性。</td></tr>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>四、壓力測試階段規劃</h2>
+    <div class="timeline">
+      <div class="phase">
+        <h3>Phase 1：基準測試 Baseline Test</h3>
+        <p>目的：確認單台或最低兩台 VM 的正常承載能力。</p>
+        <pre>hey -z 5m -c 20 https://your-domain.com/api/health</pre>
+        <ul>
+          <li>觀察 RPS、平均延遲、P95 延遲、錯誤率。</li>
+          <li>Cloud Monitoring 觀察 CPU、Memory、Network、LB request count。</li>
+          <li>此階段不應觸發 autoscaling。</li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <h3>Phase 2：漸進式升壓 Ramp-up Test</h3>
+        <p>目的：逐步提高併發，觀察何時觸發自動擴充。</p>
+        <pre>hey -z 10m -c 50 https://your-domain.com/api/search
+hey -z 10m -c 100 https://your-domain.com/api/search
+hey -z 10m -c 200 https://your-domain.com/api/search</pre>
+        <ul>
+          <li>確認 CPU 超過 60%~70% 後，MIG 是否新增 VM。</li>
+          <li>確認新 VM 進入 healthy 狀態後，Load Balancer 才開始導流。</li>
+          <li>記錄 scale out 所需時間。</li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <h3>Phase 3：尖峰流量 Spike Test</h3>
+        <p>目的：模擬短時間暴增流量，測試系統保護能力。</p>
+        <pre>hey -z 3m -c 500 https://your-domain.com/api/search</pre>
+        <ul>
+          <li>確認系統不會直接全部 timeout。</li>
+          <li>確認 Cloud Armor 是否對異常同 IP 請求限流。</li>
+          <li>確認 MIG 不超過 max instances。</li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <h3>Phase 4：防守測試 Defense Test</h3>
+        <p>目的：模擬同 IP 多次攻擊或誤操作壓測。</p>
+        <pre>hey -z 5m -c 1000 https://your-domain.com/api/heavy</pre>
+        <ul>
+          <li>同 IP 超過門檻時，Cloud Armor 應 throttle 或 deny。</li>
+          <li>後端 VM CPU 不應因單一來源流量長時間滿載。</li>
+          <li>錯誤碼可接受為 429 或 403。</li>
+        </ul>
+      </div>
+
+      <div class="phase">
+        <h3>Phase 5：故障與滾動重啟測試 Failure / Rolling Restart</h3>
+        <p>目的：驗證一台 VM 壞掉或更新時，服務不中斷。</p>
+        <pre># 模擬單台 VM App 掛掉
+sudo systemctl stop docker
+
+# 或更新 Instance Template 後執行 rolling update</pre>
+        <ul>
+          <li>Load Balancer 應停止導流到 unhealthy VM。</li>
+          <li>MIG 應自動修復或重建 VM。</li>
+          <li>Rolling Update 過程中錯誤率應維持在可接受範圍。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>五、Cloud Armor 防守規則建議</h2>
+    <table>
+      <tr><th>規則</th><th>建議值</th><th>處理方式</th></tr>
+      <tr><td>測試 IP 白名單</td><td>公司 IP / 自己 VPN IP</td><td>允許較高測試量，避免誤封自己。</td></tr>
+      <tr><td>一般 IP Rate Limit</td><td>每分鐘 300 request</td><td>超過先 throttle。</td></tr>
+      <tr><td>高風險 IP 封鎖</td><td>每分鐘 1000 request</td><td>短時間 deny，例如 10 分鐘。</td></tr>
+      <tr><td>高成本 API 保護</td><td><code>/api/heavy</code>、<code>/api/export</code></td><td>更低門檻，避免資料庫或報表功能被打爆。</td></tr>
+      <tr><td>非測試期間壓測入口</td><td><code>/api/load-test</code></td><td>非測試時間直接封鎖。</td></tr>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>六、費用防爆設計</h2>
+    <div class="grid">
+      <div class="col-6">
+        <h3>必要限制</h3>
+        <ul class="checklist">
+          <li><strong>MIG max instances：</strong>例如最多 5 台，禁止無限開機。</li>
+          <li><strong>Budget Alert：</strong>50%、80%、100% 發通知。</li>
+          <li><strong>Quota：</strong>不要把 VM、外部 IP、Load Balancer quota 開太高。</li>
+          <li><strong>壓測時間：</strong>每次壓測 3~10 分鐘，避免長時間忘記關。</li>
+        </ul>
+      </div>
+      <div class="col-6">
+        <h3>測試停止條件</h3>
+        <ul class="checklist">
+          <li>錯誤率超過 5%。</li>
+          <li>P95 延遲超過 2 秒並持續 3 分鐘。</li>
+          <li>MIG 已達 max instances。</li>
+          <li>Cloud Billing 快速增加或收到預算警示。</li>
+          <li>資料庫 CPU 或連線數接近上限。</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>七、監控指標與驗收標準</h2>
+    <table>
+      <tr><th>項目</th><th>觀察指標</th><th>驗收標準</th></tr>
+      <tr><td>可用性</td><td>HTTP 2xx / 5xx 比例</td><td>正常與升規期間 5xx 小於 1%~3%</td></tr>
+      <tr><td>延遲</td><td>P50 / P95 / P99</td><td>P95 建議低於 1~2 秒，依 API 類型調整</td></tr>
+      <tr><td>升規</td><td>MIG instance count</td><td>CPU 或 LB 負載升高後，自動新增 VM</td></tr>
+      <tr><td>降規</td><td>Instance count 回落</td><td>流量下降後，不立即關太快，避免抖動</td></tr>
+      <tr><td>防守</td><td>Cloud Armor deny / throttle count</td><td>同 IP 異常流量能被限制</td></tr>
+      <tr><td>費用</td><td>Billing / Budget Alert</td><td>壓測後成本可預期，未超過預算</td></tr>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>八、正式測試清單</h2>
+    <ul class="checklist">
+      <li>確認 <code>/health</code> 不依賴資料庫重查，避免健康檢查本身造成壓力。</li>
+      <li>確認 Load Balancer backend health check 已通過。</li>
+      <li>確認 MIG 設定 min / max instance，尤其 max 不可省略。</li>
+      <li>確認 Cloud Armor 已掛到 Backend Service。</li>
+      <li>確認 Billing Budget Alert 已建立。</li>
+      <li>確認 Cloud Monitoring Dashboard 可看到 CPU、RPS、延遲、錯誤率。</li>
+      <li>確認壓測工具不在正式 App VM 上執行。</li>
+      <li>壓測後輸出報告：最大 RPS、P95、錯誤率、最高開幾台 VM、是否觸發封鎖。</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>九、建議指令範例</h2>
+    <h3>hey 壓測</h3>
+    <pre>brew install hey
+
+# 基準測試
+hey -z 5m -c 20 https://your-domain.com/api/health
+
+# 升壓測試
+hey -z 10m -c 100 https://your-domain.com/api/search
+
+# 尖峰測試
+hey -z 3m -c 500 https://your-domain.com/api/search</pre>
+
+    <h3>k6 壓測腳本</h3>
+    <pre>import http from 'k6/http';
+import { sleep, check } from 'k6';
+
+export const options = {
+  stages: [
+    { duration: '2m', target: 50 },
+    { duration: '5m', target: 100 },
+    { duration: '2m', target: 0 },
+  ],
+  thresholds: {
+    http_req_failed: ['rate<0.03'],
+    http_req_duration: ['p(95)<2000'],
+  },
+};
+
+export default function () {
+  const response = http.get('https://your-domain.com/api/search');
+  check(response, { 'status is 200': (result) => result.status === 200 });
+  sleep(1);
+}</pre>
+  </section>
+
+  <section class="card">
+    <h2>十、測試報告模板</h2>
+    <table>
+      <tr><th>測試項目</th><th>結果</th><th>是否通過</th><th>備註</th></tr>
+      <tr><td>Baseline Test</td><td>RPS：____ / P95：____</td><td>□ 通過 □ 失敗</td><td></td></tr>
+      <tr><td>Ramp-up Test</td><td>最高 VM 數：____ / Scale out 時間：____</td><td>□ 通過 □ 失敗</td><td></td></tr>
+      <tr><td>Spike Test</td><td>錯誤率：____ / P95：____</td><td>□ 通過 □ 失敗</td><td></td></tr>
+      <tr><td>Defense Test</td><td>Cloud Armor 封鎖數：____</td><td>□ 通過 □ 失敗</td><td></td></tr>
+      <tr><td>Rolling Update</td><td>服務是否中斷：____</td><td>□ 通過 □ 失敗</td><td></td></tr>
+      <tr><td>Cost Control</td><td>是否超過預算：____</td><td>□ 通過 □ 失敗</td><td></td></tr>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>十一、資料來源</h2>
+    <p class="small">此計劃參考 Google Cloud 官方文件中 MIG Autoscaling、Cloud Armor Rate Limiting、Load Testing 與 Budget Alert 相關建議整理。</p>
+    <ul class="small">
+      <li>Google Cloud Compute Engine Autoscaler</li>
+      <li>Google Cloud Managed Instance Group</li>
+      <li>Google Cloud Armor Rate Limiting</li>
+      <li>Google Cloud Conduct Load Testing</li>
+    </ul>
+  </section>
+</main>
+
+<footer>GCP 自動升規與壓力測試計劃｜適用於 Node.js / Docker / Nginx / PM2 架構</footer>
+</body>
+</html>

@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mac + Windows Homelab：OpenStack / K8s / DevOps 架構圖</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --card: #1f2937;
+      --card2: #243244;
+      --line: #94a3b8;
+      --text: #e5e7eb;
+      --muted: #a5b4fc;
+      --accent: #38bdf8;
+      --good: #34d399;
+      --warn: #fbbf24;
+      --danger: #fb7185;
+      --purple: #c084fc;
+      --orange: #fb923c;
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top, #1e293b 0%, var(--bg) 55%, #020617 100%);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", Arial, sans-serif;
+      line-height: 1.65;
+    }
+    header {
+      padding: 34px 24px 18px;
+      max-width: 1320px;
+      margin: auto;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(28px, 4vw, 46px);
+      line-height: 1.15;
+    }
+    .subtitle {
+      color: #cbd5e1;
+      max-width: 980px;
+      font-size: 17px;
+    }
+    .layout {
+      max-width: 1320px;
+      margin: auto;
+      padding: 12px 24px 60px;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 22px;
+    }
+    nav {
+      position: sticky;
+      top: 16px;
+      align-self: start;
+      background: rgba(15, 23, 42, .86);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(148, 163, 184, .25);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+    nav button {
+      width: 100%;
+      text-align: left;
+      margin: 6px 0;
+      border: 1px solid rgba(148, 163, 184, .18);
+      background: #111827;
+      color: var(--text);
+      border-radius: 12px;
+      padding: 12px 13px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    nav button:hover, nav button.active {
+      border-color: var(--accent);
+      background: #172554;
+    }
+    main { min-width: 0; }
+    section {
+      display: none;
+      background: rgba(15, 23, 42, .72);
+      border: 1px solid rgba(148, 163, 184, .24);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 22px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.22);
+    }
+    section.active { display: block; }
+    h2 { margin: 0 0 12px; font-size: 28px; }
+    h3 { margin: 22px 0 10px; color: #bfdbfe; }
+    .hint {
+      color: #cbd5e1;
+      margin-bottom: 18px;
+    }
+    .diagram {
+      overflow: auto;
+      background: #020617;
+      border: 1px solid rgba(148, 163, 184, .25);
+      border-radius: 16px;
+      padding: 18px;
+      margin: 18px 0;
+    }
+    .canvas {
+      min-width: 860px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-items: stretch;
+    }
+    .row {
+      display: flex;
+      gap: 16px;
+      align-items: stretch;
+      justify-content: center;
+      flex-wrap: nowrap;
+    }
+    .node {
+      background: linear-gradient(180deg, var(--card), #111827);
+      border: 1px solid rgba(148, 163, 184, .35);
+      border-radius: 15px;
+      padding: 14px 16px;
+      min-width: 180px;
+      text-align: center;
+      position: relative;
+    }
+    .node strong { display: block; font-size: 16px; }
+    .node span { display: block; color: #cbd5e1; font-size: 13px; margin-top: 4px; }
+    .node.small { min-width: 130px; padding: 10px 12px; }
+    .node.good { border-color: rgba(52, 211, 153, .75); }
+    .node.warn { border-color: rgba(251, 191, 36, .8); }
+    .node.danger { border-color: rgba(251, 113, 133, .8); }
+    .node.purple { border-color: rgba(192, 132, 252, .8); }
+    .node.orange { border-color: rgba(251, 146, 60, .8); }
+    .arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--line);
+      font-weight: 700;
+      min-width: 34px;
+    }
+    .down {
+      text-align: center;
+      color: var(--line);
+      font-size: 26px;
+      line-height: 1;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+    .explain {
+      background: rgba(31, 41, 55, .82);
+      border: 1px solid rgba(148, 163, 184, .22);
+      border-radius: 14px;
+      padding: 15px;
+    }
+    .explain b { color: #7dd3fc; }
+    .explain .tag {
+      display: inline-block;
+      margin-bottom: 8px;
+      color: #020617;
+      background: #7dd3fc;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      overflow: hidden;
+      border-radius: 14px;
+    }
+    th, td {
+      border: 1px solid rgba(148, 163, 184, .22);
+      padding: 12px 13px;
+      vertical-align: top;
+    }
+    th { background: #172554; color: #dbeafe; }
+    td { background: rgba(15, 23, 42, .72); }
+    code, pre {
+      background: #020617;
+      border: 1px solid rgba(148, 163, 184, .25);
+      color: #d1fae5;
+      border-radius: 10px;
+    }
+    code { padding: 2px 6px; }
+    pre { padding: 14px; overflow: auto; }
+    .pillbar { display:flex; gap:10px; flex-wrap:wrap; margin: 14px 0; }
+    .pill { border:1px solid rgba(148,163,184,.3); border-radius:999px; padding:6px 10px; color:#cbd5e1; background:#0f172a; }
+    .callout {
+      border-left: 5px solid var(--warn);
+      background: rgba(251, 191, 36, .09);
+      padding: 14px 16px;
+      border-radius: 12px;
+      margin: 14px 0;
+    }
+    .ok { border-left-color: var(--good); background: rgba(52, 211, 153, .08); }
+    .bad { border-left-color: var(--danger); background: rgba(251, 113, 133, .08); }
+    footer {
+      max-width: 1320px;
+      margin: auto;
+      padding: 0 24px 40px;
+      color: #94a3b8;
+    }
+    @media (max-width: 920px) {
+      .layout { grid-template-columns: 1fr; }
+      nav { position: static; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Mac + Windows Homelab：OpenStack / Kubernetes / DevOps 全景架構圖</h1>
+  <p class="subtitle">這份圖用「不同角度」拆解兩台電腦如何組成一個實驗室：從實體設備、網路切割、OpenStack、Kubernetes、CI/CD、監控、Log、儲存，到使用者請求如何一路進入服務。</p>
+  <div class="pillbar">
+    <span class="pill">適合：OpenStack / K8s / DevOps / SRE 練習</span>
+    <span class="pill">設備：Mac + Windows</span>
+    <span class="pill">核心：兩台電腦先用 VM 模擬企業架構</span>
+  </div>
+</header>
+
+<div class="layout">
+  <nav id="menu">
+    <button class="active" data-target="overview">總覽圖</button>
+    <button data-target="physical">角度一：實體與虛擬化層</button>
+    <button data-target="network">角度二：網路與 IP 規劃</button>
+    <button data-target="openstack">角度三：OpenStack 私有雲</button>
+    <button data-target="kubernetes">角度四：Kubernetes 容器平台</button>
+    <button data-target="cicd">角度五：CI/CD 部署流程</button>
+    <button data-target="monitoring">角度六：監控與告警</button>
+    <button data-target="logging">角度七：Log 與問題追蹤</button>
+    <button data-target="storage">角度八：儲存與備份</button>
+    <button data-target="traffic">角度九：使用者流量路徑</button>
+    <button data-target="spec">資源配置建議</button>
+    <button data-target="roadmap">學習順序與實作路線</button>
+  </nav>
+
+  <main>
+    <section id="overview" class="active">
+      <h2>總覽圖：兩台電腦組成一個小型雲端實驗室</h2>
+      <p class="hint">核心概念：Mac 和 Windows 不直接跑 OpenStack，而是各自透過虛擬化軟體建立 Ubuntu VM，再用這些 VM 組成 OpenStack、K8s、監控與 CI/CD 環境。</p>
+      <div class="diagram">
+        <div class="canvas">
+          <div class="row"><div class="node orange"><strong>Internet</strong><span>外部使用者 / GitHub / 套件來源</span></div></div>
+          <div class="down">↓</div>
+          <div class="row"><div class="node"><strong>Router / Switch</strong><span>192.168.1.1，讓兩台電腦互通</span></div></div>
+          <div class="down">↓</div>
+          <div class="row">
+            <div class="node purple"><strong>Mac Host</strong><span>UTM / VMware Fusion / Multipass</span></div>
+            <div class="arrow">⇄</div>
+            <div class="node purple"><strong>Windows Host</strong><span>VMware Workstation / Hyper-V</span></div>
+          </div>
+          <div class="down">↓</div>
+          <div class="row">
+            <div class="node good"><strong>OpenStack Controller VM</strong><span>Keystone / Nova API / Neutron / Horizon</span></div>
+            <div class="node good"><strong>OpenStack Compute VM</strong><span>Nova Compute / Libvirt / KVM nested</span></div>
+            <div class="node warn"><strong>K8s Master VM</strong><span>API Server / Scheduler / Controller</span></div>
+            <div class="node warn"><strong>K8s Worker VM</strong><span>Pod / Service / Containerd</span></div>
+          </div>
+          <div class="down">↓</div>
+          <div class="row">
+            <div class="node small"><strong>GitLab CI</strong><span>自動建置</span></div>
+            <div class="node small"><strong>Registry</strong><span>映像檔倉庫</span></div>
+            <div class="node small"><strong>Prometheus</strong><span>指標收集</span></div>
+            <div class="node small"><strong>Grafana</strong><span>儀表板</span></div>
+            <div class="node small"><strong>ELK</strong><span>Log 查詢</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="grid">
+        <div class="explain"><span class="tag">主軸</span><b>OpenStack</b> 負責練 IaaS，也就是像雲端平台一樣開 VM、建網路、掛 Volume。</div>
+        <div class="explain"><span class="tag">主軸</span><b>Kubernetes</b> 負責練容器平台，把服務包成 Pod，做滾動更新、Service Discovery、Ingress。</div>
+        <div class="explain"><span class="tag">主軸</span><b>CI/CD</b> 負責從 Git Push 到自動測試、建 Docker Image、部署到 K8s。</div>
+        <div class="explain"><span class="tag">主軸</span><b>Monitoring / Logging</b> 負責觀察系統 CPU、Memory、Disk、API Error、Pod Restart、OpenStack 服務狀態。</div>
+      </div>
+      <div class="callout ok">建議先把目標定為「可操作、可展示、可寫進履歷」的 Lab，不要一開始追求正式 HA。兩台電腦足夠練完整流程，但不適合真的承載正式業務。</div>
+    </section>
+
+    <section id="physical">
+      <h2>角度一：實體與虛擬化層</h2>
+      <p class="hint">這一層回答：Mac 和 Windows 要怎麼變成可用的 Linux 節點。</p>
+      <div class="diagram"><div class="canvas">
+        <div class="row">
+          <div class="node purple"><strong>Mac</strong><span>Host OS：macOS</span></div>
+          <div class="node purple"><strong>Windows PC</strong><span>Host OS：Windows</span></div>
+        </div>
+        <div class="down">↓</div>
+        <div class="row">
+          <div class="node"><strong>UTM / VMware Fusion</strong><span>建立 Ubuntu VM</span></div>
+          <div class="node"><strong>VMware Workstation / Hyper-V</strong><span>建立 Ubuntu VM</span></div>
+        </div>
+        <div class="down">↓</div>
+        <div class="row">
+          <div class="node good"><strong>Ubuntu VM A</strong><span>Controller / Monitoring</span></div>
+          <div class="node good"><strong>Ubuntu VM B</strong><span>Compute / K8s Worker</span></div>
+          <div class="node good"><strong>Ubuntu VM C</strong><span>GitLab / Registry</span></div>
+        </div>
+      </div></div>
+      <div class="grid">
+        <div class="explain"><b>Host OS</b>：你的原本系統。Mac 是 macOS，Windows 是 Windows。它們主要負責提供 CPU、RAM、Disk、Network。</div>
+        <div class="explain"><b>Hypervisor</b>：虛擬化軟體，例如 VMware、UTM、Hyper-V。它負責在實體電腦裡切出多台 VM。</div>
+        <div class="explain"><b>Ubuntu VM</b>：真正執行 OpenStack / K8s 的環境。因為 OpenStack 主要跑在 Linux 上，所以 VM 裡建議用 Ubuntu Server。</div>
+        <div class="explain"><b>Nested Virtualization</b>：如果你想在 VM 裡再開 OpenStack VM，需要開啟巢狀虛擬化。Windows PC 通常比 Apple Silicon Mac 更適合。</div>
+      </div>
+    </section>
+
+    <section id="network">
+      <h2>角度二：網路與 IP 規劃</h2>
+      <p class="hint">網路不要全部混在一起。即使是 Lab，也建議用不同網段模擬企業環境。</p>
+      <div class="diagram"><div class="canvas">
+        <div class="row"><div class="node orange"><strong>Router</strong><span>192.168.1.1 / Internet Gateway</span></div></div>
+        <div class="down">↓</div>
+        <div class="row">
+          <div class="node"><strong>Management</strong><span>10.0.10.0/24</span></div>
+          <div class="node"><strong>Storage</strong><span>10.0.20.0/24</span></div>
+          <div class="node"><strong>Kubernetes</strong><span>10.0.30.0/24</span></div>
+          <div class="node"><strong>Monitoring</strong><span>10.0.40.0/24</span></div>
+          <div class="node"><strong>External</strong><span>10.0.50.0/24</span></div>
+        </div>
+      </div></div>
+      <table>
+        <thead><tr><th>網段</th><th>用途</th><th>為什麼要分開</th><th>範例</th></tr></thead>
+        <tbody>
+          <tr><td>Management Network</td><td>管理節點之間通訊</td><td>OpenStack API、SSH、內部服務不應跟使用者流量混在一起</td><td>10.0.10.11 Controller、10.0.10.21 Compute</td></tr>
+          <tr><td>Storage Network</td><td>Volume、Image、備份資料流</td><td>磁碟流量大，會影響 API 與服務流量</td><td>10.0.20.0/24</td></tr>
+          <tr><td>Kubernetes Network</td><td>Pod、Service、Node 通訊</td><td>K8s 有自己的容器網路與 Service 網路</td><td>10.0.30.0/24</td></tr>
+          <tr><td>Monitoring Network</td><td>Prometheus 抓指標</td><td>避免監控流量干擾正式服務，也方便限制權限</td><td>10.0.40.0/24</td></tr>
+          <tr><td>External Network</td><td>對外入口、Floating IP、Ingress</td><td>使用者進來的流量需要獨立控管</td><td>10.0.50.0/24</td></tr>
+        </tbody>
+      </table>
+      <div class="callout">如果只是第一次練，可以先全部用同一個 192.168.1.0/24。但第二階段要開始切 Management / External，否則 OpenStack Neutron 觀念會很難真正理解。</div>
+    </section>
+
+    <section id="openstack">
+      <h2>角度三：OpenStack 私有雲</h2>
+      <p class="hint">OpenStack 是 IaaS 平台，重點是讓你像用 AWS EC2 一樣，自己建立 VM、網路、磁碟與映像檔。</p>
+      <div class="diagram"><div class="canvas">
+        <div class="row"><div class="node good"><strong>Horizon</strong><span>OpenStack Web UI</span></div></div>
+        <div class="down">↓</div>
+        <div class="row">
+          <div class="node"><strong>Keystone</strong><span>身份認證 / Project / Role</span></div>
+          <div class="node"><strong>Nova API</strong><span>VM 建立與生命週期</span></div>
+          <div class="node"><strong>Neutron</strong><span>虛擬網路 / Router / Security Group</span></div>
+          <div class="node"><strong>Glance</strong><span>Image 管理</span></div>
+          <div class="node"><strong>Cinder</strong><span>Volume 磁碟</span></div>
+        </div>
+        <div class="down">↓</div>
+        <div class="row">
+          <div class="node warn"><strong>RabbitMQ</strong><span>OpenStack 服務間訊息</span></div>
+          <div class="node warn"><strong>MariaDB</strong><span>OpenStack 狀態資料</span></div>
+          <div class="node warn"><strong>Placement</strong><span>排程與資源追蹤</span></div>
+        </div>
+        <div class="down">↓</div>
+        <div class="row">
+          <div class="node purple"><strong>Compute Node</strong><span>Nova Compute + Libvirt + KVM</span></div>
+          <div class="node purple"><strong>VM Instances</strong><span>Ubuntu VM / Rocky VM / App VM</span></div>
+        </div>
+      </div></div>
+      <div class="grid">
+        <div class="explain"><b>Keystone</b>：管理帳號、Token、Project、Role。你可以練「誰可以開 VM、誰可以看資源」。</div>
+        <div class="explain"><b>Nova</b>：負責 VM 生命週期，例如建立、關機、重開、刪除、Resize。</div>
+        <div class="explain"><b>Neutron</b>：最重要也最難。它負責虛擬網路、Router、Floating IP、Security Group。</div>
+        <div class="explain"><b>Glance</b>：存放 VM Image，例如 Ubuntu Cloud Image。Nova 建 VM 時會從這裡拿 Image。</div>
+        <div class="explain"><b>Cinder</b>：提供可掛載到 VM 的 Block Storage，像雲端硬碟。</div>
+        <div class="explain"><b>RabbitMQ / MariaDB</b>：OpenStack 控制平面的核心依賴。RabbitMQ 傳遞任務，MariaDB 保存狀態。</div>
+      </div>
+    </section>
+
+    <section id="kubernetes">
+      <h2>角度四：Kubernetes 容器平台</h2>
+      <p class="hint">K8s 是跑應用程式的容器平台。OpenStack 偏「開 VM」，K8s 偏「跑服務」。</p>
+      <div class="diagram"><div class="canvas">
+        <div class="row"><div class="node orange"><strong>kubectl / CI/CD</strong><span>部署 YAML / Helm Chart</span></div></div>
+        <div class="down">↓</div>
+        <div class="row">
+          <div class="node good"><strong>API Server</strong><span>K8s 統一入口</span></div>
+          <div class="node good"><strong>Scheduler</strong><span>決定 Pod 放哪台 Worker</span></div>
+          <div class="node good"><strong>Controller Manager</strong><span>維持期望狀態</span></div>
+          <div class="node good"><strong>etcd</strong><span>叢集狀態資料庫</span></div>
+        </div>
+        <div class="down">↓</div>
+        <div class="row">
+          <div class="node purple"><strong>Worker 1</strong><span>kubelet / containerd / Pod</span></div>
+          <div class="node purple"><strong>Worker 2</strong><span>kubelet / containerd / Pod</span></div>
+          <div class="node purple"><strong>Worker 3</strong><span>kubelet / containerd / Pod</span></div>
+        </div>
+        <div class="down">↓</div>
+        <div class="row">
+          <div class="node small"><strong>Ingress</strong><span>HTTP 入口</span></div>
+          <div class="node small"><strong>Service</strong><span>固定入口</span></div>
+          <div class="node small"><strong>Deployment</strong><span>版本與副本數</span></div>
+          <div class="node small"><strong>Pod</strong><span>最小運行單位</span></div>
+          <div class="node small"><strong>ConfigMap / Secret</strong><span>設定與機密</span></div>
+        </div>
+      </div></div>
+      <div class="grid">
+        <div class="explain"><b>API Server</b>：所有操作都先打到這裡，例如 kubectl apply、CI/CD 部署。</div>
+        <div class="explain"><b>Scheduler</b>：決定 Pod 要放在哪個 Worker，會考慮 CPU、Memory、Taint、Affinity。</div>
+        <div class="explain"><b>Deployment</b>：描述服務要跑幾份、用哪個 Image、如何更新。</div>
+        <div class="explain"><b>Service</b>：Pod IP 會變，Service 提供穩定入口。</div>
+        <div class="explain"><b>Ingress</b>：HTTP/HTTPS 入口，例如 app.local、grafana.local。</div>
+        <div class="explain"><b>ConfigMap / Secret</b>：把設定與密碼從程式碼中拆出來，方便環境切換。</div>
+      </div>
+    </section>
+
+    <section id="cicd">
+      <h2>角度五：CI/CD 部署流程</h2>
+      <p class="hint">CI/CD 是從程式碼到部署的自動化管線。你可以練出企業最常看的 DevOps 流程。</p>
+      <div class="diagram"><div class="canvas">
+        <div class="row"><div class="node"><strong>Developer</strong><span>修改程式碼</span></div></div>
+        <div class="down">↓ git push</div>
+        <div class="row"><div class="node orange"><strong>GitHub / GitLab</strong><span>版本控制</span></div></div>
+        <div class="down">↓ webhook</div>
+        <div class="row">
+          <div class="node good"><strong>Build</strong><span>npm install / docker build</span></div>
+          <div class="node good"><strong>Test</strong><span>Unit Test / Integration Test</span></div>
+          <div class="node warn"><strong>Scan</strong><span>SonarQube / Security Scan</span></div>
+          <div class="node purple"><strong>Push Image</strong><span>Docker Registry</span></div>
+        </div>
+        <div class="down">↓ deploy</div>
+        <div class="row">
+          <div class="node"><strong>Kubernetes</strong><span>Deployment Rolling Update</span></div>
+          <div class="node"><strong>OpenStack VM</strong><span>也可部署到 VM</span></div>
+        </div>
+      </div></div>
+      <table>
+        <thead><tr><th>階段</th><th>目的</th><th>你要觀察什麼</th></tr></thead>
+        <tbody>
+          <tr><td>Build</td><td>確認程式能被建置</td><td>依賴是否鎖版、Dockerfile 是否過大、Build 是否太慢</td></tr>
+          <tr><td>Test</td><td>避免錯誤進入環境</td><td>單元測試、API 測試、測試覆蓋率、失敗原因</td></tr>
+          <tr><td>Scan</td><td>檢查品質與安全</td><td>Code Smell、漏洞、Secret 洩漏、套件弱點</td></tr>
+          <tr><td>Push Image</td><td>把可部署產物放進 Registry</td><td>Image Tag、版本策略、回滾能力</td></tr>
+          <tr><td>Deploy</td><td>部署到 K8s 或 VM</td><td>Rolling Update、Pod Ready、Health Check、回滾</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="monitoring">
+      <h2>角度六：監控與告警</h2>
+      <p class="hint">監控不是只看 CPU，而是要回答「系統是否健康、問題在哪一層、是否會影響使用者」。</p>
+      <div class="diagram"><div class="canvas">
+        <div class="row">
+          <div class="node small"><strong>Node Exporter</strong><span>主機 CPU / RAM / Disk</span></div>
+          <div class="node small"><strong>cAdvisor</strong><span>Container 指標</span></div>
+          <div class="node small"><strong>kube-state-metrics</strong><span>K8s 物件狀態</span></div>
+          <div class="node small"><strong>OpenStack Exporter</strong><span>OpenStack 服務狀態</span></div>
+        </div>
+        <div class="down">↓ scrape</div>
+        <div class="row"><div class="node good"><strong>Prometheus</strong><span>時間序列資料庫與查詢</span></div></div>
+        <div class="down">↓ query / alert</div>
+        <div class="row">
+          <div class="node purple"><strong>Grafana</strong><span>Dashboard</span></div>
+          <div class="node danger"><strong>AlertManager</strong><span>Email / Teams / Slack 告警</span></div>
+        </div>
+      </div></div>
+      <table>
+        <thead><tr><th>指標</th><th>代表意義</th><th>常見判斷</th></tr></thead>
+        <tbody>
+          <tr><td>CPU Usage</td><td>運算資源是否吃滿</td><td>長期超過 80% 要看是否需要擴容或限制服務</td></tr>
+          <tr><td>Memory Usage</td><td>是否有記憶體壓力</td><td>接近滿載、頻繁 OOMKilled，代表服務設定或資源不足</td></tr>
+          <tr><td>Disk IO / Disk Usage</td><td>磁碟容量與讀寫瓶頸</td><td>磁碟超過 80% 要預警；IO Wait 高會拖慢整機</td></tr>
+          <tr><td>Pod Restart Count</td><td>容器是否反覆重啟</td><td>短時間大量增加，多半是程式錯誤、設定錯誤或資源不足</td></tr>
+          <tr><td>API Latency</td><td>使用者感受到的速度</td><td>P95 / P99 延遲比平均值更重要</td></tr>
+          <tr><td>HTTP 5xx Rate</td><td>服務錯誤比例</td><td>突然上升要立刻查 Log 與近期部署</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="logging">
+      <h2>角度七：Log 與問題追蹤</h2>
+      <p class="hint">Log 是排查問題的證據鏈。監控告訴你「有問題」，Log 告訴你「問題發生在哪裡」。</p>
+      <div class="diagram"><div class="canvas">
+        <div class="row">
+          <div class="node small"><strong>App Log</strong><span>API / Error / Business Log</span></div>
+          <div class="node small"><strong>Nginx Log</strong><span>Access / Error</span></div>
+          <div class="node small"><strong>K8s Log</strong><span>Pod / Event</span></div>
+          <div class="node small"><strong>OpenStack Log</strong><span>Nova / Neutron / Keystone</span></div>
+        </div>
+        <div class="down">↓ collect</div>
+        <div class="row"><div class="node warn"><strong>Filebeat / Fluent Bit</strong><span>收集與轉送 Log</span></div></div>
+        <div class="down">↓ parse</div>
+        <div class="row"><div class="node good"><strong>Logstash / Pipeline</strong><span>格式化、切欄位、清洗</span></div></div>
+        <div class="down">↓ store</div>
+        <div class="row"><div class="node purple"><strong>Elasticsearch / OpenSearch</strong><span>儲存與搜尋</span></div></div>
+        <div class="down">↓ visualize</div>
+        <div class="row"><div class="node"><strong>Kibana / Dashboard</strong><span>查詢錯誤、追 Trace ID</span></div></div>
+      </div></div>
+      <div class="grid">
+        <div class="explain"><b>Access Log</b>：看誰打了哪個 API、狀態碼、耗時、來源 IP。</div>
+        <div class="explain"><b>Error Log</b>：看程式錯誤、例外堆疊、資料庫錯誤。</div>
+        <div class="explain"><b>Trace ID</b>：一次請求一路從 Nginx、API、DB 都帶同一個 ID，方便串起完整路徑。</div>
+        <div class="explain"><b>Retention</b>：Log 不能無限存，Lab 可設定 7～14 天，避免磁碟爆掉。</div>
+      </div>
+    </section>
+
+    <section id="storage">
+      <h2>角度八：儲存與備份</h2>
+      <p class="hint">兩台電腦可以練儲存概念，但不適合正式 Ceph 高可用。Ceph 正式環境通常至少三台以上較合理。</p>
+      <div class="diagram"><div class="canvas">
+        <div class="row">
+          <div class="node"><strong>Local Disk</strong><span>VM Disk / Host Disk</span></div>
+          <div class="node"><strong>Cinder Volume</strong><span>OpenStack Block Storage</span></div>
+          <div class="node"><strong>NFS</strong><span>Lab 共用儲存</span></div>
+          <div class="node warn"><strong>Ceph Lab</strong><span>只建議練概念</span></div>
+        </div>
+        <div class="down">↓ backup</div>
+        <div class="row">
+          <div class="node good"><strong>Snapshot</strong><span>快速還原點</span></div>
+          <div class="node good"><strong>External Disk</strong><span>離線備份</span></div>
+          <div class="node good"><strong>Cloud Backup</strong><span>重要設定檔備份</span></div>
+        </div>
+      </div></div>
+      <table>
+        <thead><tr><th>儲存類型</th><th>適合用途</th><th>風險</th></tr></thead>
+        <tbody>
+          <tr><td>Local Disk</td><td>最簡單，適合 VM、Lab、測試服務</td><td>主機壞掉資料可能一起消失</td></tr>
+          <tr><td>NFS</td><td>簡單共享檔案、K8s 測試 PV</td><td>單點故障，效能普通</td></tr>
+          <tr><td>Cinder</td><td>練 OpenStack Volume 掛載</td><td>背後仍要有穩定儲存</td></tr>
+          <tr><td>Ceph</td><td>練分散式儲存、RBD、OSD、Monitor</td><td>兩台不適合正式 HA，硬體資源吃重</td></tr>
+          <tr><td>Snapshot</td><td>升級前、實驗前保護環境</td><td>不能取代真正備份</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="traffic">
+      <h2>角度九：使用者流量路徑</h2>
+      <p class="hint">這一張是最接近真實業務的角度：使用者打開網站後，請求如何一路進入你的服務。</p>
+      <div class="diagram"><div class="canvas">
+        <div class="row"><div class="node orange"><strong>User Browser</strong><span>https://app.local</span></div></div>
+        <div class="down">↓ DNS / hosts</div>
+        <div class="row"><div class="node"><strong>Router / NAT</strong><span>轉送到 Lab 入口</span></div></div>
+        <div class="down">↓ HTTP / HTTPS</div>
+        <div class="row"><div class="node good"><strong>Nginx / HAProxy</strong><span>Reverse Proxy / TLS / Routing</span></div></div>
+        <div class="down">↓</div>
+        <div class="row">
+          <div class="node purple"><strong>K8s Ingress</strong><span>進入容器服務</span></div>
+          <div class="node purple"><strong>OpenStack Floating IP</strong><span>進入 VM 服務</span></div>
+        </div>
+        <div class="down">↓</div>
+        <div class="row">
+          <div class="node small"><strong>Frontend</strong><span>React / Next.js</span></div>
+          <div class="node small"><strong>Backend API</strong><span>Node.js / FastAPI</span></div>
+          <div class="node small"><strong>Database</strong><span>MongoDB / PostgreSQL</span></div>
+          <div class="node small"><strong>Cache</strong><span>Redis</span></div>
+        </div>
+      </div></div>
+      <div class="grid">
+        <div class="explain"><b>Nginx / HAProxy</b>：入口層，負責把不同網域或路徑導到不同服務。</div>
+        <div class="explain"><b>K8s Ingress</b>：容器平台內的 HTTP 路由，常見搭配 Nginx Ingress Controller。</div>
+        <div class="explain"><b>Floating IP</b>：OpenStack 讓外部連到 VM 的方式，像雲端 VM 綁公網 IP。</div>
+        <div class="explain"><b>Database</b>：Lab 可先用單機 MongoDB；正式環境才考慮 Replica Set、備份與監控。</div>
+      </div>
+    </section>
+
+    <section id="spec">
+      <h2>資源配置建議</h2>
+      <p class="hint">以下用兩台 16 核心電腦思路估算。實際配置要看 RAM 與磁碟，OpenStack 與 K8s 都很吃記憶體。</p>
+      <table>
+        <thead><tr><th>VM</th><th>建議 CPU</th><th>建議 RAM</th><th>建議 Disk</th><th>用途</th></tr></thead>
+        <tbody>
+          <tr><td>OpenStack Controller</td><td>4 vCPU</td><td>12～16GB</td><td>100GB</td><td>Keystone、Nova API、Neutron、Glance、Horizon、DB、MQ</td></tr>
+          <tr><td>OpenStack Compute</td><td>6～8 vCPU</td><td>16～32GB</td><td>200GB+</td><td>跑 OpenStack 建出的 VM</td></tr>
+          <tr><td>K8s Master</td><td>2～4 vCPU</td><td>6～8GB</td><td>80GB</td><td>API Server、Scheduler、Controller、etcd</td></tr>
+          <tr><td>K8s Worker 1</td><td>4～6 vCPU</td><td>8～16GB</td><td>100GB</td><td>跑 Pod、Ingress、測試服務</td></tr>
+          <tr><td>K8s Worker 2</td><td>4～6 vCPU</td><td>8～16GB</td><td>100GB</td><td>跑 Pod、模擬多節點</td></tr>
+          <tr><td>Monitoring</td><td>2～4 vCPU</td><td>8GB</td><td>100GB</td><td>Prometheus、Grafana、AlertManager</td></tr>
+          <tr><td>Logging</td><td>4 vCPU</td><td>8～16GB</td><td>200GB+</td><td>ELK / OpenSearch，最吃磁碟</td></tr>
+          <tr><td>GitLab / Registry</td><td>4 vCPU</td><td>8～16GB</td><td>150GB+</td><td>CI/CD 與 Docker Image 倉庫</td></tr>
+        </tbody>
+      </table>
+      <div class="callout bad">如果總 RAM 只有 32GB，不建議一次開完整環境。先做 OpenStack 或 K8s 二選一。若總 RAM 有 64GB 以上，再分階段加入監控、CI/CD、Log。</div>
+    </section>
+
+    <section id="roadmap">
+      <h2>學習順序與實作路線</h2>
+      <p class="hint">不要一次全部裝，會很容易卡住。建議用階段式完成，每一階段都要能驗收。</p>
+      <table>
+        <thead><tr><th>階段</th><th>目標</th><th>驗收方式</th></tr></thead>
+        <tbody>
+          <tr><td>STEP_01</td><td>兩台電腦互通，VM 可 SSH</td><td>Mac VM ping Windows VM；Windows VM ssh 到 Mac VM</td></tr>
+          <tr><td>STEP_02</td><td>建立基礎 Linux Lab</td><td>所有 VM 固定 IP、可互相解析 Hostname</td></tr>
+          <tr><td>STEP_03</td><td>先完成 Kubernetes</td><td>部署一個 Node.js API，透過 Ingress 打得到</td></tr>
+          <tr><td>STEP_04</td><td>加入 CI/CD</td><td>Git Push 後自動 Build Image 並部署到 K8s</td></tr>
+          <tr><td>STEP_05</td><td>加入監控</td><td>Grafana 看得到 Node、Pod、API 指標</td></tr>
+          <tr><td>STEP_06</td><td>加入 Logging</td><td>Kibana / OpenSearch 查得到 API Error Log</td></tr>
+          <tr><td>STEP_07</td><td>再做 OpenStack</td><td>Horizon 可登入，能開 VM、建 Network、綁 Floating IP</td></tr>
+          <tr><td>STEP_08</td><td>整合 OpenStack + K8s</td><td>OpenStack VM 裡也能加入 K8s Worker 或跑服務</td></tr>
+        </tbody>
+      </table>
+      <div class="callout ok">履歷可以寫成：自建 Homelab，包含 Linux VM、Kubernetes、OpenStack、CI/CD、Prometheus/Grafana、集中式 Log，並具備網路切割、資源監控與服務部署經驗。</div>
+    </section>
+  </main>
+</div>
+
+<footer>單檔 HTML，可直接用瀏覽器開啟。建議先從「總覽圖 → 網路規劃 → K8s → 監控 → OpenStack」順序閱讀。</footer>
+
+<script>
+  const buttons = document.querySelectorAll('nav button');
+  const sections = document.querySelectorAll('main section');
+  buttons.forEach(button => {
+    button.addEventListener('click', () => {
+      buttons.forEach(currentButton => currentButton.classList.remove('active'));
+      sections.forEach(section => section.classList.remove('active'));
+      button.classList.add('active');
+      document.getElementById(button.dataset.target).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+</script>
+</body>
+</html>

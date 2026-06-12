@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DevOps / SRE 企業架構互動模擬器 - 動畫修正版</title>
+<style>
+:root{
+  --bg:#07111f;--panel:#0d1b2e;--panel2:#10243d;--line:#7fa3cc;--text:#e7f0ff;--muted:#9fb4d0;
+  --blue:#38bdf8;--green:#4ade80;--red:#fb7185;--yellow:#facc15;--purple:#c084fc;--orange:#fb923c;
+}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",Arial,sans-serif;background:radial-gradient(circle at top,#12345b 0,#07111f 50%,#030814 100%);color:var(--text)}
+header{padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(4,10,22,.72);backdrop-filter:blur(12px)}
+h1{margin:0 0 6px;font-size:26px}header p{margin:0;color:var(--muted)}
+.layout{display:grid;grid-template-columns:330px 1fr;gap:16px;padding:16px}.panel{background:rgba(13,27,46,.94);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:16px;box-shadow:0 16px 50px rgba(0,0,0,.25)}
+.controls{display:flex;flex-direction:column;gap:14px}.group{padding:12px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07)}.group h3{margin:0 0 10px;font-size:15px;color:#dbeafe}
+label{display:block;margin:8px 0 5px;color:var(--muted);font-size:13px}select,input[type=number],input[type=range]{width:100%;padding:9px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:#07172a;color:var(--text)}
+button{cursor:pointer;border:0;border-radius:12px;padding:10px 12px;color:#06111f;font-weight:800;background:linear-gradient(135deg,#93c5fd,#38bdf8);margin:4px 4px 4px 0}button.secondary{background:linear-gradient(135deg,#d8b4fe,#c084fc)}button.danger{background:linear-gradient(135deg,#fda4af,#fb7185)}button.ok{background:linear-gradient(135deg,#bbf7d0,#4ade80)}button.warn{background:linear-gradient(135deg,#fde68a,#facc15)}
+.stageWrap{position:relative;min-height:740px;overflow:hidden}.topbar{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:10px}.badge{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.07);color:#dbeafe;font-size:13px}.dot{width:9px;height:9px;border-radius:50%;background:var(--green)}
+#stage{position:relative;height:620px;border-radius:18px;background:linear-gradient(180deg,rgba(8,24,45,.94),rgba(3,9,20,.98));border:1px solid rgba(255,255,255,.1);overflow:hidden}
+svg#wires{position:absolute;inset:0;width:100%;height:100%;z-index:1}.wire{fill:none;stroke:rgba(127,163,204,.55);stroke-width:3;stroke-linecap:round;stroke-dasharray:8 8}.wire.active{stroke:#60a5fa;filter:drop-shadow(0 0 6px rgba(56,189,248,.55));stroke-dasharray:none}.wire.blocked{stroke:rgba(251,113,133,.45);stroke-dasharray:3 8}
+.node{position:absolute;z-index:2;width:150px;min-height:78px;border-radius:16px;border:1px solid rgba(255,255,255,.15);background:linear-gradient(180deg,rgba(16,36,61,.98),rgba(8,21,40,.98));box-shadow:0 12px 30px rgba(0,0,0,.28);padding:10px;text-align:center;transition:.25s transform,.25s box-shadow,.25s border-color}.node strong{display:block;font-size:15px}.node small{display:block;margin-top:4px;color:var(--muted);font-size:12px}.node .meter{height:7px;background:rgba(255,255,255,.08);border-radius:999px;margin-top:8px;overflow:hidden}.node .bar{height:100%;width:18%;background:linear-gradient(90deg,#38bdf8,#4ade80);border-radius:999px;transition:width .25s}.node.failed{border-color:var(--red);animation:redPulse 1s infinite;box-shadow:0 0 24px rgba(251,113,133,.9),0 0 80px rgba(251,113,133,.35)}.node.scaled{border-color:var(--yellow);box-shadow:0 0 24px rgba(250,204,21,.35)}
+@keyframes redPulse{0%,100%{filter:none}50%{filter:brightness(1.45)}}
+.packet{position:absolute;z-index:5;width:14px;height:14px;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 14px currentColor,0 0 28px currentColor}.packet.req{background:var(--blue);color:var(--blue)}.packet.res{background:var(--green);color:var(--green)}.packet.drop{background:var(--red);color:var(--red);animation:dropBlink .45s 4}@keyframes dropBlink{50%{opacity:.2}}
+.legend{position:absolute;left:14px;bottom:14px;z-index:4;display:flex;gap:10px;flex-wrap:wrap}.log{height:150px;overflow:auto;background:#050d18;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:10px;color:#cfe3ff;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}.stat{padding:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px}.stat b{display:block;font-size:20px}.stat span{font-size:12px;color:var(--muted)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.62);display:none;align-items:center;justify-content:center;z-index:20;padding:20px}.modal.open{display:flex}.modalCard{max-width:720px;width:100%;background:#09182b;border:1px solid rgba(255,255,255,.16);border-radius:18px;padding:18px;box-shadow:0 30px 90px rgba(0,0,0,.5)}.modalCard h2{margin:0 0 8px}.modalCard pre{white-space:pre-wrap;background:#04101f;border-radius:14px;padding:12px;color:#dbeafe;overflow:auto}.close{float:right;background:#334155;color:#e5e7eb}
+@media(max-width:980px){.layout{grid-template-columns:1fr}.stageWrap{min-height:auto}#stage{height:760px}.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header>
+  <h1>DevOps / SRE 企業架構互動模擬器</h1>
+  <p>動畫修正版：封包會沿著線路移動，可模擬負載平衡、故障、修復、水平擴容與垂直升規。</p>
+</header>
+<div class="layout">
+  <aside class="panel controls">
+    <div class="group">
+      <h3>架構模式</h3>
+      <label>公司規模 / 架構</label>
+      <select id="architectureSelect">
+        <option value="small">小公司：單台 VM</option>
+        <option value="medium" selected>中型公司：獨立 Nginx VM + 多台 App VM</option>
+        <option value="large">大公司：GCP LB + K8s / Pods</option>
+      </select>
+      <label>在哪一層做平衡</label>
+      <select id="balancePointSelect"></select>
+    </div>
+    <div class="group">
+      <h3>流量模擬</h3>
+      <label>流量筆數</label><input id="requestCountInput" type="number" min="1" max="200" value="18">
+      <label>負載平衡演算法</label>
+      <select id="algorithmSelect">
+        <option value="roundRobin">Round Robin：輪流分配</option>
+        <option value="random">Random：隨機分配</option>
+        <option value="leastConnection">Least Connection：最少連線</option>
+        <option value="ipHash">IP Hash：同來源固定後端</option>
+        <option value="weighted">Weighted：權重分配</option>
+      </select>
+      <label>動畫速度：<span id="speedText">慢</span></label><input id="speedInput" type="range" min="0.35" max="2.5" step="0.05" value="0.65">
+      <button id="startButton">開始流量</button><button class="secondary" id="stopButton">停止動畫</button>
+    </div>
+    <div class="group">
+      <h3>故障 / 修復模擬</h3>
+      <label>選擇故障位置</label><select id="failureSelect"></select>
+      <button class="danger" id="failButton">製造故障</button><button class="ok" id="repairButton">一鍵修復 / 重啟</button>
+      <button class="warn" id="showFixButton">查看修復教學</button>
+    </div>
+    <div class="group">
+      <h3>升規模擬</h3>
+      <button id="scaleOutButton">水平擴容：新增 App / Pod</button>
+      <button class="secondary" id="scaleUpButton">垂直升規：CPU / Memory +1</button>
+      <button class="danger" id="resetButton">重置全部</button>
+    </div>
+  </aside>
+  <main class="panel stageWrap">
+    <div class="topbar">
+      <div><span class="badge"><span class="dot"></span> 藍色 Request 沿線進入，綠色 Response 沿線返回</span></div>
+      <div class="badge" id="architectureBadge">中型公司架構</div>
+    </div>
+    <div id="stage">
+      <svg id="wires" viewBox="0 0 1000 620" preserveAspectRatio="none"></svg>
+      <div class="legend"><span class="badge"><span class="dot" style="background:var(--blue)"></span>Request</span><span class="badge"><span class="dot" style="background:var(--green)"></span>Response</span><span class="badge"><span class="dot" style="background:var(--red)"></span>Failure</span></div>
+    </div>
+    <div class="stats"><div class="stat"><b id="totalStat">0</b><span>總流量</span></div><div class="stat"><b id="successStat">0</b><span>成功回應</span></div><div class="stat"><b id="failedStat">0</b><span>故障 / Drop</span></div><div class="stat"><b id="scaleStat">0</b><span>擴容次數</span></div></div>
+    <h3>事件紀錄</h3><div id="log" class="log"></div>
+  </main>
+</div>
+<div id="fixModal" class="modal"><div class="modalCard"><button class="close" id="closeModalButton">關閉</button><h2 id="fixTitle">修復教學</h2><p id="fixSummary"></p><pre id="fixCommands"></pre><button class="ok" id="modalRepairButton">照教學一鍵修復</button></div></div>
+<script>
+const stage=document.getElementById('stage');const svg=document.getElementById('wires');const logBox=document.getElementById('log');
+const architectureSelect=document.getElementById('architectureSelect');const balancePointSelect=document.getElementById('balancePointSelect');const algorithmSelect=document.getElementById('algorithmSelect');const failureSelect=document.getElementById('failureSelect');
+const requestCountInput=document.getElementById('requestCountInput');const speedInput=document.getElementById('speedInput');const speedText=document.getElementById('speedText');
+const totalStat=document.getElementById('totalStat');const successStat=document.getElementById('successStat');const failedStat=document.getElementById('failedStat');const scaleStat=document.getElementById('scaleStat');const architectureBadge=document.getElementById('architectureBadge');
+let state={architecture:'medium',nodes:{},paths:[],requests:0,success:0,failed:0,scale:0,rrIndex:0,activeConnections:{},timers:[],extraApps:0,verticalLevel:0};
+const baseNodes={
+  small:[
+    ['user','User','Browser / Client',55,260],['vm','GCP VM','Nginx + PM2 + Node + DB',415,250]
+  ],
+  medium:[
+    ['user','User','Browser / Client',45,260],['nginx','Nginx VM','Public IP / SSL / Proxy',270,250],['app1','App VM 1','Docker / Node.js',560,130],['app2','App VM 2','Docker / Node.js',560,265],['app3','App VM 3','Docker / Node.js',560,400],['db','DB VM','Private IP',805,265]
+  ],
+  large:[
+    ['user','User','Browser / Client',35,260],['gclb','GCP LB','Global Load Balancer',230,250],['ingress','Ingress','Nginx Ingress',420,250],['svc','K8s Service','ClusterIP',600,250],['pod1','Pod 1','Container: API',790,120],['pod2','Pod 2','Container: API',790,250],['pod3','Pod 3','Container: API',790,380],['cloudsql','Cloud SQL','Managed DB',790,510]
+  ]
+};
+const repairGuides={
+  user:['Client / 網路端異常','確認使用者 DNS、網路、防火牆或瀏覽器快取。','ping domain\nnslookup domain\ncurl -v https://your-domain.com'],
+  vm:['單台 VM 故障','小公司單機架構沒有備援，先重啟服務；若 VM 掛掉，需重開 VM 或從 snapshot 還原。','sudo systemctl status nginx\npm2 status\npm2 restart all\nsudo systemctl restart nginx'],
+  nginx:['Nginx VM 故障','這是入口單點。檢查 nginx 設定、憑證、80/443、防火牆與 upstream。','sudo nginx -t\nsudo systemctl restart nginx\ntail -f /var/log/nginx/error.log\ncurl -I http://10.0.0.11:3000/health'],
+  app1:['App VM 故障','檢查 Docker / PM2 / Node.js，Load Balancer 應把流量導到其他健康節點。','docker ps\ndocker logs <container>\ndocker restart <container>\npm2 restart all'],
+  app2:['App VM 故障','檢查 Docker / PM2 / Node.js，Load Balancer 應把流量導到其他健康節點。','docker ps\ndocker logs <container>\ndocker restart <container>\npm2 restart all'],
+  app3:['App VM 故障','檢查 Docker / PM2 / Node.js，Load Balancer 應把流量導到其他健康節點。','docker ps\ndocker logs <container>\ndocker restart <container>\npm2 restart all'],
+  db:['DB VM 故障','DB 故障會造成 App 無法完成交易。檢查連線數、磁碟、慢查詢與備份還原。','systemctl status mongod\ndf -h\ntop\ntail -f /var/log/mongodb/mongod.log'],
+  gclb:['GCP Load Balancer 異常','檢查 backend health check、URL map、SSL cert 與 firewall。','gcloud compute backend-services get-health BACKEND\ngcloud compute forwarding-rules list'],
+  ingress:['Ingress 故障','檢查 Ingress Controller、規則、憑證與 Service mapping。','kubectl get ingress -A\nkubectl logs -n ingress-nginx deploy/ingress-nginx-controller'],
+  svc:['K8s Service 故障','檢查 Service selector 是否對到 Pod label，以及 endpoints 是否存在。','kubectl get svc,endpoints -A\nkubectl describe svc SERVICE_NAME'],
+  pod1:['Pod 故障','K8s 應自動重啟 Pod；檢查 CrashLoopBackOff、ImagePullBackOff 與 readinessProbe。','kubectl get pods\nkubectl describe pod POD_NAME\nkubectl logs POD_NAME\nkubectl rollout restart deployment DEPLOYMENT_NAME'],
+  pod2:['Pod 故障','K8s 應自動重啟 Pod；檢查 CrashLoopBackOff、ImagePullBackOff 與 readinessProbe。','kubectl get pods\nkubectl describe pod POD_NAME\nkubectl logs POD_NAME\nkubectl rollout restart deployment DEPLOYMENT_NAME'],
+  pod3:['Pod 故障','K8s 應自動重啟 Pod；檢查 CrashLoopBackOff、ImagePullBackOff 與 readinessProbe。','kubectl get pods\nkubectl describe pod POD_NAME\nkubectl logs POD_NAME\nkubectl rollout restart deployment DEPLOYMENT_NAME'],
+  cloudsql:['Cloud SQL 異常','檢查連線上限、CPU、慢查詢、private connection 與備援狀態。','gcloud sql instances describe INSTANCE\n查看 Cloud SQL Metrics\n檢查 max_connections / slow query']
+};
+function log(message){const now=new Date().toLocaleTimeString();logBox.innerHTML=`[${now}] ${message}<br>`+logBox.innerHTML;}
+function resetCounters(){state.requests=0;state.success=0;state.failed=0;state.rrIndex=0;state.activeConnections={};updateStats();}
+function updateStats(){totalStat.textContent=state.requests;successStat.textContent=state.success;failedStat.textContent=state.failed;scaleStat.textContent=state.scale;Object.values(state.nodes).forEach(n=>{const el=document.getElementById('node-'+n.id);if(el){const count=state.activeConnections[n.id]||0;el.querySelector('.bar').style.width=Math.min(100,10+count*18)+'%';}})}
+function clearTimers(){state.timers.forEach(clearTimeout);state.timers=[];document.querySelectorAll('.packet').forEach(p=>p.remove());}
+function nodeCenter(id){const n=state.nodes[id];return{x:n.x+75,y:n.y+39};}
+function pathD(from,to){const a=nodeCenter(from),b=nodeCenter(to);const mid=(a.x+b.x)/2;return `M ${a.x} ${a.y} C ${mid} ${a.y}, ${mid} ${b.y}, ${b.x} ${b.y}`;}
+function addPath(from,to,type='normal'){state.paths.push({from,to,type});}
+function drawArchitecture(){clearTimers();stage.querySelectorAll('.node').forEach(n=>n.remove());svg.innerHTML='';state.nodes={};state.paths=[];state.extraApps=0;state.verticalLevel=0;resetCounters();
+  let nodes=JSON.parse(JSON.stringify(baseNodes[state.architecture]));
+  nodes.forEach(([id,title,sub,x,y])=>{state.nodes[id]={id,title,sub,x,y,failed:false,weight:id.endsWith('1')?3:id.endsWith('2')?1:2};});
+  Object.values(state.nodes).forEach(n=>createNode(n));
+  if(state.architecture==='small'){addPath('user','vm','single');architectureBadge.textContent='小公司：單台 VM';}
+  if(state.architecture==='medium'){addPath('user','nginx','entry');['app1','app2','app3'].forEach(a=>addPath('nginx',a,'balance'));['app1','app2','app3'].forEach(a=>addPath(a,'db','db'));architectureBadge.textContent='中型公司：獨立 Nginx VM';}
+  if(state.architecture==='large'){addPath('user','gclb','entry');addPath('gclb','ingress','entry');addPath('ingress','svc','entry');['pod1','pod2','pod3'].forEach(p=>addPath('svc',p,'balance'));['pod1','pod2','pod3'].forEach(p=>addPath(p,'cloudsql','db'));architectureBadge.textContent='大公司：GKE / K8s';}
+  drawPaths();refreshSelectors();log('已切換架構，動畫線路已重建。');}
+function createNode(n){const el=document.createElement('div');el.className='node';el.id='node-'+n.id;el.style.left=n.x+'px';el.style.top=n.y+'px';el.innerHTML=`<strong>${n.title}</strong><small>${n.sub}</small><div class="meter"><div class="bar"></div></div>`;el.onclick=()=>{failureSelect.value=n.id;showFixGuide(n.id)};stage.appendChild(el);}
+function drawPaths(){svg.innerHTML='';state.paths.forEach((p,i)=>{const path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('id',`path-${p.from}-${p.to}`);path.setAttribute('d',pathD(p.from,p.to));path.setAttribute('class','wire');path.dataset.from=p.from;path.dataset.to=p.to;svg.appendChild(path);});}
+function refreshSelectors(){balancePointSelect.innerHTML='';failureSelect.innerHTML='';let balanceOptions=[];if(state.architecture==='small')balanceOptions=[['vm','單台 VM 內部，無真正分流']];if(state.architecture==='medium')balanceOptions=[['nginx','Nginx VM 做平衡']];if(state.architecture==='large')balanceOptions=[['gclb','GCP LB 平衡入口'],['svc','K8s Service 平衡 Pods']];balanceOptions.forEach(([v,t])=>balancePointSelect.add(new Option(t,v)));Object.values(state.nodes).forEach(n=>failureSelect.add(new Option(`${n.title}：${n.sub}`,n.id)));}
+function availableBackends(){if(state.architecture==='small')return ['vm'].filter(id=>!state.nodes[id].failed);if(state.architecture==='medium')return Object.keys(state.nodes).filter(id=>id.startsWith('app')&&!state.nodes[id].failed);if(state.architecture==='large')return Object.keys(state.nodes).filter(id=>id.startsWith('pod')&&!state.nodes[id].failed);return [];}
+function chooseBackend(index){const list=availableBackends();if(!list.length)return null;const alg=algorithmSelect.value;if(alg==='roundRobin'){const target=list[state.rrIndex%list.length];state.rrIndex++;return target;}if(alg==='random')return list[Math.floor(Math.random()*list.length)];if(alg==='leastConnection')return list.slice().sort((a,b)=>(state.activeConnections[a]||0)-(state.activeConnections[b]||0))[0];if(alg==='ipHash'){const sourceIp=index%5;return list[sourceIp%list.length];}if(alg==='weighted'){let expanded=[];list.forEach(id=>{for(let i=0;i<(state.nodes[id].weight||1);i++)expanded.push(id)});return expanded[index%expanded.length];}return list[0];}
+function routeToBackend(target){if(state.architecture==='small')return ['user','vm'];if(state.architecture==='medium')return ['user','nginx',target,'db'];if(state.architecture==='large')return balancePointSelect.value==='gclb'?['user','gclb','ingress','svc',target,'cloudsql']:['user','gclb','ingress','svc',target,'cloudsql'];}
+function pathElement(a,b){return document.getElementById(`path-${a}-${b}`) || document.getElementById(`path-${b}-${a}`);}
+function animateSegment(from,to,kind,duration,callback){const path=pathElement(from,to);if(!path){callback&&callback();return;}path.classList.add('active');const packet=document.createElement('div');packet.className='packet '+kind;stage.appendChild(packet);const total=path.getTotalLength();const reverse=!document.getElementById(`path-${from}-${to}`);const start=performance.now();function frame(now){let t=Math.min(1,(now-start)/duration);let point=path.getPointAtLength((reverse?1-t:t)*total);packet.style.left=point.x+'px';packet.style.top=point.y+'px';if(t<1){requestAnimationFrame(frame)}else{packet.remove();path.classList.remove('active');callback&&callback();}}requestAnimationFrame(frame);}
+function animateRoute(route,kind,done){const speed=Number(speedInput.value);const duration=900/speed;let i=0;function next(){if(i>=route.length-1){done&&done();return;}animateSegment(route[i],route[i+1],kind,duration,()=>{i++;next();});}next();}
+function runOne(index){const target=chooseBackend(index);state.requests++;if(!target){state.failed++;log(`Request #${index+1} 無可用後端，流量被丟棄。`);updateStats();return;}const route=routeToBackend(target);const firstFailed=route.find(id=>state.nodes[id]?.failed);if(firstFailed){state.failed++;log(`Request #${index+1} 因 ${state.nodes[firstFailed].title} 故障而失敗。`);updateStats();return;}state.activeConnections[target]=(state.activeConnections[target]||0)+1;updateStats();log(`Request #${index+1} → ${state.nodes[target].title}，演算法：${algorithmSelect.options[algorithmSelect.selectedIndex].text}`);
+  animateRoute(route,'req',()=>{state.success++;state.activeConnections[target]=Math.max(0,(state.activeConnections[target]||1)-1);updateStats();animateRoute(route.slice().reverse(),'res',()=>{});});}
+function startTraffic(){clearTimers();resetCounters();const count=Math.max(1,Math.min(200,Number(requestCountInput.value)||1));for(let i=0;i<count;i++){state.timers.push(setTimeout(()=>runOne(i),i*260));}log(`開始送出 ${count} 筆流量。`);}
+function failNode(id){const n=state.nodes[id];if(!n)return;n.failed=true;document.getElementById('node-'+id)?.classList.add('failed');state.paths.forEach(p=>{if(p.from===id||p.to===id){const el=pathElement(p.from,p.to);if(el)el.classList.add('blocked');}});log(`${n.title} 已故障：節點開始紅光警示。`);showFixGuide(id);}
+function repairNode(id){const n=state.nodes[id];if(!n)return;n.failed=false;document.getElementById('node-'+id)?.classList.remove('failed');state.paths.forEach(p=>{if(p.from===id||p.to===id){const el=pathElement(p.from,p.to);if(el)el.classList.remove('blocked');}});log(`${n.title} 已修復 / 重啟完成，流量可重新通過。`);}
+function showFixGuide(id){const n=state.nodes[id];const g=repairGuides[id]||['一般故障','檢查服務狀態、Log、資源用量與網路連線。','systemctl status SERVICE\ntail -f /var/log/syslog'];document.getElementById('fixTitle').textContent=`${n?n.title:id} 修復教學`;document.getElementById('fixSummary').textContent=g[1];document.getElementById('fixCommands').textContent=g[2];document.getElementById('fixModal').classList.add('open');}
+function scaleOut(){let prefix=state.architecture==='large'?'pod':'app';let baseY=state.architecture==='large'?120:130;let x=state.architecture==='large'?790:560;let source=state.architecture==='large'?'svc':'nginx';let db=state.architecture==='large'?'cloudsql':'db';if(state.architecture==='small'){log('小公司單台 VM 無法真正水平分流；建議先拆成 Nginx VM + App VM。');return;}state.extraApps++;state.scale++;const id=prefix+(3+state.extraApps);const y=baseY+(3+state.extraApps-1)*95;state.nodes[id]={id,title:(prefix==='pod'?`Pod ${3+state.extraApps}`:`App VM ${3+state.extraApps}`),sub:prefix==='pod'?'Container: API':'Docker / Node.js',x,y,failed:false,weight:1};createNode(state.nodes[id]);addPath(source,id,'balance');addPath(id,db,'db');drawPaths();refreshSelectors();updateStats();log(`水平擴容完成：新增 ${state.nodes[id].title}。`);}
+function scaleUp(){state.verticalLevel++;state.scale++;Object.values(state.nodes).forEach(n=>{if(['vm','nginx','gclb','svc'].includes(n.id)||n.id.startsWith('app')||n.id.startsWith('pod'))document.getElementById('node-'+n.id)?.classList.add('scaled')});updateStats();log(`垂直升規完成：CPU / Memory 等級 +1，目前等級 ${state.verticalLevel}。`);}
+speedInput.oninput=()=>{const v=Number(speedInput.value);speedText.textContent=v<0.8?'很慢':v<1.3?'慢':v<1.9?'中':'快';};architectureSelect.onchange=()=>{state.architecture=architectureSelect.value;drawArchitecture();};document.getElementById('startButton').onclick=startTraffic;document.getElementById('stopButton').onclick=()=>{clearTimers();log('動畫已停止。')};document.getElementById('failButton').onclick=()=>failNode(failureSelect.value);document.getElementById('repairButton').onclick=()=>repairNode(failureSelect.value);document.getElementById('showFixButton').onclick=()=>showFixGuide(failureSelect.value);document.getElementById('scaleOutButton').onclick=scaleOut;document.getElementById('scaleUpButton').onclick=scaleUp;document.getElementById('resetButton').onclick=()=>{state.scale=0;drawArchitecture();log('全部狀態已重置。')};document.getElementById('closeModalButton').onclick=()=>document.getElementById('fixModal').classList.remove('open');document.getElementById('modalRepairButton').onclick=()=>{repairNode(failureSelect.value);document.getElementById('fixModal').classList.remove('open')};
+speedInput.oninput();drawArchitecture();
+</script>
+</body>
+</html>
