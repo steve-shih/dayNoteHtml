@@ -33,3 +33,4 @@ venv.bak/
 ehthumbs.db
 Thumbs.db
 .env
+backend/gcp-service-account.json  

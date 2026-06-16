@@ -9,7 +9,21 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from pymongo import MongoClient
+from google.cloud import storage
+import os
+from flask import redirect
+from apscheduler.schedulers.background import BackgroundScheduler
+import sync_manager
 
+# 動態切換 MongoDB 連線字串
+if os.getenv("NODE_ENV") == "production":
+    MONGO_URI = os.getenv("MONGO_URI")
+elif os.getenv("USE_ATLAS") == "true":
+    MONGO_URI = os.getenv("ATLAS_MONGO_URI")
+    print("☁️  [Environment] Connecting to Atlas MongoDB...")
+else:
+    MONGO_URI = os.getenv("LOCAL_MONGO_URI", "mongodb://127.0.0.1:27017")
+    print("💻  [Environment] Connecting to Local MongoDB...")
 app = Flask(__name__)
 CORS(app)
 load_dotenv()
@@ -27,9 +41,20 @@ METADATA_FILE = os.path.join(DATA_DIR, 'metadata.json')
 os.makedirs(DATA_DIR, exist_ok=True)
 
 # MongoDB Configuration
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://host.docker.internal:27017")
 mongo_client = MongoClient(MONGO_URI)
 db = mongo_client["daynote"]
+
+# GCS Configuration
+GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
+gcs_client = None
+gcs_bucket = None
+if GCS_BUCKET_NAME:
+    try:
+        gcs_client = storage.Client()
+        gcs_bucket = gcs_client.bucket(GCS_BUCKET_NAME)
+        print(f"✅ [GCS] Connected to bucket: {GCS_BUCKET_NAME}")
+    except Exception as e:
+        print(f"⚠️ [GCS] Failed to initialize GCS Client: {e}")
 
 # Automatic JSON to MongoDB Seeding/Migration on Startup
 def init_db():
@@ -112,10 +137,31 @@ def upload_file():
         stored_filename = f"{file_id}{ext}"
         file_path = os.path.join(DATA_DIR, stored_filename)
         
-        try:
-            file.save(file_path)
-        except Exception as e:
-            return jsonify({"error": f"Failed to save physical file: {str(e)}"}), 500
+        storage_type = "local"
+        
+        # 1. 優先嘗試上傳到 GCS
+        upload_success = False
+        if gcs_bucket:
+            try:
+                blob = gcs_bucket.blob(stored_filename)
+                # Rewind the file pointer before uploading
+                file.seek(0)
+                blob.upload_from_file(file, content_type=file.content_type)
+                storage_type = "gcs"
+                upload_success = True
+                print(f"✅ [Upload] Saved {stored_filename} to GCS")
+            except Exception as e:
+                print(f"⚠️ [Upload] GCS upload failed: {e}. Falling back to local storage.")
+                
+        # 2. 如果 GCS 失敗或未設定，則存在本地 (備援)
+        if not upload_success:
+            try:
+                file.seek(0)
+                file.save(file_path)
+                storage_type = "local"
+                print(f"✅ [Upload] Saved {stored_filename} to Local")
+            except Exception as e:
+                return jsonify({"error": f"Failed to save physical file: {str(e)}"}), 500
         
         if db["categories"].find_one({"name": category}) is None:
             db["categories"].insert_one({"name": category})
@@ -126,7 +172,8 @@ def upload_file():
             "stored_filename": stored_filename,
             "category": category,
             "title": original_filename,
-            "upload_time": datetime.now().isoformat()
+            "upload_time": datetime.now().isoformat(),
+            "storage_type": storage_type
         }
         db["notes"].insert_one(note)
         note.pop("_id", None)
@@ -181,6 +228,20 @@ def get_notes():
 
 @app.route('/api/notes/<filename>', methods=['GET'])
 def get_note_file(filename):
+    note = db["notes"].find_one({"stored_filename": filename})
+    storage_type = note.get("storage_type", "local") if note else "local"
+    
+    if storage_type == "gcs" and gcs_bucket:
+        try:
+            blob = gcs_bucket.blob(filename)
+            # Generate a signed URL valid for 1 hour
+            url = blob.generate_signed_url(version="v4", expiration=3600, method="GET")
+            return redirect(url, code=302)
+        except Exception as e:
+            print(f"⚠️ [Download] Failed to generate signed URL for {filename}: {e}")
+            # Fallback in case generation fails, though file might not be locally available
+            pass
+            
     return send_from_directory(DATA_DIR, filename)
 
 @app.route('/api/notes/<note_id>', methods=['PUT'])
@@ -216,12 +277,23 @@ def delete_note(note_id):
         return jsonify({"error": "Note not found"}), 404
         
     if not note.get('is_url'):
-        file_path = os.path.join(DATA_DIR, note['stored_filename'])
-        if os.path.exists(file_path):
+        storage_type = note.get("storage_type", "local")
+        
+        if storage_type == "gcs" and gcs_bucket:
             try:
-                os.remove(file_path)
+                blob = gcs_bucket.blob(note['stored_filename'])
+                blob.delete()
+                print(f"✅ [Delete] Deleted {note['stored_filename']} from GCS")
             except Exception as e:
-                return jsonify({"error": f"Failed to delete physical file: {str(e)}"}), 500
+                print(f"⚠️ [Delete] Failed to delete from GCS: {e}")
+        else:
+            file_path = os.path.join(DATA_DIR, note['stored_filename'])
+            if os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                    print(f"✅ [Delete] Deleted {note['stored_filename']} from Local")
+                except Exception as e:
+                    return jsonify({"error": f"Failed to delete physical file: {str(e)}"}), 500
                 
     db["notes"].delete_one({"id": note_id})
     return jsonify({"message": "Note deleted successfully"})
@@ -256,5 +328,22 @@ def ai_generate():
     except Exception as e:
         return jsonify({"error": f"AI Generation failed: {str(e)}"}), 500
 
+def scheduled_sync_job():
+    print("⏰ [Scheduler] 執行每月自動同步任務 (A ∪ B)...")
+    try:
+        sync_manager.sync_files_to_gcs()
+        sync_manager.sync_databases()
+        print("✅ [Scheduler] 同步任務完成")
+    except Exception as e:
+        print(f"⚠️ [Scheduler] 同步任務失敗: {e}")
+
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5000, debug=True)
+    # 啟動背景排程器 (每個月的第一天凌晨 3 點執行)
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(func=scheduled_sync_job, trigger="cron", day=1, hour=3)
+    scheduler.start()
+    
+    try:
+        app.run(host='127.0.0.1', port=5000, debug=True, use_reloader=False)
+    except (KeyboardInterrupt, SystemExit):
+        scheduler.shutdown()
