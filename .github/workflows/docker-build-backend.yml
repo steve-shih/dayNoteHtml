@@ -1,51 +1,63 @@
-name: Build and Push Backend Image
+# ==========================================
+# 📂 存放路徑：dayNoteApp/.github/workflows/docker-build-backend.yml
+# 📖 檔案解說：這是一個 GitHub Actions 自動化腳本，專門用來將 dayNoteApp 的「後端 (backend)」打包成 Docker Image 並推送到雲端倉庫。
+# 🚀 觸發條件：當有人把程式碼推送到 main 分支，且有修改 backend 資料夾內的檔案時，就會自動執行。
+# ==========================================
 
+name: Build and Push Backend Image # 這個腳本的名稱，會顯示在 GitHub 的 Actions 頁面中
+
+# 定義何時觸發這個自動化流程
 on:
   push:
     branches:
-      - main
+      - main # 只有推送到 main 分支時才會觸發
     paths:
-      - 'backend/**'
-      - '.github/workflows/docker-build-backend.yml'
+      - 'backend/**' # 只有 backend 資料夾內的檔案有變動時才會觸發
+      - '.github/workflows/docker-build-backend.yml' # 或者這個腳本本身被修改時也會觸發
 
+# 設定一些全域變數
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}-backend
+  REGISTRY: ghcr.io # 指定要推送到的 Docker 雲端倉庫 (GitHub 內建的 Container Registry)
+  IMAGE_NAME: ${{ github.repository }}-backend # 設定打包出來的映像檔名稱，例如 steve-shih/daynotehtml-backend
 
+# 定義要執行的工作任務
 jobs:
   build-and-push-image:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # 這個工作會在一台由 GitHub 提供的最新版 Ubuntu 虛擬機上執行
     permissions:
-      contents: read
-      packages: write
+      contents: read # 允許讀取程式碼
+      packages: write # 允許寫入/上傳 Docker Image 到 GHCR
 
+    # 這是這個工作包含的所有步驟，會由上往下依序執行
     steps:
+      # [步驟 1] 下載程式碼：啟動虛擬機並把您的最新程式碼抓下來
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # [步驟 2] 登入 Docker 雲端倉庫：使用您的 GitHub 帳號密碼登入 GHCR
       - name: Log in to the Container registry
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ github.actor }} # 您的 GitHub 帳號名稱
+          password: ${{ secrets.GITHUB_TOKEN }} # GitHub 自動提供的臨時密碼，不需要您手動設定
 
+      # [步驟 3] 萃取標籤與中介資料：決定這個 Docker Image 要叫什麼名字、版本號是多少
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=sha,format=short
-            type=raw,value=latest
-            type=ref,event=branch
+            type=sha,format=short # 自動產生一個簡短的 Commit 亂碼作為標籤 (例如 sha-1234567)
+            type=raw,value=latest # 強制標上 latest 最新標籤
+            type=ref,event=branch # 標上分支名稱 (例如 main)
 
+      # [步驟 4] 開始打包並推送到雲端倉庫：這是最核心的步驟！
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./backend
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-
+          context: ./backend # 告訴打包程式：請去 backend 資料夾裡面尋找 Dockerfile
+          push: true # 打包完成後，是否要自動上傳到雲端？ (true 代表是)
+          tags: ${{ steps.meta.outputs.tags }} # 使用上一個步驟產生出來的標籤名字
+          labels: ${{ steps.meta.outputs.labels }} # 使用上一個步驟產生出來的附註資訊
