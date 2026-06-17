@@ -80,7 +80,7 @@ export default function Home() {
 
   const fetchCategories = async () => {
     try {
-      const res = await axios.get(`/api/categories`);
+      const res = await axios.get(`/daynote/api/categories`);
       setCategories(res.data);
       if (res.data.length > 0 && uploadCategory === undefined) {
         setUploadCategory(undefined); // Removed auto-selection to allow empty
@@ -92,7 +92,7 @@ export default function Home() {
 
   const fetchNotes = async (category: string | null = null) => {
     try {
-      const url = category ? `/api/notes?category=${category}` : `/api/notes`;
+      const url = category ? `/daynote/api/notes?category=${category}` : `/daynote/api/notes`;
       const res = await axios.get(url);
       setNotes(res.data);
     } catch (error) {
@@ -102,7 +102,7 @@ export default function Home() {
 
   const fetchNoteContent = async (note: Note) => {
     try {
-      const res = await axios.get(`/api/notes/${note.stored_filename}`, {
+      const res = await axios.get(`/daynote/api/notes/${note.stored_filename}`, {
         responseType: "text"
       });
       setNoteContent(res.data);
@@ -129,7 +129,7 @@ export default function Home() {
           setUploading(false);
           return;
         }
-        await axios.post(`/api/notes/url`, {
+        await axios.post(`/daynote/api/notes/url`, {
           url: urlInput,
           name: urlNameInput
         });
@@ -144,7 +144,7 @@ export default function Home() {
           const formData = new FormData();
           formData.append("file", f);
           formData.append("category", targetCategory);
-          return axios.post(`/api/upload`, formData, {
+          return axios.post(`/daynote/api/upload`, formData, {
             headers: { "Content-Type": "multipart/form-data" }
           });
         }));
@@ -187,7 +187,7 @@ export default function Home() {
     }
     
     try {
-      await axios.put(`/api/notes/${activeNote.id}`, { category: targetCategory });
+      await axios.put(`/daynote/api/notes/${activeNote.id}`, { category: targetCategory });
       message.success("Category updated!");
       fetchCategories();
       fetchNotes(activeCategory === "all" ? null : activeCategory);
@@ -199,7 +199,7 @@ export default function Home() {
 
   const handleDelete = async (noteId: string) => {
     try {
-      await axios.delete(`/api/notes/${noteId}`);
+      await axios.delete(`/daynote/api/notes/${noteId}`);
       message.success("Note deleted successfully!");
       setActiveNote(null);
       setIsFullscreen(false);
@@ -211,7 +211,7 @@ export default function Home() {
 
   const handleDeleteCategory = async (cat: string) => {
     try {
-      await axios.delete(`/api/categories/${encodeURIComponent(cat)}`);
+      await axios.delete(`/daynote/api/categories/${encodeURIComponent(cat)}`);
       message.success("分類已刪除，筆記已移至未分類");
       if (activeCategory === cat) setActiveCategory("all");
       fetchCategories();
@@ -239,7 +239,7 @@ export default function Home() {
     setIsGenerating(true);
     
     try {
-      const res = await axios.post('/api/ai/generate', {
+      const res = await axios.post('/daynote/api/ai/generate', {
         prompt: chatInput,
         api_key: apiKey
       });
@@ -261,7 +261,7 @@ export default function Home() {
     formData.append("category", "AI筆記");
     
     try {
-      await axios.post(`/api/upload`, formData, {
+      await axios.post(`/daynote/api/upload`, formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
       message.success("AI 筆記已成功儲存！");
@@ -506,7 +506,7 @@ export default function Home() {
                           onChange: async (newTitle) => {
                             if (!newTitle.trim()) return;
                             try {
-                              await axios.put(`/api/notes/${activeNote.id}`, { title: newTitle });
+                              await axios.put(`/daynote/api/notes/${activeNote.id}`, { title: newTitle });
                               setActiveNote({ ...activeNote, title: newTitle });
                               fetchNotes(activeCategory === "all" ? null : activeCategory);
                               message.success("Title updated!");
@@ -546,7 +546,7 @@ export default function Home() {
                     <Button 
                       type="text" 
                       icon={<ExportOutlined />}
-                      href={activeNote.is_url ? activeNote.url : `/api/notes/${activeNote.stored_filename}`}
+                      href={activeNote.is_url ? activeNote.url : `/daynote/api/notes/${activeNote.stored_filename}`}
                       target="_blank"
                       title="Open in new tab"
                     />
@@ -554,7 +554,7 @@ export default function Home() {
                       <Button 
                         type="text" 
                         icon={<DownloadOutlined />}
-                        href={`/api/notes/${activeNote.stored_filename}`}
+                        href={`/daynote/api/notes/${activeNote.stored_filename}`}
                         download={activeNote.original_filename}
                         target="_blank"
                         title="Download"
