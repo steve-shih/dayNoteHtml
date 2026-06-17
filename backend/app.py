@@ -244,6 +244,26 @@ def get_note_file(filename):
             
     return send_from_directory(DATA_DIR, filename)
 
+@app.route('/api/notes/verify/<filename>', methods=['GET'])
+def verify_note_file(filename):
+    note = db["notes"].find_one({"stored_filename": filename})
+    if not note:
+        return jsonify({"exists": False, "error": "Note metadata not found"}), 404
+        
+    storage_type = note.get("storage_type", "local")
+    
+    if storage_type == "gcs" and gcs_bucket:
+        try:
+            blob = gcs_bucket.blob(filename)
+            exists = blob.exists()
+            return jsonify({"exists": exists, "storage_type": "gcs"}), 200
+        except Exception as e:
+            return jsonify({"exists": False, "error": str(e), "storage_type": "gcs"}), 500
+    else:
+        file_path = os.path.join(DATA_DIR, filename)
+        exists = os.path.exists(file_path)
+        return jsonify({"exists": exists, "storage_type": "local"}), 200
+
 @app.route('/api/notes/<note_id>', methods=['PUT'])
 def update_note(note_id):
     req = request.get_json()

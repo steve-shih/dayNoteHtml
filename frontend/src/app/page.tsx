@@ -159,6 +159,22 @@ export default function Home() {
         } else {
           message.error(`Upload failed for all ${failures.length} files. Unsupported type or size.`);
         }
+
+        successes.forEach((r: any) => {
+          const note = r.value.data.note;
+          if (note) {
+            setTimeout(async () => {
+              try {
+                const verifyRes = await axios.get(`/daynote/api/notes/verify/${note.stored_filename}`);
+                if (verifyRes.data.exists && verifyRes.data.storage_type === "gcs") {
+                  message.success(`[GCP驗證] ${note.original_filename} 上傳成功！`);
+                }
+              } catch (e) {
+                // Ignore verification errors in UI
+              }
+            }, 10000);
+          }
+        });
       }
 
       setIsUploadOpen(false);
@@ -261,12 +277,26 @@ export default function Home() {
     formData.append("category", "AI筆記");
     
     try {
-      await axios.post(`/daynote/api/upload`, formData, {
+      const res = await axios.post(`/daynote/api/upload`, formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
       message.success("AI 筆記已成功儲存！");
       fetchCategories();
       fetchNotes(activeCategory === "all" ? null : activeCategory);
+
+      const note = res.data.note;
+      if (note) {
+        setTimeout(async () => {
+          try {
+            const verifyRes = await axios.get(`/daynote/api/notes/verify/${note.stored_filename}`);
+            if (verifyRes.data.exists && verifyRes.data.storage_type === "gcs") {
+              message.success(`[GCP驗證] AI 筆記 上傳成功！`);
+            }
+          } catch (e) {
+            // Ignore verification errors in UI
+          }
+        }, 10000);
+      }
     } catch (error) {
       message.error("儲存失敗。");
     }
