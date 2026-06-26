@@ -47,9 +47,17 @@ export default function Home() {
   const [fileList, setFileList] = useState<RcFile[]>([]);
   const [urlInput, setUrlInput] = useState('');
   const [urlNameInput, setUrlNameInput] = useState('');
+  const [htmlInputContent, setHtmlInputContent] = useState('');
+  const [htmlNameInput, setHtmlNameInput] = useState('');
   const [uploadCategory, setUploadCategory] = useState<string | undefined>(undefined);
   const [newCategoryName, setNewCategoryName] = useState<string>("");
   const [uploading, setUploading] = useState(false);
+  
+  // New States
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [passwordInput, setPasswordInput] = useState("");
+  const [isEditingTxt, setIsEditingTxt] = useState(false);
+  const [txtEditContent, setTxtEditContent] = useState("");
 
   useEffect(() => {
     const checkMobile = () => {
@@ -57,6 +65,10 @@ export default function Home() {
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
+
+    if (sessionStorage.getItem('daynote_auth') === 'true') {
+      setIsAuthenticated(true);
+    }
 
     fetchCategories();
     fetchNotes();
@@ -73,6 +85,7 @@ export default function Home() {
   useEffect(() => {
     if (activeNote) {
       fetchNoteContent(activeNote);
+      setIsEditingTxt(false);
     } else {
       setNoteContent("");
     }
@@ -105,7 +118,15 @@ export default function Home() {
       const res = await axios.get(`/daynote/api/notes/${note.stored_filename}`, {
         responseType: "text"
       });
-      setNoteContent(res.data);
+      let text = res.data;
+      if (typeof text === 'string' && text.startsWith("DAYNOTE_B64:")) {
+        try {
+          text = decodeURIComponent(escape(atob(text.substring(12))));
+        } catch (e) {
+          console.error("Base64 decode failed", e);
+        }
+      }
+      setNoteContent(text);
     } catch (error) {
       setNoteContent("無法載入檔案內容 / Failed to load file content.");
     }
@@ -134,6 +155,34 @@ export default function Home() {
           name: urlNameInput
         });
         message.success("網址已成功加入，並自動歸類為 WEB URL NOTE！");
+      } else if (uploadTab === 'html') {
+        if (!htmlInputContent.trim()) {
+          message.warning("請輸入 HTML 內容！");
+          setUploading(false);
+          return;
+        }
+        const fileName = htmlNameInput.trim() ? `${htmlNameInput}.html` : `note_${new Date().getTime()}.html`;
+        const blob = new Blob([htmlInputContent], { type: 'text/html' });
+        const file = new File([blob], fileName, { type: 'text/html' });
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("category", targetCategory);
+        
+        const res = await axios.post(`/daynote/api/upload`, formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+        message.success("HTML 筆記已成功儲存！");
+        const note = res.data.note;
+        if (note) {
+          setTimeout(async () => {
+            try {
+              const verifyRes = await axios.get(`/daynote/api/notes/verify/${note.stored_filename}`);
+              if (verifyRes.data.exists && verifyRes.data.storage_type === "gcs") {
+                message.success(`[GCP驗證] ${note.original_filename} 上傳成功！`);
+              }
+            } catch (e) {}
+          }, 10000);
+        }
       } else {
         if (fileList.length === 0) {
           message.warning("Please select at least one file to upload.");
@@ -141,8 +190,21 @@ export default function Home() {
           return;
         }
         const results = await Promise.allSettled(fileList.map(async (f) => {
+          let fileToUpload: File | RcFile = f;
+          
+          if (f.name.toLowerCase().endsWith('.txt')) {
+            try {
+              const text = await f.text();
+              const b64 = btoa(unescape(encodeURIComponent(text)));
+              const blob = new Blob(["DAYNOTE_B64:" + b64], { type: 'text/plain' });
+              fileToUpload = new File([blob], f.name, { type: 'text/plain' });
+            } catch (e) {
+              console.error("Failed to read/encode txt file", e);
+            }
+          }
+          
           const formData = new FormData();
-          formData.append("file", f);
+          formData.append("file", fileToUpload as Blob);
           formData.append("category", targetCategory);
           return axios.post(`/daynote/api/upload`, formData, {
             headers: { "Content-Type": "multipart/form-data" }
@@ -181,6 +243,8 @@ export default function Home() {
       setFileList([]);
       setUrlInput('');
       setUrlNameInput('');
+      setHtmlInputContent('');
+      setHtmlNameInput('');
       setNewCategoryName("");
       setUploadCategory(undefined);
       fetchCategories();
@@ -343,6 +407,37 @@ export default function Home() {
 
   const showViewer = !!activeNote || activeCategory === "ai_assistant";
   const showList = !isMobile || !showViewer;
+
+  if (!isAuthenticated) {
+    return (
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#141414' }}>
+        <Card title={<Title level={3} style={{ margin: 0, color: '#1677ff', textAlign: 'center' }}>DayNote 登入</Title>} style={{ width: 350, background: '#1f1f1f', borderColor: '#303030' }}>
+          <Input.Password 
+            size="large" 
+            placeholder="請輸入密碼" 
+            value={passwordInput} 
+            onChange={e => setPasswordInput(e.target.value)} 
+            onPressEnter={() => {
+              if (passwordInput === 'daynote123') {
+                sessionStorage.setItem('daynote_auth', 'true');
+                setIsAuthenticated(true);
+              } else {
+                message.error('密碼錯誤！');
+              }
+            }}
+          />
+          <Button type="primary" size="large" block style={{ marginTop: 16 }} onClick={() => {
+            if (passwordInput === 'daynote123') {
+              sessionStorage.setItem('daynote_auth', 'true');
+              setIsAuthenticated(true);
+            } else {
+              message.error('密碼錯誤！');
+            }
+          }}>進入系統</Button>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -630,6 +725,44 @@ export default function Home() {
                       sandbox="allow-same-origin allow-scripts"
                       title={activeNote.original_filename}
                     />
+                  ) : activeNote.original_filename.endsWith('.txt') || activeNote.original_filename.endsWith('.md') || activeNote.original_filename.endsWith('.json') || activeNote.original_filename.endsWith('.csv') ? (
+                    <div style={{ background: '#141414', padding: 24, borderRadius: 8, minHeight: '100%' }}>
+                      {isEditingTxt ? (
+                        <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                          <Input.TextArea 
+                            value={txtEditContent} 
+                            onChange={e => setTxtEditContent(e.target.value)}
+                            style={{ flex: 1, minHeight: '60vh', fontFamily: 'monospace', background: '#1f1f1f', color: '#fff', border: '1px solid #303030' }}
+                          />
+                          <Space style={{ marginTop: 16, justifyContent: 'flex-end', width: '100%' }}>
+                            <Button onClick={() => setIsEditingTxt(false)}>取消</Button>
+                            <Button type="primary" onClick={async () => {
+                              try {
+                                const b64 = btoa(unescape(encodeURIComponent(txtEditContent)));
+                                const payload = "DAYNOTE_B64:" + b64;
+                                await axios.put(`/daynote/api/notes/${activeNote.stored_filename}/content`, { content: payload });
+                                setNoteContent(txtEditContent);
+                                setIsEditingTxt(false);
+                                message.success("儲存成功！");
+                              } catch (e) {
+                                message.error("儲存失敗");
+                              }
+                            }}>儲存變更</Button>
+                          </Space>
+                        </div>
+                      ) : (
+                        <div style={{ fontFamily: 'monospace', whiteSpace: 'pre-wrap', position: 'relative', minHeight: '60vh' }}>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+                            <Button 
+                              icon={<FileTextOutlined />} 
+                              type="primary" 
+                              onClick={() => { setTxtEditContent(noteContent); setIsEditingTxt(true); }}
+                            >編輯內容</Button>
+                          </div>
+                          <div>{noteContent}</div>
+                        </div>
+                      )}
+                    </div>
                   ) : (
                     <div style={{ background: '#141414', padding: 24, borderRadius: 8, minHeight: '100%', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
                       {noteContent}
@@ -683,10 +816,22 @@ export default function Home() {
                   <Input placeholder="Leave empty to use URL as title" value={urlNameInput} onChange={e => setUrlNameInput(e.target.value)} />
                 </div>
               )
+            },
+            {
+              key: 'html',
+              label: 'HTML 編輯',
+              children: (
+                <div>
+                  <div style={{ marginBottom: 8 }}>Title (Optional)</div>
+                  <Input placeholder="Enter title (without .html)" value={htmlNameInput} onChange={e => setHtmlNameInput(e.target.value)} />
+                  <div style={{ marginTop: 16, marginBottom: 8 }}>HTML Content</div>
+                  <Input.TextArea placeholder="<h1>Hello...</h1>" rows={10} value={htmlInputContent} onChange={e => setHtmlInputContent(e.target.value)} />
+                </div>
+              )
             }
           ]} />
 
-          {uploadTab === 'file' && (
+          {(uploadTab === 'file' || uploadTab === 'html') && (
             <div>
               <div style={{ marginBottom: 8 }}>Category (Optional)</div>
               <Select 
@@ -704,7 +849,7 @@ export default function Home() {
             </div>
           )}
 
-          {uploadTab === 'file' && uploadCategory === "NEW_CATEGORY" && (
+          {(uploadTab === 'file' || uploadTab === 'html') && uploadCategory === "NEW_CATEGORY" && (
             <div>
               <div style={{ marginBottom: 8 }}>New Category Name</div>
               <Input 

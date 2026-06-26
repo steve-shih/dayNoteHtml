@@ -244,6 +244,45 @@ def get_note_file(filename):
             
     return send_from_directory(DATA_DIR, filename)
 
+@app.route('/api/notes/<filename>/content', methods=['PUT'])
+def update_note_content(filename):
+    req = request.get_json()
+    new_content = req.get('content')
+    
+    if new_content is None:
+        return jsonify({"error": "Content is required"}), 400
+        
+    note = db["notes"].find_one({"stored_filename": filename})
+    if not note:
+        return jsonify({"error": "Note metadata not found"}), 404
+        
+    storage_type = note.get("storage_type", "local")
+    
+    # 1. 嘗試更新 GCS
+    if storage_type == "gcs" and gcs_bucket:
+        try:
+            blob = gcs_bucket.blob(filename)
+            blob.upload_from_string(new_content, content_type="text/plain")
+            print(f"✅ [Update] Updated {filename} in GCS")
+            return jsonify({"message": "File content updated successfully in GCS"})
+        except Exception as e:
+            print(f"⚠️ [Update] GCS update failed: {e}. Attempting local update.")
+            
+    # 2. 如果 GCS 失敗或是 local 存儲，更新 local
+    file_path = os.path.join(DATA_DIR, filename)
+    try:
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(new_content)
+        print(f"✅ [Update] Updated {filename} in Local")
+        
+        # 如果原本在 GCS，但 GCS 更新失敗導致降級到 Local，更新資料庫的 storage_type
+        if storage_type == "gcs":
+            db["notes"].update_one({"stored_filename": filename}, {"$set": {"storage_type": "local"}})
+            
+        return jsonify({"message": "File content updated successfully locally"})
+    except Exception as e:
+        return jsonify({"error": f"Failed to update physical file: {str(e)}"}), 500
+
 @app.route('/api/notes/verify/<filename>', methods=['GET'])
 def verify_note_file(filename):
     note = db["notes"].find_one({"stored_filename": filename})
