@@ -182,6 +182,73 @@ def upload_file():
     else:
         return jsonify({"error": "File type not allowed or invalid file"}), 400
 
+@app.route('/api/ai/upload', methods=['POST'])
+def ai_upload_note():
+    req = request.get_json()
+    if not req:
+        return jsonify({"error": "Invalid JSON payload"}), 400
+        
+    password = req.get('password')
+    if password != 'daynote123':
+        return jsonify({"error": "Unauthorized"}), 401
+        
+    title = req.get('title', 'AI Note')
+    content = req.get('content')
+    extension = req.get('extension', 'md').lstrip('.')
+    category = req.get('category', 'AI筆記')
+    
+    if not content:
+        return jsonify({"error": "Content is required"}), 400
+        
+    if extension not in ALLOWED_EXTENSIONS:
+        return jsonify({"error": f"Extension {extension} not allowed"}), 400
+        
+    file_id = str(uuid.uuid4())
+    stored_filename = f"{file_id}.{extension}"
+    file_path = os.path.join(DATA_DIR, stored_filename)
+    original_filename = f"{title}.{extension}"
+    
+    storage_type = "local"
+    upload_success = False
+    
+    # 1. 優先嘗試上傳到 GCS
+    if gcs_bucket:
+        try:
+            blob = gcs_bucket.blob(stored_filename)
+            blob.upload_from_string(content, content_type="text/plain")
+            storage_type = "gcs"
+            upload_success = True
+            print(f"✅ [AI Upload] Saved {stored_filename} to GCS")
+        except Exception as e:
+            print(f"⚠️ [AI Upload] GCS upload failed: {e}. Falling back to local storage.")
+            
+    # 2. 如果 GCS 失敗或未設定，則存在本地
+    if not upload_success:
+        try:
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(content)
+            storage_type = "local"
+            print(f"✅ [AI Upload] Saved {stored_filename} to Local")
+        except Exception as e:
+            return jsonify({"error": f"Failed to save physical file: {str(e)}"}), 500
+            
+    if db["categories"].find_one({"name": category}) is None:
+        db["categories"].insert_one({"name": category})
+        
+    note = {
+        "id": file_id,
+        "original_filename": original_filename,
+        "stored_filename": stored_filename,
+        "category": category,
+        "title": title,
+        "upload_time": datetime.now().isoformat(),
+        "storage_type": storage_type
+    }
+    db["notes"].insert_one(note)
+    note.pop("_id", None)
+    
+    return jsonify({"message": "AI Note uploaded successfully", "note": note}), 201
+
 @app.route('/api/notes/url', methods=['POST'])
 def add_url_note():
     req = request.get_json()
