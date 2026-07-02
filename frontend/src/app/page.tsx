@@ -27,7 +27,7 @@ axios.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-import { ConfigProvider, theme as antdTheme, Layout, Menu, Button, Modal, Upload, Select, Input, List, Typography, Space, message, Empty, Tag, Card, Popconfirm, Spin, Divider, Grid, Drawer, Tabs } from 'antd';
+import { ConfigProvider, theme as antdTheme, Layout, Menu, Button, Modal, Upload, Select, Input, List, Typography, Space, message, Empty, Tag, Card, Popconfirm, Spin, Divider, Grid, Drawer, Tabs, Checkbox } from 'antd';
 import { UploadOutlined, FileTextOutlined, PlusOutlined, DownloadOutlined, FolderOpenOutlined, FullscreenOutlined, FullscreenExitOutlined, CloseOutlined, DeleteOutlined, RobotOutlined, SendOutlined, SaveOutlined, MenuOutlined, ArrowLeftOutlined, ExportOutlined, LinkOutlined } from '@ant-design/icons';
 import type { UploadProps, MenuProps } from 'antd';
 import type { RcFile } from 'antd/es/upload';
@@ -121,6 +121,7 @@ export default function Home() {
   const [usernameInput, setUsernameInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
   const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [isEditingTxt, setIsEditingTxt] = useState(false);
   const [txtEditContent, setTxtEditContent] = useState("");
 
@@ -138,6 +139,14 @@ export default function Home() {
 
     const savedTheme = localStorage.getItem('daynote_theme') as any;
     if (savedTheme) setAppTheme(savedTheme);
+
+    const savedUsername = localStorage.getItem('daynote_saved_username');
+    const savedPassword = localStorage.getItem('daynote_saved_password');
+    if (savedUsername && savedPassword) {
+      setUsernameInput(savedUsername);
+      setPasswordInput(savedPassword);
+      setRememberMe(true);
+    }
 
     const savedToken = localStorage.getItem('daynote_token');
     if (savedToken) {
@@ -507,6 +516,13 @@ export default function Home() {
                   message.success('註冊成功！請登入');
                   setIsRegisterMode(false);
                 } else {
+                  if (rememberMe) {
+                    localStorage.setItem('daynote_saved_username', usernameInput);
+                    localStorage.setItem('daynote_saved_password', passwordInput);
+                  } else {
+                    localStorage.removeItem('daynote_saved_username');
+                    localStorage.removeItem('daynote_saved_password');
+                  }
                   localStorage.setItem('daynote_token', res.data.token);
                   localStorage.setItem('daynote_username', res.data.username);
                   setIsAuthenticated(true);
@@ -516,7 +532,10 @@ export default function Home() {
               }
             }}
           />
-          <Button type="primary" size="large" block style={{ marginTop: 16 }} onClick={async () => {
+          <div style={{ marginTop: 12, marginBottom: 4 }}>
+            <Checkbox checked={rememberMe} onChange={e => setRememberMe(e.target.checked)}>記住帳號密碼</Checkbox>
+          </div>
+          <Button type="primary" size="large" block style={{ marginTop: 12 }} onClick={async () => {
               const endpoint = isRegisterMode ? '/daynote/api/auth/register' : '/daynote/api/auth/login';
               try {
                 const res = await axios.post(endpoint, { username: usernameInput, password: passwordInput });
@@ -524,6 +543,13 @@ export default function Home() {
                   message.success('註冊成功！請登入');
                   setIsRegisterMode(false);
                 } else {
+                  if (rememberMe) {
+                    localStorage.setItem('daynote_saved_username', usernameInput);
+                    localStorage.setItem('daynote_saved_password', passwordInput);
+                  } else {
+                    localStorage.removeItem('daynote_saved_username');
+                    localStorage.removeItem('daynote_saved_password');
+                  }
                   localStorage.setItem('daynote_token', res.data.token);
                   localStorage.setItem('daynote_username', res.data.username);
                   setIsAuthenticated(true);
