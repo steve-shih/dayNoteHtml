@@ -42,3 +42,4 @@ pymongo==4.17.0
 python-dotenv
 google-cloud-storage  
 apscheduler  
+PyJWT

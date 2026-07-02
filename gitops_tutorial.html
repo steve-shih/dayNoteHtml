@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitOps & ArgoCD 新手大師指南</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-grad-1: #0f172a;
+            --bg-grad-2: #1e1b4b;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --accent: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.5);
+            --text-main: #f8fafc;
+            --text-muted: #cbd5e1;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, var(--bg-grad-1), var(--bg-grad-2));
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        /* 裝飾性背景光暈 */
+        .glow-circle {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--accent-glow) 0%, rgba(0,0,0,0) 70%);
+            top: -200px;
+            right: -200px;
+            z-index: -1;
+            filter: blur(80px);
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+        }
+
+        /* 玻璃透視卡片 */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.8s ease-out backwards;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .card:nth-child(2) { animation-delay: 0.1s; }
+        .card:nth-child(3) { animation-delay: 0.2s; }
+        .card:nth-child(4) { animation-delay: 0.3s; }
+        .card:nth-child(5) { animation-delay: 0.4s; }
+
+        .card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #fff;
+        }
+
+        .card h2 .icon {
+            font-size: 2rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+        }
+
+        strong {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* 程式碼區塊 */
+        .code-block {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Courier New', Courier, monospace;
+            color: #a78bfa;
+            overflow-x: auto;
+            margin: 1rem 0;
+            position: relative;
+        }
+
+        /* 重點步驟 */
+        .step-list {
+            list-style: none;
+            margin: 1.5rem 0;
+        }
+
+        .step-list li {
+            position: relative;
+            padding-left: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .step-list li::before {
+            content: counter(step-counter);
+            counter-increment: step-counter;
+            position: absolute;
+            left: 0;
+            top: -2px;
+            width: 28px;
+            height: 28px;
+            background: var(--accent);
+            color: #0f172a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        body {
+            counter-reset: step-counter;
+        }
+
+        /* 警告框 */
+        .alert {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid var(--warning);
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+
+        .alert-title {
+            color: var(--warning);
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 動畫 */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="glow-circle"></div>
+
+    <div class="container">
+        <header>
+            <h1>雲端架構師速成班</h1>
+            <p>從零開始掌握 GitOps、ArgoCD 與 GCS 完美備援</p>
+        </header>
+
+        <!-- 卡片 1：GitOps 概念 -->
+        <div class="card">
+            <h2><span class="icon">🧭</span> 什麼是 GitOps？</h2>
+            <p>傳統的部署是人手動把程式碼推上伺服器。但在 <strong>GitOps</strong> 的世界裡，<strong>「Git 倉庫就是唯一的真理」</strong>。</p>
+            <p>我們將職責一分為二：</p>
+            <ul class="step-list">
+                <li><strong>應用程式倉庫 (dayNoteApp)：</strong> 負責寫程式。當您推送程式碼，GitHub Actions 只負責把它打包成 Docker 映像檔。</li>
+                <li><strong>基礎設施倉庫 (k8s-infra)：</strong> 負責寫架構。這裡面只有 YAML 設定檔。</li>
+            </ul>
+            <p><strong>ArgoCD</strong> 就像是一個有強迫症的糾察隊。它住在您的 Kubernetes 叢集裡，每天死死盯著 <code>k8s-infra</code> 倉庫。只要倉庫裡的 YAML 檔一有風吹草動，它就會立刻把線上系統修改成跟 YAML 一模一樣的狀態！</p>
+        </div>
+
+        <!-- 卡片 2：真正的全自動流水線 -->
+        <div class="card">
+            <h2><span class="icon">🚀</span> 我們打造的全自動流水線 (做法二)</h2>
+            <p>剛剛我們將您的系統升級到了「最高等級」的 CI/CD 連動法。當您未來開發完新功能並 <code>git push</code> 後，會發生這場魔法：</p>
+            <ul class="step-list">
+                <li><strong>自動編譯：</strong> GitHub Actions 幫您編譯出帶有最新 Git 版本號 (SHA) 的 Docker 映像檔。</li>
+                <li><strong>自動連動：</strong> GitHub Actions 拿著秘密鑰匙 (<code>INFRA_PAT</code>)，偷偷跑到您的 <code>k8s-infra</code> 倉庫，幫您把 <code>k8s-prod.yaml</code> 裡面的版本號改成最新的。</li>
+                <li><strong>ArgoCD 發威：</strong> ArgoCD 發現 <code>k8s-infra</code> 變了！它立刻發動，在線上叢集為您無縫抽換最新的容器！</li>
+            </ul>
+            <div class="alert">
+                <div class="alert-title">⚠️ 必做的設定：INFRA_PAT</div>
+                <p>為了讓這個魔法生效，您必須去 GitHub 產生一把具有 repo 權限的 PAT (Personal Access Token)，並將它存入 <code>dayNoteApp</code> 的 Repository Secrets 中，命名為 <strong>INFRA_PAT</strong>。</p>
+            </div>
+        </div>
+
+        <!-- 卡片 3：GCS 備援與 A ∪ B 聯集 -->
+        <div class="card">
+            <h2><span class="icon">☁️</span> GCS 與 A ∪ B 完美備援機制</h2>
+            <p>我們也成功解決了「檔案遺失與不一致」的問題，現在您的系統固若金湯：</p>
+            <p><strong>1. 備援機制：</strong> 當使用者上傳檔案時，系統會優先傳到 GCP 雲端 (Bucket: <code>petpa</code>)。如果雲端突然壞了，系統會「備援」將檔案暫存在本地容器中，確保使用者的操作不中斷。</p>
+            <p><strong>2. A ∪ B 自動大掃除：</strong> 我們在背景植入了 <code>APScheduler</code>。每個月的 1 號凌晨 3 點，系統會自動甦醒，將掉落在本地的暫存檔全部補推上 GCS，並確保本地與 Atlas 資料庫的狀態達成 <strong>完美的聯集 (A ∪ B)</strong>。</p>
+            <p><strong>3. K8s 機密掛載：</strong> 您的 GCP 金鑰現在被安全地鎖在 Kubernetes 的 <code>Secrets</code> 中，並動態掛載給容器，GitHub 上絕對看不到您的密碼！</p>
+        </div>
+
+        <!-- 卡片 4：如何登入您的 ArgoCD -->
+        <div class="card">
+            <h2><span class="icon">🔐</span> 如何登入觀看您的線上 ArgoCD？</h2>
+            <p>因為資安考量，ArgoCD 預設是不公開的。當您想看它時，請打開終端機，執行以下「打洞」指令：</p>
+            
+            <div class="code-block">
+                # 1. 切換到 GCP 雲端叢集<br>
+                gcloud container clusters get-credentials steve-k8s-cluster --zone asia-east1-a --project qqcat-454915<br><br>
+                # 2. 開啟私密隧道<br>
+                kubectl port-forward svc/argocd-server -n argocd 8081:443
+            </div>
+
+            <p>接著打開瀏覽器前往：<a href="https://localhost:8081" style="color: var(--accent);">https://localhost:8081</a></p>
+            <ul style="list-style-type: none; margin-top: 10px;">
+                <li>👤 <strong>帳號：</strong> admin</li>
+                <li>🔑 <strong>雲端初始密碼：</strong> R0r-Jbum7UHYpTka</li>
+            </ul>
+        </div>
+
+        <!-- 卡片 5：下一步 -->
+        <div class="card" style="border-color: rgba(56, 189, 248, 0.4);">
+            <h2><span class="icon">🎉</span> 未來該怎麼推 Code？</h2>
+            <p>太簡單了！您現在只需專注在寫程式：</p>
+            <p><strong>只要在 dayNoteApp 裡面 <code>git push</code>，剩下的全部交給機器人。</strong> 去喝杯咖啡，打開 ArgoCD 看著綠燈亮起，您的世界就已經更新完畢了！</p>
+        </div>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,244 @@
+openapi: 3.0.0
+info:
+  title: DayNote API
+  description: API for DayNote Application (including Authentication and Note Management)
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000
+    description: Local Development Server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []
+
+paths:
+  /api/auth/register:
+    post:
+      summary: Register a new user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Registration successful
+        '400':
+          description: Missing fields or user already exists
+
+  /api/auth/login:
+    post:
+      summary: Login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  username:
+                    type: string
+        '401':
+          description: Invalid credentials
+
+  /api/auth/me:
+    get:
+      summary: Get current user info
+      responses:
+        '200':
+          description: User info retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  username:
+                    type: string
+
+  /api/categories:
+    get:
+      summary: Get user categories
+      responses:
+        '200':
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+    post:
+      summary: Add a new category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category:
+                  type: string
+      responses:
+        '200':
+          description: Category added successfully
+
+  /api/categories/{category}:
+    delete:
+      summary: Delete a category
+      parameters:
+        - in: path
+          name: category
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Category deleted successfully
+        '400':
+          description: Cannot delete protected categories
+
+  /api/upload:
+    post:
+      summary: Upload a file note
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                category:
+                  type: string
+      responses:
+        '201':
+          description: File uploaded successfully
+
+  /api/notes:
+    get:
+      summary: Get user notes
+      parameters:
+        - in: query
+          name: category
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+  /api/notes/{filename}:
+    get:
+      summary: Download or view a note file
+      security: []
+      parameters:
+        - in: path
+          name: filename
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: token
+          schema:
+            type: string
+            description: JWT token for direct URL access
+      responses:
+        '200':
+          description: File content
+        '302':
+          description: Redirect to GCS signed URL
+        '401':
+          description: Unauthorized
+
+  /api/notes/{filename}/content:
+    put:
+      summary: Update text/markdown note content
+      parameters:
+        - in: path
+          name: filename
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+      responses:
+        '200':
+          description: File content updated
+        '404':
+          description: Note not found
+
+  /api/notes/{note_id}:
+    put:
+      summary: Update note metadata (title, category)
+      parameters:
+        - in: path
+          name: note_id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                category:
+                  type: string
+                title:
+                  type: string
+      responses:
+        '200':
+          description: Note updated
+    delete:
+      summary: Delete a note
+      parameters:
+        - in: path
+          name: note_id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Note deleted

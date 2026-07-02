@@ -2,16 +2,17 @@ import os
 import json
 import uuid
 import threading
-from datetime import datetime
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import google.generativeai as genai
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, redirect
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash, check_password_hash
 from pymongo import MongoClient
 from google.cloud import storage
-import os
-from flask import redirect
+import jwt
+from functools import wraps
 from apscheduler.schedulers.background import BackgroundScheduler
 import sync_manager
 
@@ -24,11 +25,13 @@ elif os.getenv("USE_ATLAS") == "true":
 else:
     MONGO_URI = os.getenv("LOCAL_MONGO_URI", "mongodb://127.0.0.1:27017")
     print("💻  [Environment] Connecting to Local MongoDB...")
+
 app = Flask(__name__)
 CORS(app)
 load_dotenv()
 
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB max limit
+app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "daynote-super-secret-key")
 ALLOWED_EXTENSIONS = {'txt', 'html', 'pdf', 'md', 'png', 'jpg', 'jpeg', 'csv'}
 
 def allowed_file(filename):
@@ -56,9 +59,17 @@ if GCS_BUCKET_NAME:
     except Exception as e:
         print(f"⚠️ [GCS] Failed to initialize GCS Client: {e}")
 
-# Automatic JSON to MongoDB Seeding/Migration on Startup
+# Database Migration & Initialization
 def init_db():
-    if db["categories"].count_documents({}) == 0:
+    # 1. 確保 steve 帳戶存在
+    steve_user = db["users"].find_one({"username": "steve"})
+    if not steve_user:
+        hashed_password = generate_password_hash("daynote123")
+        db["users"].insert_one({"username": "steve", "password_hash": hashed_password})
+        print("✅ [DB] Created default user 'steve'.")
+        
+    # 2. 如果是完全空的 db，從 metadata.json 轉移資料並綁定給 steve
+    if db["categories"].count_documents({}) == 0 and db["notes"].count_documents({}) == 0:
         migrated = False
         if os.path.exists(METADATA_FILE):
             try:
@@ -69,52 +80,133 @@ def init_db():
                 notes = old_data.get("notes", [])
                 
                 if categories:
-                    db["categories"].insert_many([{"name": c} for c in categories])
+                    db["categories"].insert_many([{"name": c, "username": "steve"} for c in categories])
                 if notes:
+                    for note in notes:
+                        note["username"] = "steve"
                     db["notes"].insert_many(notes)
                 migrated = True
-                print("Seeded MongoDB from local metadata.json successfully!")
+                print("✅ [DB] Seeded MongoDB from local metadata.json successfully!")
             except Exception as e:
-                print(f"Error migrating local JSON to MongoDB: {e}")
+                print(f"⚠️ [DB] Error migrating local JSON to MongoDB: {e}")
         
         if not migrated:
             default_categories = ["投資", "英文", "CS", "其他"]
-            db["categories"].insert_many([{"name": c} for c in default_categories])
-            print("Seeded default categories into MongoDB.")
+            db["categories"].insert_many([{"name": c, "username": "steve"} for c in default_categories])
+            print("✅ [DB] Seeded default categories into MongoDB for steve.")
+            
+    # 3. 確保舊資料有綁定 username
+    db["categories"].update_many({"username": {"$exists": False}}, {"$set": {"username": "steve"}})
+    db["notes"].update_many({"username": {"$exists": False}}, {"$set": {"username": "steve"}})
+    print("✅ [DB] Migrated all existing data to 'steve'.")
 
 init_db()
 
+# --- Auth Middleware ---
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        # token is passed in header Authorization: Bearer <token>
+        auth_header = request.headers.get('Authorization')
+        if auth_header and auth_header.startswith('Bearer '):
+            token = auth_header.split(' ')[1]
+            
+        if not token:
+            return jsonify({'error': 'Token is missing!'}), 401
+            
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+            current_user = data['username']
+        except Exception as e:
+            return jsonify({'error': 'Token is invalid!'}), 401
+            
+        return f(current_user, *args, **kwargs)
+    return decorated
+
+# --- Auth Routes ---
+@app.route('/api/auth/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    
+    if not username or not password:
+        return jsonify({'error': '請提供帳號與密碼'}), 400
+        
+    if db["users"].find_one({"username": username}):
+        return jsonify({'error': '帳號已經存在'}), 400
+        
+    hashed_password = generate_password_hash(password)
+    db["users"].insert_one({"username": username, "password_hash": hashed_password})
+    
+    # 給新帳戶預設分類
+    default_categories = ["投資", "英文", "CS", "其他"]
+    db["categories"].insert_many([{"name": c, "username": username} for c in default_categories])
+    
+    return jsonify({'message': '註冊成功！'})
+
+@app.route('/api/auth/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    
+    if not username or not password:
+        return jsonify({'error': '請提供帳號與密碼'}), 400
+        
+    user = db["users"].find_one({"username": username})
+    if not user or not check_password_hash(user['password_hash'], password):
+        return jsonify({'error': '登入失敗，帳號或密碼錯誤'}), 401
+        
+    token = jwt.encode({
+        'username': username,
+        'exp': datetime.utcnow() + timedelta(days=7)
+    }, app.config['SECRET_KEY'], algorithm="HS256")
+    
+    return jsonify({'token': token, 'username': username})
+
+@app.route('/api/auth/me', methods=['GET'])
+@token_required
+def get_me(current_user):
+    return jsonify({'username': current_user})
+
+# --- Note Routes ---
 @app.route('/api/categories', methods=['GET'])
-def get_categories():
-    categories_cursor = db["categories"].find({}, {"_id": 0, "name": 1})
+@token_required
+def get_categories(current_user):
+    categories_cursor = db["categories"].find({"username": current_user}, {"_id": 0, "name": 1})
     categories = [c["name"] for c in categories_cursor]
     return jsonify(categories)
 
 @app.route('/api/categories', methods=['POST'])
-def add_category():
+@token_required
+def add_category(current_user):
     req = request.get_json()
     new_category = req.get('category')
     if not new_category:
         return jsonify({"error": "Category is required"}), 400
     
-    if db["categories"].find_one({"name": new_category}) is None:
-        db["categories"].insert_one({"name": new_category})
+    if db["categories"].find_one({"name": new_category, "username": current_user}) is None:
+        db["categories"].insert_one({"name": new_category, "username": current_user})
     
-    categories_cursor = db["categories"].find({}, {"_id": 0, "name": 1})
+    categories_cursor = db["categories"].find({"username": current_user}, {"_id": 0, "name": 1})
     categories = [c["name"] for c in categories_cursor]
     return jsonify({"message": "Category added successfully", "categories": categories})
 
 @app.route('/api/categories/<category>', methods=['DELETE'])
-def delete_category(category):
+@token_required
+def delete_category(current_user, category):
     if category in ["未分類", "AI筆記", "WEB URL NOTE"]:
         return jsonify({"error": "Cannot delete protected categories"}), 400
         
-    db["categories"].delete_one({"name": category})
-    db["notes"].update_many({"category": category}, {"$set": {"category": "未分類"}})
+    db["categories"].delete_one({"name": category, "username": current_user})
+    db["notes"].update_many({"category": category, "username": current_user}, {"$set": {"category": "未分類"}})
     return jsonify({"message": "Category deleted successfully"})
 
 @app.route('/api/upload', methods=['POST'])
-def upload_file():
+@token_required
+def upload_file(current_user):
     if 'file' not in request.files:
         return jsonify({"error": "No file part"}), 400
         
@@ -163,11 +255,12 @@ def upload_file():
             except Exception as e:
                 return jsonify({"error": f"Failed to save physical file: {str(e)}"}), 500
         
-        if db["categories"].find_one({"name": category}) is None:
-            db["categories"].insert_one({"name": category})
+        if db["categories"].find_one({"name": category, "username": current_user}) is None:
+            db["categories"].insert_one({"name": category, "username": current_user})
             
         note = {
             "id": file_id,
+            "username": current_user,
             "original_filename": original_filename,
             "stored_filename": stored_filename,
             "category": category,
@@ -183,14 +276,11 @@ def upload_file():
         return jsonify({"error": "File type not allowed or invalid file"}), 400
 
 @app.route('/api/ai/upload', methods=['POST'])
-def ai_upload_note():
+@token_required
+def ai_upload_note(current_user):
     req = request.get_json()
     if not req:
         return jsonify({"error": "Invalid JSON payload"}), 400
-        
-    password = req.get('password')
-    if password != 'daynote123':
-        return jsonify({"error": "Unauthorized"}), 401
         
     title = req.get('title', 'AI Note')
     content = req.get('content')
@@ -232,11 +322,12 @@ def ai_upload_note():
         except Exception as e:
             return jsonify({"error": f"Failed to save physical file: {str(e)}"}), 500
             
-    if db["categories"].find_one({"name": category}) is None:
-        db["categories"].insert_one({"name": category})
+    if db["categories"].find_one({"name": category, "username": current_user}) is None:
+        db["categories"].insert_one({"name": category, "username": current_user})
         
     note = {
         "id": file_id,
+        "username": current_user,
         "original_filename": original_filename,
         "stored_filename": stored_filename,
         "category": category,
@@ -250,7 +341,8 @@ def ai_upload_note():
     return jsonify({"message": "AI Note uploaded successfully", "note": note}), 201
 
 @app.route('/api/notes/url', methods=['POST'])
-def add_url_note():
+@token_required
+def add_url_note(current_user):
     req = request.get_json()
     url = req.get('url')
     name = req.get('name')
@@ -264,11 +356,12 @@ def add_url_note():
         
     file_id = str(uuid.uuid4())
     
-    if db["categories"].find_one({"name": category}) is None:
-        db["categories"].insert_one({"name": category})
+    if db["categories"].find_one({"name": category, "username": current_user}) is None:
+        db["categories"].insert_one({"name": category, "username": current_user})
         
     note = {
         "id": file_id,
+        "username": current_user,
         "original_filename": name,
         "stored_filename": "URL",
         "category": category,
@@ -283,9 +376,10 @@ def add_url_note():
     return jsonify({"message": "URL added successfully", "note": note}), 201
 
 @app.route('/api/notes', methods=['GET'])
-def get_notes():
+@token_required
+def get_notes(current_user):
     category = request.args.get('category')
-    query = {}
+    query = {"username": current_user}
     if category:
         query["category"] = category
     
@@ -295,33 +389,52 @@ def get_notes():
 
 @app.route('/api/notes/<filename>', methods=['GET'])
 def get_note_file(filename):
-    note = db["notes"].find_one({"stored_filename": filename})
+    token = request.args.get('token')
+    if not token:
+        # Check header
+        auth_header = request.headers.get('Authorization')
+        if auth_header and auth_header.startswith('Bearer '):
+            token = auth_header.split(' ')[1]
+            
+    if token:
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+            current_user = data['username']
+            # Verify ownership
+            note = db["notes"].find_one({"stored_filename": filename, "username": current_user})
+            if not note:
+                return jsonify({'error': 'Unauthorized'}), 401
+        except Exception:
+            return jsonify({'error': 'Invalid Token'}), 401
+    else:
+        # IF no token provided, we either block or allow. Let's strictly block to enforce auth.
+        return jsonify({'error': 'Unauthorized'}), 401
+    
     storage_type = note.get("storage_type", "local") if note else "local"
     
     if storage_type == "gcs" and gcs_bucket:
         try:
             blob = gcs_bucket.blob(filename)
-            # Generate a signed URL valid for 1 hour
             url = blob.generate_signed_url(version="v4", expiration=3600, method="GET")
             return redirect(url, code=302)
         except Exception as e:
             print(f"⚠️ [Download] Failed to generate signed URL for {filename}: {e}")
-            # Fallback in case generation fails, though file might not be locally available
             pass
             
     return send_from_directory(DATA_DIR, filename)
 
 @app.route('/api/notes/<filename>/content', methods=['PUT'])
-def update_note_content(filename):
+@token_required
+def update_note_content(current_user, filename):
     req = request.get_json()
     new_content = req.get('content')
     
     if new_content is None:
         return jsonify({"error": "Content is required"}), 400
         
-    note = db["notes"].find_one({"stored_filename": filename})
+    note = db["notes"].find_one({"stored_filename": filename, "username": current_user})
     if not note:
-        return jsonify({"error": "Note metadata not found"}), 404
+        return jsonify({"error": "Note metadata not found or unauthorized"}), 404
         
     storage_type = note.get("storage_type", "local")
     
@@ -342,7 +455,6 @@ def update_note_content(filename):
             f.write(new_content)
         print(f"✅ [Update] Updated {filename} in Local")
         
-        # 如果原本在 GCS，但 GCS 更新失敗導致降級到 Local，更新資料庫的 storage_type
         if storage_type == "gcs":
             db["notes"].update_one({"stored_filename": filename}, {"$set": {"storage_type": "local"}})
             
@@ -351,8 +463,9 @@ def update_note_content(filename):
         return jsonify({"error": f"Failed to update physical file: {str(e)}"}), 500
 
 @app.route('/api/notes/verify/<filename>', methods=['GET'])
-def verify_note_file(filename):
-    note = db["notes"].find_one({"stored_filename": filename})
+@token_required
+def verify_note_file(current_user, filename):
+    note = db["notes"].find_one({"stored_filename": filename, "username": current_user})
     if not note:
         return jsonify({"exists": False, "error": "Note metadata not found"}), 404
         
@@ -371,7 +484,8 @@ def verify_note_file(filename):
         return jsonify({"exists": exists, "storage_type": "local"}), 200
 
 @app.route('/api/notes/<note_id>', methods=['PUT'])
-def update_note(note_id):
+@token_required
+def update_note(current_user, note_id):
     req = request.get_json()
     new_category = req.get('category')
     new_title = req.get('title')
@@ -379,8 +493,8 @@ def update_note(note_id):
     update_fields = {}
     
     if new_category:
-        if db["categories"].find_one({"name": new_category}) is None:
-            db["categories"].insert_one({"name": new_category})
+        if db["categories"].find_one({"name": new_category, "username": current_user}) is None:
+            db["categories"].insert_one({"name": new_category, "username": current_user})
         update_fields["category"] = new_category
         
     if new_title:
@@ -389,18 +503,19 @@ def update_note(note_id):
     if not update_fields:
         return jsonify({"error": "No updates provided"}), 400
         
-    result = db["notes"].update_one({"id": note_id}, {"$set": update_fields})
+    result = db["notes"].update_one({"id": note_id, "username": current_user}, {"$set": update_fields})
     
     if result.matched_count == 0:
-        return jsonify({"error": "Note not found"}), 404
+        return jsonify({"error": "Note not found or unauthorized"}), 404
         
     return jsonify({"message": "Note updated successfully"})
 
 @app.route('/api/notes/<note_id>', methods=['DELETE'])
-def delete_note(note_id):
-    note = db["notes"].find_one({"id": note_id})
+@token_required
+def delete_note(current_user, note_id):
+    note = db["notes"].find_one({"id": note_id, "username": current_user})
     if not note:
-        return jsonify({"error": "Note not found"}), 404
+        return jsonify({"error": "Note not found or unauthorized"}), 404
         
     if not note.get('is_url'):
         storage_type = note.get("storage_type", "local")
@@ -421,11 +536,12 @@ def delete_note(note_id):
                 except Exception as e:
                     return jsonify({"error": f"Failed to delete physical file: {str(e)}"}), 500
                 
-    db["notes"].delete_one({"id": note_id})
+    db["notes"].delete_one({"id": note_id, "username": current_user})
     return jsonify({"message": "Note deleted successfully"})
 
 @app.route('/api/ai/generate', methods=['POST'])
-def ai_generate():
+@token_required
+def ai_generate(current_user):
     req = request.get_json() or {}
     api_key = req.get('api_key')
     if not api_key:
@@ -464,7 +580,6 @@ def scheduled_sync_job():
         print(f"⚠️ [Scheduler] 同步任務失敗: {e}")
 
 if __name__ == '__main__':
-    # 啟動背景排程器 (每個月的第一天凌晨 3 點執行)
     scheduler = BackgroundScheduler()
     scheduler.add_job(func=scheduled_sync_job, trigger="cron", day=1, hour=3)
     scheduler.start()
