@@ -30,7 +30,7 @@ axios.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-import { ConfigProvider, theme as antdTheme, Layout, Menu, Button, Modal, Upload, Select, Input, List, Typography, Space, message, Empty, Tag, Card, Popconfirm, Spin, Divider, Grid, Drawer, Tabs, Checkbox } from 'antd';
+import { ConfigProvider, theme as antdTheme, Layout, Menu, Button, Modal, Upload, Select, Input, List, Typography, Space, message, Empty, Tag, Card, Popconfirm, Spin, Divider, Grid, Drawer, Tabs, Checkbox, Radio } from 'antd';
 import { UploadOutlined, FileTextOutlined, PlusOutlined, DownloadOutlined, FolderOpenOutlined, FullscreenOutlined, FullscreenExitOutlined, CloseOutlined, DeleteOutlined, RobotOutlined, SendOutlined, SaveOutlined, MenuOutlined, ArrowLeftOutlined, ExportOutlined, LinkOutlined } from '@ant-design/icons';
 import type { UploadProps, MenuProps } from 'antd';
 import type { RcFile } from 'antd/es/upload';
@@ -106,6 +106,8 @@ export default function Home() {
   const [chatMessages, setChatMessages] = useState<{role: 'user' | 'ai', content: string}[]>([]);
   const [chatInput, setChatInput] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [aiProvider, setAiProvider] = useState<'gemini' | 'local'>('local');
+  const chatEndRef = useRef<HTMLDivElement>(null);
   
   // Upload Modal State
   const [isUploadOpen, setIsUploadOpen] = useState(false);
@@ -399,7 +401,7 @@ export default function Home() {
 
   const handleSendMessage = async () => {
     if (!chatInput.trim()) return;
-    if (!apiKey) {
+    if (aiProvider === 'gemini' && !apiKey) {
       message.error("請先輸入您的 Gemini API Key！");
       return;
     }
@@ -412,7 +414,8 @@ export default function Home() {
     try {
       const res = await axios.post('/daynote/api/ai/generate', {
         prompt: chatInput,
-        api_key: apiKey
+        api_key: apiKey,
+        ai_provider: aiProvider
       });
       setChatMessages(prev => [...prev, { role: 'ai', content: res.data.html }]);
     } catch (error: any) {
@@ -677,16 +680,24 @@ export default function Home() {
                   {isMobile && <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => setActiveCategory("all")} style={{ color: colors.textMain, marginRight: 8 }} />}
                   <RobotOutlined style={{ color: '#1677ff' }} /> AI 筆記助手
                 </Title>
-                <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-                  <Input.Password 
-                    placeholder="在此貼上您的 Google Gemini API Key" 
-                    value={apiKey} 
-                    onChange={e => handleSaveApiKey(e.target.value)}
-                    style={{ width: isMobile ? '100%' : 350, maxWidth: '100%' }}
-                  />
-                  <Text type="secondary" style={{ fontSize: 12, alignSelf: 'center' }}>
-                    金鑰僅保存在您的瀏覽器中，不會上傳。
-                  </Text>
+                <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <Radio.Group value={aiProvider} onChange={e => setAiProvider(e.target.value)} buttonStyle="solid">
+                    <Radio.Button value="local">🏠 本地私有 AI (免費無限)</Radio.Button>
+                    <Radio.Button value="gemini">✨ Google Gemini</Radio.Button>
+                  </Radio.Group>
+                  {aiProvider === 'gemini' && (
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <Input.Password 
+                        placeholder="在此貼上您的 Google Gemini API Key" 
+                        value={apiKey} 
+                        onChange={e => handleSaveApiKey(e.target.value)}
+                        style={{ width: isMobile ? '100%' : 350, maxWidth: '100%' }}
+                      />
+                      <Text type="secondary" style={{ fontSize: 12, alignSelf: 'center' }}>
+                        金鑰保存在瀏覽器中。
+                      </Text>
+                    </div>
+                  )}
                 </div>
               </div>
               <div style={{ flex: 1, overflowY: 'auto', padding: 24 }} className="custom-scrollbar">

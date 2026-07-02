@@ -543,22 +543,45 @@ def delete_note(current_user, note_id):
 @token_required
 def ai_generate(current_user):
     req = request.get_json() or {}
+    ai_provider = req.get('ai_provider', 'local')
     api_key = req.get('api_key')
-    if not api_key:
-        return jsonify({"error": "API Key is missing."}), 400
         
     prompt = req.get('prompt')
     if not prompt:
         return jsonify({"error": "Prompt is required"}), 400
         
+    system_prompt = "You are an expert HTML note designer. Given the user's topic, generate a beautiful, modern HTML snippet containing notes (using modern CSS, colors, tables, etc.). Output ONLY the raw HTML code, without any markdown formatting blocks (like ```html), without DOCTYPE, just the content that can be injected into a <div>."
+    
     try:
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-1.5-flash')
-        system_prompt = "You are an expert HTML note designer. Given the user's topic, generate a beautiful, modern HTML snippet containing notes (using modern CSS, colors, tables, etc.). Output ONLY the raw HTML code, without any markdown formatting blocks (like ```html), without DOCTYPE, just the content that can be injected into a <div>."
-        
-        response = model.generate_content(f"{system_prompt}\n\nUser Topic: {prompt}")
-        
-        text = response.text
+        if ai_provider == 'gemini':
+            if not api_key:
+                return jsonify({"error": "Gemini API Key is missing."}), 400
+            import google.generativeai as genai
+            genai.configure(api_key=api_key)
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            response = model.generate_content(f"{system_prompt}\n\nUser Topic: {prompt}")
+            text = response.text
+        else:
+            local_ai_url = os.getenv("LOCAL_AI_URL", "http://host.docker.internal:8000")
+            local_ai_key = os.getenv("LOCAL_AI_KEY", "my_secure_api_key_2026")
+            
+            import requests
+            res = requests.post(
+                f"{local_ai_url}/api/chat",
+                json={
+                    "user_id": current_user,
+                    "message": prompt,
+                    "model": "qwen2",
+                    "system_prompt": system_prompt
+                },
+                headers={"X-API-KEY": local_ai_key},
+                timeout=60
+            )
+            if res.status_code == 200:
+                text = res.json().get("response", "")
+            else:
+                return jsonify({"error": f"Local AI Error: {res.text}"}), 500
+
         if text.startswith('```html'):
             text = text[7:]
         elif text.startswith('```'):
