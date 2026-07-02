@@ -534,6 +534,8 @@ export default function Home() {
                   localStorage.setItem('daynote_token', res.data.token);
                   localStorage.setItem('daynote_username', res.data.username);
                   setIsAuthenticated(true);
+                  fetchCategories();
+                  fetchNotes();
                 }
               } catch (e: any) {
                 message.error(e.response?.data?.error || '操作失敗');
@@ -561,6 +563,8 @@ export default function Home() {
                   localStorage.setItem('daynote_token', res.data.token);
                   localStorage.setItem('daynote_username', res.data.username);
                   setIsAuthenticated(true);
+                  fetchCategories();
+                  fetchNotes();
                 }
               } catch (e: any) {
                 message.error(e.response?.data?.error || '操作失敗');
