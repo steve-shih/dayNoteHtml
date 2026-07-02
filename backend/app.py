@@ -575,7 +575,7 @@ def ai_generate(current_user):
             response = model.generate_content(f"{system_prompt}\n\nUser Topic: {prompt}")
             text = response.text
         else:
-            local_ai_url = os.getenv("LOCAL_AI_URL", "http://host.docker.internal:8000")
+            local_ai_url = os.getenv("LOCAL_AI_URL", "http://host.docker.internal:8001")
             local_ai_key = os.getenv("LOCAL_AI_KEY", "my_secure_api_key_2026")
             
             import requests

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 axios.defaults.headers.common['ngrok-skip-browser-warning'] = '69420';
 
@@ -401,9 +401,12 @@ export default function Home() {
 
   const handleSendMessage = async () => {
     if (!chatInput.trim()) return;
-    if (aiProvider === 'gemini' && !apiKey) {
-      message.error("請先輸入您的 Gemini API Key！");
-      return;
+    
+    let currentProvider = aiProvider;
+    if (currentProvider === 'gemini' && !apiKey) {
+      message.warning("未偵測到 Gemini API Key，已自動為您切換至地端 Ollama 模式！");
+      setAiProvider('local');
+      currentProvider = 'local';
     }
     
     const newMsg = { role: 'user' as const, content: chatInput };
@@ -415,7 +418,7 @@ export default function Home() {
       const res = await axios.post('/daynote/api/ai/generate', {
         prompt: chatInput,
         api_key: apiKey,
-        ai_provider: aiProvider
+        ai_provider: currentProvider
       });
       setChatMessages(prev => [...prev, { role: 'ai', content: res.data.html }]);
     } catch (error: any) {
