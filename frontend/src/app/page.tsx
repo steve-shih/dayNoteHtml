@@ -19,9 +19,12 @@ axios.interceptors.response.use(
   error => {
     if (error.response && error.response.status === 401) {
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('daynote_token');
-        localStorage.removeItem('daynote_username');
-        window.location.reload();
+        const hasToken = localStorage.getItem('daynote_token');
+        if (hasToken) {
+          localStorage.removeItem('daynote_token');
+          localStorage.removeItem('daynote_username');
+          window.location.reload();
+        }
       }
     }
     return Promise.reject(error);
@@ -151,10 +154,10 @@ export default function Home() {
     const savedToken = localStorage.getItem('daynote_token');
     if (savedToken) {
       setIsAuthenticated(true);
+      fetchCategories();
+      fetchNotes();
     }
 
-    fetchCategories();
-    fetchNotes();
     const savedKey = localStorage.getItem("gemini_api_key");
     if (savedKey) setApiKey(savedKey);
 
@@ -162,8 +165,10 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    fetchNotes(activeCategory === "all" ? null : activeCategory);
-  }, [activeCategory]);
+    if (isAuthenticated) {
+      fetchNotes(activeCategory === "all" ? null : activeCategory);
+    }
+  }, [activeCategory, isAuthenticated]);
 
   useEffect(() => {
     if (activeNote) {
@@ -175,6 +180,7 @@ export default function Home() {
   }, [activeNote]);
 
   const fetchCategories = async () => {
+    if (!localStorage.getItem('daynote_token')) return;
     try {
       const res = await axios.get(`/daynote/api/categories`);
       setCategories(res.data);
@@ -187,6 +193,7 @@ export default function Home() {
   };
 
   const fetchNotes = async (category: string | null = null) => {
+    if (!localStorage.getItem('daynote_token')) return;
     try {
       const url = category ? `/daynote/api/notes?category=${category}` : `/daynote/api/notes`;
       const res = await axios.get(url);
@@ -197,8 +204,9 @@ export default function Home() {
   };
 
   const fetchNoteContent = async (note: Note) => {
-    try {
-      const res = await axios.get(`/daynote/api/notes/${note.stored_filename}`, {
+    if (note.is_url) return;
+    if (!localStorage.getItem('daynote_token')) return;
+    try { const res = await axios.get(`/daynote/api/notes/${note.stored_filename}`, {
         responseType: "text"
       });
       let text = res.data;
