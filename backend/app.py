@@ -175,9 +175,22 @@ def get_me(current_user):
 @app.route('/api/categories', methods=['GET'])
 @token_required
 def get_categories(current_user):
+    # 1. 從 categories 集合中取得
     categories_cursor = db["categories"].find({"username": current_user}, {"_id": 0, "name": 1})
-    categories = [c["name"] for c in categories_cursor]
-    return jsonify(categories)
+    categories = {c["name"] for c in categories_cursor}
+    
+    # 2. 從 notes 集合中反查，以防舊資料未被註冊在 categories 集合中
+    notes_categories = db["notes"].distinct("category", {"username": current_user})
+    categories.update(notes_categories)
+    
+    # 3. 確保系統預設分類存在
+    categories.update({"未分類", "AI筆記", "WEB URL NOTE"})
+    
+    # 過濾掉無效值並排序
+    categories.discard(None)
+    categories.discard("")
+    
+    return jsonify(sorted(list(categories)))
 
 @app.route('/api/categories', methods=['POST'])
 @token_required
