@@ -563,6 +563,12 @@ def ai_generate(current_user):
     if not prompt:
         return jsonify({"error": "Prompt is required"}), 400
         
+    session_id = req.get('session_id')
+    ai_mode = req.get('ai_mode', 'general')
+    
+    use_rag = True if ai_mode == 'rag' else False
+    use_web = True if ai_mode == 'web' else False
+        
     system_prompt = "You are an expert HTML note designer. Given the user's topic, generate a beautiful, modern HTML snippet containing notes (using modern CSS, colors, tables, etc.). Output ONLY the raw HTML code, without any markdown formatting blocks (like ```html), without DOCTYPE, just the content that can be injected into a <div>."
     
     try:
@@ -574,6 +580,7 @@ def ai_generate(current_user):
             model = genai.GenerativeModel('gemini-1.5-flash')
             response = model.generate_content(f"{system_prompt}\n\nUser Topic: {prompt}")
             text = response.text
+            out_session_id = session_id
         else:
             local_ai_url = os.getenv("LOCAL_AI_URL", "http://host.docker.internal:8001")
             local_ai_key = os.getenv("LOCAL_AI_KEY", "my_secure_api_key_2026")
@@ -585,13 +592,18 @@ def ai_generate(current_user):
                     "user_id": current_user,
                     "message": prompt,
                     "model": "qwen2",
-                    "system_prompt": system_prompt
+                    "system_prompt": system_prompt,
+                    "session_id": session_id,
+                    "use_rag": use_rag,
+                    "use_web": use_web
                 },
                 headers={"X-API-KEY": local_ai_key},
                 timeout=60
             )
             if res.status_code == 200:
-                text = res.json().get("response", "")
+                res_data = res.json()
+                text = res_data.get("response", "")
+                out_session_id = res_data.get("session_id", session_id)
             else:
                 return jsonify({"error": f"Local AI Error: {res.text}"}), 500
 
@@ -602,9 +614,64 @@ def ai_generate(current_user):
         if text.endswith('```'):
             text = text[:-3]
             
-        return jsonify({"html": text.strip()})
+        return jsonify({"html": text, "session_id": out_session_id})
+
     except Exception as e:
-        return jsonify({"error": f"AI Generation failed: {str(e)}"}), 500
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/ai/sessions', methods=['GET'])
+@token_required
+def get_ai_sessions(current_user):
+    local_ai_url = os.getenv("LOCAL_AI_URL", "http://host.docker.internal:8001")
+    local_ai_key = os.getenv("LOCAL_AI_KEY", "my_secure_api_key_2026")
+    try:
+        import requests
+        res = requests.get(
+            f"{local_ai_url}/api/sessions/{current_user}",
+            headers={"X-API-KEY": local_ai_key},
+            timeout=10
+        )
+        if res.status_code == 200:
+            return jsonify(res.json())
+        return jsonify({"error": res.text}), res.status_code
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/ai/history/<session_id>', methods=['GET'])
+@token_required
+def get_ai_history(current_user, session_id):
+    local_ai_url = os.getenv("LOCAL_AI_URL", "http://host.docker.internal:8001")
+    local_ai_key = os.getenv("LOCAL_AI_KEY", "my_secure_api_key_2026")
+    try:
+        import requests
+        res = requests.get(
+            f"{local_ai_url}/api/chat/history/{current_user}/{session_id}",
+            headers={"X-API-KEY": local_ai_key},
+            timeout=10
+        )
+        if res.status_code == 200:
+            return jsonify(res.json())
+        return jsonify({"error": res.text}), res.status_code
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/ai/sessions/<session_id>', methods=['DELETE'])
+@token_required
+def delete_ai_session(current_user, session_id):
+    local_ai_url = os.getenv("LOCAL_AI_URL", "http://host.docker.internal:8001")
+    local_ai_key = os.getenv("LOCAL_AI_KEY", "my_secure_api_key_2026")
+    try:
+        import requests
+        res = requests.delete(
+            f"{local_ai_url}/api/sessions/{current_user}/{session_id}",
+            headers={"X-API-KEY": local_ai_key},
+            timeout=10
+        )
+        if res.status_code == 200:
+            return jsonify({"message": "Session deleted"})
+        return jsonify({"error": res.text}), res.status_code
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 def scheduled_sync_job():
     print("⏰ [Scheduler] 執行每月自動同步任務 (A ∪ B)...")

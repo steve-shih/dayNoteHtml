@@ -108,6 +108,10 @@ export default function Home() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiProvider, setAiProvider] = useState<'gemini' | 'local'>('local');
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const [aiSessions, setAiSessions] = useState<any[]>([]);
+  const [currentSessionId, setCurrentSessionId] = useState<string>('');
+  const [aiMode, setAiMode] = useState<'general' | 'web' | 'rag'>('general');
+  const [isSessionsDrawerOpen, setIsSessionsDrawerOpen] = useState(false);
   
   // Upload Modal State
   const [isUploadOpen, setIsUploadOpen] = useState(false);
@@ -340,8 +344,11 @@ export default function Home() {
       setHtmlNameInput('');
       setNewCategoryName("");
       setUploadCategory(undefined);
-      fetchCategories();
-      fetchNotes(activeCategory === "all" ? null : activeCategory);
+      if (isAuthenticated) {
+        fetchCategories();
+        fetchNotes(activeCategory === "all" ? null : activeCategory);
+        loadAiSessions();
+      }
     } catch (error) {
       message.error("發生錯誤，無法完成操作。");
     } finally {
@@ -418,14 +425,69 @@ export default function Home() {
       const res = await axios.post('/daynote/api/ai/generate', {
         prompt: chatInput,
         api_key: apiKey,
-        ai_provider: currentProvider
+        ai_provider: currentProvider,
+        session_id: currentSessionId,
+        ai_mode: aiMode
       });
       setChatMessages(prev => [...prev, { role: 'ai', content: res.data.html }]);
+      if (res.data.session_id) {
+        setCurrentSessionId(res.data.session_id);
+        loadAiSessions();
+      }
     } catch (error: any) {
       message.error(error.response?.data?.error || "AI 生成失敗");
       setChatMessages(prev => [...prev, { role: 'ai', content: `<p style="color:red;">Error: 產生筆記時發生錯誤。</p>` }]);
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const loadAiSessions = async () => {
+    if (!isAuthenticated) return;
+    try {
+      const res = await axios.get('/daynote/api/ai/sessions');
+      setAiSessions(res.data.sessions || []);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const loadAiSessionHistory = async (sessionId: string) => {
+    try {
+      setIsGenerating(true);
+      const res = await axios.get(`/daynote/api/ai/history/${sessionId}`);
+      const history = res.data.history || [];
+      const formattedMessages = history.map((msg: any) => ({
+        role: msg.type === 'human' ? 'user' : 'ai',
+        content: msg.content
+      }));
+      setChatMessages(formattedMessages);
+      setCurrentSessionId(sessionId);
+    } catch (e) {
+      message.error("載入對話歷史失敗");
+    } finally {
+      setIsGenerating(false);
+      setIsSessionsDrawerOpen(false);
+    }
+  };
+
+  const createNewAiSession = () => {
+    setChatMessages([]);
+    setCurrentSessionId('');
+    setChatInput('');
+    setIsSessionsDrawerOpen(false);
+  };
+  
+  const deleteAiSession = async (sessionId: string) => {
+    try {
+      await axios.delete(`/daynote/api/ai/sessions/${sessionId}`);
+      message.success("已刪除對話");
+      loadAiSessions();
+      if (currentSessionId === sessionId) {
+        createNewAiSession();
+      }
+    } catch (e) {
+      message.error("刪除失敗");
     }
   };
 
@@ -571,6 +633,7 @@ export default function Home() {
                   setIsAuthenticated(true);
                   fetchCategories();
                   fetchNotes();
+                  loadAiSessions();
                 }
               } catch (e: any) {
                 message.error(e.response?.data?.error || '操作失敗');
@@ -683,26 +746,41 @@ export default function Home() {
                   {isMobile && <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => setActiveCategory("all")} style={{ color: colors.textMain, marginRight: 8 }} />}
                   <RobotOutlined style={{ color: '#1677ff' }} /> AI 筆記助手
                 </Title>
-                <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <Radio.Group value={aiProvider} onChange={e => setAiProvider(e.target.value)} buttonStyle="solid">
-                    <Radio.Button value="local">🏠 本地私有 AI (免費無限)</Radio.Button>
-                    <Radio.Button value="gemini">✨ Google Gemini</Radio.Button>
-                  </Radio.Group>
-                  {aiProvider === 'gemini' && (
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <Input.Password 
-                        placeholder="在此貼上您的 Google Gemini API Key" 
-                        value={apiKey} 
-                        onChange={e => handleSaveApiKey(e.target.value)}
-                        style={{ width: isMobile ? '100%' : 350, maxWidth: '100%' }}
-                      />
-                      <Text type="secondary" style={{ fontSize: 12, alignSelf: 'center' }}>
-                        金鑰保存在瀏覽器中。
-                      </Text>
-                    </div>
-                  )}
+                
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 16, marginTop: 16 }}>
+                  <Button type={aiProvider === 'local' ? 'primary' : 'default'} onClick={() => setAiProvider('local')} icon={<RobotOutlined />}>
+                    Ollama Local
+                  </Button>
+                  <Button type={aiProvider === 'gemini' ? 'primary' : 'default'} onClick={() => setAiProvider('gemini')}>
+                    Google Gemini
+                  </Button>
+                  <Button onClick={() => setIsSessionsDrawerOpen(true)} icon={<MenuOutlined />} style={{ marginLeft: 'auto' }}>
+                    歷史對話
+                  </Button>
                 </div>
+                
+                {aiProvider === 'local' && (
+                  <div style={{ marginBottom: 16 }}>
+                    <Radio.Group value={aiMode} onChange={(e) => setAiMode(e.target.value)} buttonStyle="solid">
+                      <Radio.Button value="general">一般對話</Radio.Button>
+                      <Radio.Button value="web">🌐 聯網搜尋</Radio.Button>
+                      <Radio.Button value="rag">📄 知識庫 (RAG)</Radio.Button>
+                    </Radio.Group>
+                  </div>
+                )}
+                
+                {aiProvider === 'gemini' && (
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                    <Input.Password 
+                      placeholder="在此貼上您的 Google Gemini API Key" 
+                      value={apiKey} 
+                      onChange={e => handleSaveApiKey(e.target.value)}
+                      style={{ width: isMobile ? '100%' : 350, maxWidth: '100%' }}
+                    />
+                  </div>
+                )}
               </div>
+              
               <div style={{ flex: 1, overflowY: 'auto', padding: 24 }} className="custom-scrollbar">
                 {chatMessages.length === 0 ? (
                   <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -1056,6 +1134,29 @@ export default function Home() {
           )}
         </Space>
       </Modal>
+      
+      <Drawer
+        title="AI 歷史對話清單"
+        placement="right"
+        onClose={() => setIsSessionsDrawerOpen(false)}
+        open={isSessionsDrawerOpen}
+        extra={<Button type="primary" onClick={createNewAiSession} icon={<PlusOutlined />}>新對話</Button>}
+      >
+        <List
+          dataSource={aiSessions}
+          renderItem={(item: any) => (
+            <List.Item
+              actions={[<Button type="text" danger icon={<DeleteOutlined />} onClick={() => deleteAiSession(item.session_id)} />]}
+              style={{ cursor: 'pointer', background: currentSessionId === item.session_id ? '#e6f4ff' : 'transparent', padding: '12px 16px', borderRadius: 8, marginBottom: 8 }}
+            >
+              <div onClick={() => loadAiSessionHistory(item.session_id)} style={{ width: '100%' }}>
+                <div style={{ fontWeight: 'bold' }}>{item.title}</div>
+                <div style={{ fontSize: '12px', color: '#999' }}>{item.created_at}</div>
+              </div>
+            </List.Item>
+          )}
+        />
+      </Drawer>
     </Layout>
     </ConfigProvider>
   );
