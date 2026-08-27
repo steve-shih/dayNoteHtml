@@ -150,6 +150,23 @@ export default function Home() {
   const [graphLoading, setGraphLoading] = useState(false);
   const [mindmapTree, setMindmapTree] = useState<any>(null);
   const [mindmapLoading, setMindmapLoading] = useState(false);
+  const [fixingTitleLoading, setFixingTitleLoading] = useState(false);
+
+  const handleFixNoteTitle = async (noteId: string) => {
+    setFixingTitleLoading(true);
+    try {
+      const res = await axios.post('/daynote/api/claude/fix-title', { note_id: noteId });
+      if (res.data && res.data.new_title) {
+        message.success(`AI 已成功將標題修正為：「${res.data.new_title}」`);
+        setActiveNote(prev => prev ? { ...prev, title: res.data.new_title } : null);
+        fetchNotes(activeCategory === "all" ? null : activeCategory);
+      }
+    } catch (err: any) {
+      message.error(err.response?.data?.error || 'AI 修正標題失敗');
+    } finally {
+      setFixingTitleLoading(false);
+    }
+  };
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -755,11 +772,21 @@ export default function Home() {
                           </div>
                         </div>
                         <Space wrap>
+                          <Button
+                            type="primary"
+                            icon={<RobotOutlined />}
+                            loading={fixingTitleLoading}
+                            onClick={() => handleFixNoteTitle(activeNote.id)}
+                            style={{ background: 'linear-gradient(135deg, #722ed1, #1890ff)', border: 'none' }}
+                          >
+                            🤖 AI 修正標題
+                          </Button>
                           <Select 
                             value={activeNote.category}
                             style={{ width: 140 }}
                             onChange={handleChangeCategory}
                           >
+
                             {categories.map(cat => (
                               <Option key={cat} value={cat}>{cat}</Option>
                             ))}

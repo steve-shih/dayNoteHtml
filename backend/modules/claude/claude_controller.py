@@ -63,3 +63,18 @@ def generate_mindmap(current_user):
     if not result.get("success"):
         return jsonify({"error": result.get("error")}), 500
     return jsonify(result)
+
+@claude_bp.route('/fix-title', methods=['POST'])
+@token_required
+def fix_title(current_user):
+    req = request.get_json() or {}
+    note_id = req.get('note_id')
+
+    if not note_id:
+        return jsonify({"error": "note_id is required"}), 400
+
+    result = claude_service.fix_title(current_user, note_id)
+    if not result.get("success"):
+        return jsonify({"error": result.get("error")}), 500
+    return jsonify(result)
+

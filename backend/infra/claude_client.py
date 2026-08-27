@@ -118,3 +118,18 @@ class ClaudeClient:
                     }
                 }
         return result
+
+    def suggest_correct_title(self, note_title, note_content):
+        """
+        使用 Claude 分析筆記內容，修正並建議更精準、簡潔專業的標題
+        """
+        system_prompt = (
+            "你是個人知識庫的命名專家。請分析以下筆記的現名稱與內容，"
+            "給出一個最適合、簡潔且明確的繁體中文筆記標題（直接輸出純標題文字，切勿包含引號、Markdown 標點符號或任何額外說明，長度 15 字以內）。"
+        )
+        prompt = f"現名稱：{note_title}\n筆記內容：\n{note_content[:2000]}"
+        result = self.call_messages_api(prompt=prompt, system_prompt=system_prompt)
+        if result["success"]:
+            clean_title = result["response"].strip().strip('"\'「」《》 \n\r')
+            return {"success": True, "title": clean_title}
+        return result

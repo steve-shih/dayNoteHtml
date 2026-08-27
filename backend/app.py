@@ -1,3 +1,10 @@
+import sys
+if sys.platform == 'win32':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
 import os
 from flask import Flask, jsonify
 from flask_cors import CORS

@@ -57,3 +57,20 @@ class ClaudeService:
 
         result = self.client.generate_mindmap_outline(prompt, note_content)
         return result
+
+    def fix_title(self, username, note_id):
+        note, msg, code = self.note_service.get_note_by_id(note_id, username)
+        if not note:
+            return {"success": False, "error": "Note not found"}
+
+        title = note.get("title") or note.get("original_filename", "")
+        content = note.get("content", "")
+
+        result = self.client.suggest_correct_title(title, content)
+        if result.get("success"):
+            new_title = result.get("title")
+            if new_title:
+                self.note_service.note_repo.update_note(note_id, username, {"title": new_title})
+                return {"success": True, "new_title": new_title}
+        return result
+
