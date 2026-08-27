@@ -1,33 +1,70 @@
+import os
 import json
 import requests
 from config_loader import load_config
 
 class ClaudeClient:
     """
-    Anthropic Claude API SDK / HTTP 存取封裝類別
+    統一 AI 客戶端 (支援 Anthropic Claude API 與 本地/遠端 Ollama 動態切換)
     """
     def __init__(self):
         self.config = load_config()
 
-    def _get_claude_settings(self):
+    def _get_ai_settings(self):
         cfg = load_config()
-        claude_cfg = cfg.get("claude", {})
-        api_key = claude_cfg.get("api_key", "").strip()
-        model = claude_cfg.get("model", "claude-3-5-sonnet-20241022")
-        max_tokens = claude_cfg.get("max_tokens", 2048)
-        temperature = claude_cfg.get("temperature", 0.7)
-        return api_key, model, max_tokens, temperature
+        ai_cfg = cfg.get("ai", {})
+        provider = ai_cfg.get("provider", "claude").lower()
+
+        # Claude 設定
+        claude_cfg = ai_cfg.get("claude", {}) or cfg.get("claude", {})
+        claude_key = claude_cfg.get("api_key", "").strip()
+        claude_model = claude_cfg.get("model", "claude-3-5-sonnet-20241022")
+        claude_max_tokens = claude_cfg.get("max_tokens", 2048)
+        claude_temp = claude_cfg.get("temperature", 0.7)
+
+        # Ollama 設定
+        ollama_cfg = ai_cfg.get("ollama", {})
+        ollama_url = os.getenv("LOCAL_AI_URL") or ollama_cfg.get("url", "http://49.158.138.26:8001")
+        ollama_model = ollama_cfg.get("model", "llama3")
+        ollama_key = os.getenv("LOCAL_AI_KEY") or ollama_cfg.get("api_key", "")
+
+        return {
+            "provider": provider,
+            "claude": {
+                "api_key": claude_key,
+                "model": claude_model,
+                "max_tokens": claude_max_tokens,
+                "temperature": claude_temp
+            },
+            "ollama": {
+                "url": ollama_url.rstrip('/'),
+                "model": ollama_model,
+                "api_key": ollama_key
+            }
+        }
 
     def call_messages_api(self, prompt, context="", system_prompt="你是 dayNoteApp 的 Obsidian 智慧助理，請用繁體中文以專業且友善的口吻回答。"):
         """
-        呼叫 Anthropic Claude API /v1/messages
+        統一呼叫 AI 端點 (依據 provider 切換 Claude 或 Ollama)
         """
-        api_key, model, max_tokens, temperature = self._get_claude_settings()
+        settings = self._get_ai_settings()
+        provider = settings["provider"]
 
+        user_content = prompt
+        if context:
+            user_content = f"【參考筆記內容】\n{context}\n\n【使用者提問/指令】\n{prompt}"
+
+        if provider == "ollama":
+            return self._call_ollama_api(settings["ollama"], user_content, system_prompt)
+        else:
+            return self._call_claude_api(settings["claude"], user_content, system_prompt)
+
+    def _call_claude_api(self, claude_cfg, user_content, system_prompt):
+        api_key = claude_cfg["api_key"]
         if not api_key:
             return {
                 "success": False,
-                "error": "未設定 Claude API Key。請至設定面板或 config.json 設定 claude_api_key。"
+                "error": "未設定 Claude API Key。請至設定面板切換至 Ollama 或設定 Claude API Key。"
             }
 
         url = "https://api.anthropic.com/v1/messages"
@@ -37,14 +74,10 @@ class ClaudeClient:
             "content-type": "application/json"
         }
 
-        user_content = prompt
-        if context:
-            user_content = f"【參考筆記內容】\n{context}\n\n【使用者提問/指令】\n{prompt}"
-
         payload = {
-            "model": model,
-            "max_tokens": max_tokens,
-            "temperature": temperature,
+            "model": claude_cfg["model"],
+            "max_tokens": claude_cfg["max_tokens"],
+            "temperature": claude_cfg["temperature"],
             "system": system_prompt,
             "messages": [
                 {"role": "user", "content": user_content}
@@ -52,7 +85,7 @@ class ClaudeClient:
         }
 
         try:
-            res = requests.post(url, headers=headers, json=payload, timeout=45)
+            res = requests.post(url, headers=headers, json=payload, timeout=60)
             if res.status_code == 200:
                 data = res.json()
                 text_response = ""
@@ -66,9 +99,72 @@ class ClaudeClient:
         except Exception as e:
             return {"success": False, "error": f"連線至 Claude API 失敗: {str(e)}"}
 
+    def _call_ollama_api(self, ollama_cfg, user_content, system_prompt):
+        base_url = ollama_cfg["url"]
+        model = ollama_cfg["model"]
+        api_key = ollama_cfg["api_key"]
+
+        headers = {"content-type": "application/json"}
+        if api_key:
+            headers["Authorization"] = f"Bearer {api_key}"
+            headers["x-api-key"] = api_key
+
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": user_content})
+
+        # 優先嘗試 /api/chat 端點，備援 /v1/chat/completions 與 /api/generate
+        try:
+            url = f"{base_url}/api/chat"
+            payload = {
+                "model": model,
+                "messages": messages,
+                "stream": False
+            }
+            res = requests.post(url, headers=headers, json=payload, timeout=60)
+            if res.status_code == 200:
+                data = res.json()
+                content = data.get("message", {}).get("content", "")
+                return {"success": True, "response": content}
+        except Exception:
+            pass
+
+        try:
+            url = f"{base_url}/v1/chat/completions"
+            payload = {
+                "model": model,
+                "messages": messages
+            }
+            res = requests.post(url, headers=headers, json=payload, timeout=60)
+            if res.status_code == 200:
+                data = res.json()
+                choices = data.get("choices", [])
+                if choices:
+                    content = choices[0].get("message", {}).get("content", "")
+                    return {"success": True, "response": content}
+        except Exception:
+            pass
+
+        try:
+            url = f"{base_url}/api/generate"
+            payload = {
+                "model": model,
+                "prompt": f"{system_prompt}\n\n{user_content}",
+                "stream": False
+            }
+            res = requests.post(url, headers=headers, json=payload, timeout=60)
+            if res.status_code == 200:
+                data = res.json()
+                return {"success": True, "response": data.get("response", "")}
+        except Exception as e:
+            return {"success": False, "error": f"連線至 Ollama 服務失敗 ({base_url}): {str(e)}"}
+
+        return {"success": False, "error": f"無法連線至 Ollama 服務端點 ({base_url})"}
+
     def summarize_and_tag(self, note_title, note_content):
         """
-        使用 Claude 產生筆記摘要與標籤建議
+        使用 AI 產生筆記摘要與標籤建議
         """
         system_prompt = "請擔任個人知識庫的分析專家，解析給定的筆記，產生「簡短摘要」以及「3-5 個建議標籤 (例如: #程式設計 #Python)」。請一律以 JSON 格式回應：{\"summary\": \"摘要內容...\", \"tags\": [\"#標籤1\", \"#標籤2\"]}"
         prompt = f"筆記標題：{note_title}\n筆記內容：\n{note_content[:3000]}"
@@ -76,9 +172,7 @@ class ClaudeClient:
         result = self.call_messages_api(prompt=prompt, system_prompt=system_prompt)
         if result["success"]:
             raw_text = result["response"].strip()
-            # 試圖解析 JSON
             try:
-                # 抽取 JSON 區塊
                 if "```json" in raw_text:
                     raw_text = raw_text.split("```json")[1].split("```")[0].strip()
                 elif "```" in raw_text:
@@ -91,7 +185,7 @@ class ClaudeClient:
 
     def generate_mindmap_outline(self, prompt, note_content=""):
         """
-        使用 Claude 生成心智圖樹狀大綱結構 (JSON 格式)
+        使用 AI 生成心智圖樹狀大綱結構 (JSON 格式)
         """
         system_prompt = (
             "請將輸入的知識或筆記內容轉換成層級式心智圖 JSON 結構。"
@@ -121,7 +215,7 @@ class ClaudeClient:
 
     def suggest_correct_title(self, note_title, note_content):
         """
-        使用 Claude 分析筆記內容，修正並建議更精準、簡潔專業的標題
+        使用 AI 分析筆記內容，修正並建議更精準、簡潔專業的標題
         """
         system_prompt = (
             "你是個人知識庫的命名專家。請分析以下筆記的現名稱與內容，"
@@ -133,3 +227,6 @@ class ClaudeClient:
             clean_title = result["response"].strip().strip('"\'「」《》 \n\r')
             return {"success": True, "title": clean_title}
         return result
+
+# 類別別名以相容舊呼叫
+AIClient = ClaudeClient

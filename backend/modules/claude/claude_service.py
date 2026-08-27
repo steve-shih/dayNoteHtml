@@ -1,7 +1,9 @@
+import json
 from infra.claude_client import ClaudeClient
 from infra.storage import read_local_file_content
 from modules.claude.claude_repository import ClaudeRepository
 from modules.notes.note_service import NoteService
+
 
 class ClaudeService:
     """
@@ -16,17 +18,25 @@ class ClaudeService:
 
     def get_claude_config(self):
         cfg = self.repo.get_config()
-        claude_cfg = cfg.get("claude", {}).copy()
-        # 遮罩敏感 API Key 前幾碼以外的部分供前端展示
-        key = claude_cfg.get("api_key", "")
-        if key and len(key) > 8:
-            claude_cfg["masked_key"] = f"{key[:6]}...{key[-4:]}"
-        else:
-            claude_cfg["masked_key"] = ""
-        return claude_cfg
+        ai_cfg = cfg.get("ai", {})
+        if not ai_cfg:
+            ai_cfg = {
+                "provider": "claude",
+                "claude": cfg.get("claude", {}),
+                "ollama": {"url": "http://49.158.138.26:8001", "model": "llama3"}
+            }
 
-    def update_claude_config(self, api_key=None, model=None, max_tokens=None, temperature=None):
-        return self.repo.update_claude_config(api_key, model, max_tokens, temperature)
+        key = ai_cfg.get("claude", {}).get("api_key", "")
+        masked = f"{key[:6]}...{key[-4:]}" if key and len(key) > 8 else ""
+        ai_cfg_copy = json.loads(json.dumps(ai_cfg))
+        if "claude" in ai_cfg_copy:
+            ai_cfg_copy["claude"]["masked_key"] = masked
+
+        return ai_cfg_copy
+
+    def update_claude_config(self, provider=None, claude_settings=None, ollama_settings=None):
+        return self.repo.update_ai_config(provider, claude_settings, ollama_settings)
+
 
     def chat(self, username, prompt, note_id=None):
         context = ""

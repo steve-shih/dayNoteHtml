@@ -15,13 +15,20 @@ def get_config(current_user):
 @token_required
 def update_config(current_user):
     req = request.get_json() or {}
-    api_key = req.get('api_key')
-    model = req.get('model')
-    max_tokens = req.get('max_tokens')
-    temperature = req.get('temperature')
+    provider = req.get('provider')
+    claude_settings = req.get('claude')
+    ollama_settings = req.get('ollama')
 
-    updated = claude_service.update_claude_config(api_key, model, max_tokens, temperature)
-    return jsonify({"message": "Claude settings updated successfully", "config": updated})
+    # 舊版參數相容處理
+    if not claude_settings and 'api_key' in req:
+        claude_settings = {
+            "api_key": req.get('api_key'),
+            "model": req.get('model', 'claude-3-5-sonnet-20241022')
+        }
+
+    updated = claude_service.update_claude_config(provider, claude_settings, ollama_settings)
+    return jsonify({"message": "AI settings updated successfully", "config": updated})
+
 
 @claude_bp.route('/chat', methods=['POST'])
 @token_required

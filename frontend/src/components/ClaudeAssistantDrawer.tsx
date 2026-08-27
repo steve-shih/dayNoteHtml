@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Drawer, Tabs, Input, Button, List, Space, Typography, Tag, Card, Form, Spin, message, Divider } from 'antd';
-import { RobotOutlined, SendOutlined, SettingOutlined, BulbOutlined, SearchOutlined, LinkOutlined } from '@ant-design/icons';
+import { Drawer, Tabs, Input, Button, List, Space, Typography, Tag, Card, Form, Spin, message, Divider, Radio } from 'antd';
+import { RobotOutlined, SendOutlined, SettingOutlined, BulbOutlined, SearchOutlined, LinkOutlined, HddOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
 const { Text, Paragraph } = Typography;
@@ -30,7 +30,7 @@ export default function ClaudeAssistantDrawer({
   onSelectNote
 }: ClaudeAssistantDrawerProps) {
   const [messages, setMessages] = useState<{ role: 'user' | 'claude'; content: string }[]>([
-    { role: 'claude', content: '你好！我是你的 Obsidian 知識庫 Claude AI 助手。我可以幫你總結筆記、建議標籤，或是回答任何相關問題！' }
+    { role: 'claude', content: '你好！我是你的 Obsidian 知識庫 AI 助手。我可以幫你總結筆記、建議標籤，或是回答任何相關問題！' }
   ]);
   const [inputPrompt, setInputPrompt] = useState('');
   const [loading, setLoading] = useState(false);
@@ -42,10 +42,14 @@ export default function ClaudeAssistantDrawer({
   ]);
   const [ragLoading, setRagLoading] = useState(false);
 
-  // 設定頁狀態
+  // 統一 AI 設定頁狀態 (Claude / Ollama)
+  const [provider, setProvider] = useState<'claude' | 'ollama'>('claude');
   const [apiKey, setApiKey] = useState('');
   const [model, setModel] = useState('claude-3-5-sonnet-20241022');
   const [maskedKey, setMaskedKey] = useState('');
+  const [ollamaUrl, setOllamaUrl] = useState('http://49.158.138.26:8001');
+  const [ollamaModel, setOllamaModel] = useState('llama3');
+  const [ollamaKey, setOllamaKey] = useState('');
   const [configLoading, setConfigLoading] = useState(false);
 
   // 摘要頁狀態
@@ -63,11 +67,19 @@ export default function ClaudeAssistantDrawer({
     try {
       const res = await axios.get('/daynote/api/claude/config');
       if (res.data) {
-        setModel(res.data.model || 'claude-3-5-sonnet-20241022');
-        setMaskedKey(res.data.masked_key || '');
+        setProvider(res.data.provider || 'claude');
+        if (res.data.claude) {
+          setModel(res.data.claude.model || 'claude-3-5-sonnet-20241022');
+          setMaskedKey(res.data.claude.masked_key || '');
+        }
+        if (res.data.ollama) {
+          setOllamaUrl(res.data.ollama.url || 'http://49.158.138.26:8001');
+          setOllamaModel(res.data.ollama.model || 'llama3');
+          setOllamaKey(res.data.ollama.api_key || '');
+        }
       }
     } catch (err) {
-      console.error('Failed to fetch Claude config', err);
+      console.error('Failed to fetch AI config', err);
     } finally {
       setConfigLoading(false);
     }
@@ -77,10 +89,18 @@ export default function ClaudeAssistantDrawer({
     setConfigLoading(true);
     try {
       await axios.post('/daynote/api/claude/config', {
-        api_key: apiKey || undefined,
-        model: model
+        provider: provider,
+        claude: {
+          api_key: apiKey || undefined,
+          model: model
+        },
+        ollama: {
+          url: ollamaUrl,
+          model: ollamaModel,
+          api_key: ollamaKey || undefined
+        }
       });
-      message.success('Claude 設定已儲存至 config.json！');
+      message.success(`AI 提供者已切換為 [${provider.toUpperCase()}] 並成功更新！`);
       fetchClaudeConfig();
       setApiKey('');
     } catch (err: any) {
@@ -106,7 +126,7 @@ export default function ClaudeAssistantDrawer({
         setMessages(prev => [...prev, { role: 'claude', content: res.data.response }]);
       }
     } catch (err: any) {
-      const errMsg = err.response?.data?.error || '與 Claude 通訊失敗';
+      const errMsg = err.response?.data?.error || '與 AI 服務通訊失敗';
       setMessages(prev => [...prev, { role: 'claude', content: `⚠️ 錯誤: ${errMsg}` }]);
     } finally {
       setLoading(false);
@@ -155,7 +175,7 @@ export default function ClaudeAssistantDrawer({
           summary: res.data.summary,
           tags: res.data.tags
         });
-        message.success('Claude 摘要與標籤解析完成！');
+        message.success('AI 摘要與標籤解析完成！');
       }
     } catch (err: any) {
       message.error(err.response?.data?.error || '摘要生成失敗');
@@ -169,11 +189,12 @@ export default function ClaudeAssistantDrawer({
       title={
         <Space>
           <RobotOutlined style={{ color: '#722ed1', fontSize: 20 }} />
-          <Text strong>Anthropic Claude AI 助手</Text>
+          <Text strong>AI 智慧助手 (Claude & Ollama)</Text>
+          <Tag color={provider === 'ollama' ? 'orange' : 'purple'}>{provider.toUpperCase()}</Tag>
         </Space>
       }
       placement="right"
-      width={450}
+      width={460}
       onClose={onClose}
       open={open}
     >
@@ -199,7 +220,7 @@ export default function ClaudeAssistantDrawer({
                           size="small"
                           style={{
                             display: 'inline-block',
-                            maxWidth: '90%',
+                            maxWidth: '92%',
                             backgroundColor: item.role === 'user' ? '#1890ff' : '#f9f0ff',
                             borderColor: item.role === 'user' ? '#1890ff' : '#d3ade6',
                             color: item.role === 'user' ? '#ffffff' : '#000000',
@@ -231,7 +252,7 @@ export default function ClaudeAssistantDrawer({
                       </div>
                     )}
                   />
-                  {ragLoading && <Spin tip="Claude 正在全庫搜尋與推理中..." style={{ display: 'block', margin: '10px 0' }} />}
+                  {ragLoading && <Spin tip="AI 正在全庫搜尋與推理中..." style={{ display: 'block', margin: '10px 0' }} />}
                 </div>
                 <Space.Compact style={{ width: '100%' }}>
                   <Input
@@ -282,7 +303,7 @@ export default function ClaudeAssistantDrawer({
                       </div>
                     )}
                   />
-                  {loading && <Spin tip="Claude 正在思考中..." style={{ display: 'block', margin: '10px 0' }} />}
+                  {loading && <Spin tip="AI 正在思考中..." style={{ display: 'block', margin: '10px 0' }} />}
                 </div>
                 <Space.Compact style={{ width: '100%' }}>
                   <Input
@@ -301,7 +322,7 @@ export default function ClaudeAssistantDrawer({
             label: '💡 摘要標籤',
             children: (
               <div style={{ padding: '8px 0' }}>
-                <Paragraph>使用 Claude 自動分析當前開啟的筆記，產生精準摘要與 Obsidian 建議標籤：</Paragraph>
+                <Paragraph>使用 AI 自動分析當前開啟的筆記，產生精準摘要與 Obsidian 建議標籤：</Paragraph>
                 <Button
                   type="primary"
                   block
@@ -333,28 +354,72 @@ export default function ClaudeAssistantDrawer({
           },
           {
             key: 'settings',
-            label: '⚙️ API 設定',
+            label: '⚙️ AI 引擎設定',
             children: (
               <Form layout="vertical" style={{ marginTop: 8 }}>
-                <Form.Item label="Claude API Key">
-                  <Input.Password
-                    placeholder={maskedKey ? `已設定 (${maskedKey})` : '請輸入 Anthropic Claude API Key'}
-                    value={apiKey}
-                    onChange={e => setApiKey(e.target.value)}
-                  />
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    API Key 儲存於後端 config.json 檔案。
-                  </Text>
+                <Form.Item label="選擇主要 AI 引擎 (AI Provider)">
+                  <Radio.Group
+                    value={provider}
+                    onChange={e => setProvider(e.target.value)}
+                    buttonStyle="solid"
+                    style={{ width: '100%' }}
+                  >
+                    <Radio.Button value="claude" style={{ width: '50%', textAlign: 'center' }}>
+                      ☁️ Anthropic Claude
+                    </Radio.Button>
+                    <Radio.Button value="ollama" style={{ width: '50%', textAlign: 'center' }}>
+                      🦙 Local Ollama
+                    </Radio.Button>
+                  </Radio.Group>
                 </Form.Item>
-                <Form.Item label="選擇 Claude 模型">
-                  <Input
-                    value={model}
-                    onChange={e => setModel(e.target.value)}
-                    placeholder="claude-3-5-sonnet-20241022"
-                  />
-                </Form.Item>
+
+                <Divider style={{ margin: '12px 0' }} />
+
+                {provider === 'claude' ? (
+                  <>
+                    <Form.Item label="Claude API Key">
+                      <Input.Password
+                        placeholder={maskedKey ? `已設定 (${maskedKey})` : '請輸入 Anthropic Claude API Key'}
+                        value={apiKey}
+                        onChange={e => setApiKey(e.target.value)}
+                      />
+                    </Form.Item>
+                    <Form.Item label="Claude 模型名稱">
+                      <Input
+                        value={model}
+                        onChange={e => setModel(e.target.value)}
+                        placeholder="claude-3-5-sonnet-20241022"
+                      />
+                    </Form.Item>
+                  </>
+                ) : (
+                  <>
+                    <Form.Item label="Ollama 服務位址 (Base URL)">
+                      <Input
+                        value={ollamaUrl}
+                        onChange={e => setOllamaUrl(e.target.value)}
+                        placeholder="http://49.158.138.26:8001 或 http://localhost:11434"
+                      />
+                    </Form.Item>
+                    <Form.Item label="Ollama 模型名稱 (Model)">
+                      <Input
+                        value={ollamaModel}
+                        onChange={e => setOllamaModel(e.target.value)}
+                        placeholder="llama3, mistral, gemma"
+                      />
+                    </Form.Item>
+                    <Form.Item label="API Key / Auth Token (選填)">
+                      <Input.Password
+                        value={ollamaKey}
+                        onChange={e => setOllamaKey(e.target.value)}
+                        placeholder="選填驗證 Token"
+                      />
+                    </Form.Item>
+                  </>
+                )}
+
                 <Button type="primary" block icon={<SettingOutlined />} onClick={handleSaveConfig} loading={configLoading}>
-                  儲存 Claude 設定
+                  儲存 AI 引擎設定
                 </Button>
               </Form>
             )
