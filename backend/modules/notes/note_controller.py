@@ -4,8 +4,11 @@ from modules.notes.note_service import NoteService
 from infra.storage import save_uploaded_file, is_allowed_file, DATA_DIR
 from shared.jwt_service import token_required
 
+from datetime import datetime
+
 note_bp = Blueprint('notes', __name__, url_prefix='/api')
 note_service = NoteService()
+
 
 @note_bp.route('/notes', methods=['GET'])
 @token_required
@@ -61,7 +64,8 @@ def upload_file(current_user):
         "stored_filename": stored_filename,
         "category": category,
         "title": original_filename,
-        "upload_time": note_service.note_repo.find_by_id(file_id, current_user) or "",
+        "upload_time": datetime.now().isoformat(),
+
         "storage_type": storage_type
     }
     note_service.note_repo.save_note(note_doc)
