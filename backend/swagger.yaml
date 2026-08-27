@@ -370,4 +370,21 @@ paths:
         '200':
           description: AI generated RAG response with referenced note sources
 
+  /api/claude/auto-category:
+    post:
+      summary: Auto generate category for a note using AI
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                note_id:
+                  type: string
+      responses:
+        '200':
+          description: AI auto category generated and updated successfully
+
+
 

@@ -24,9 +24,10 @@ class ClaudeClient:
 
         # Ollama 設定
         ollama_cfg = ai_cfg.get("ollama", {})
-        ollama_url = os.getenv("LOCAL_AI_URL") or ollama_cfg.get("url", "http://49.158.138.26:8001")
-        ollama_model = ollama_cfg.get("model", "llama3")
-        ollama_key = os.getenv("LOCAL_AI_KEY") or ollama_cfg.get("api_key", "")
+        ollama_url = ollama_cfg.get("url", "") or os.getenv("LOCAL_AI_URL") or "http://localhost:11434"
+        ollama_model = ollama_cfg.get("model", "llama3:latest")
+        ollama_key = ollama_cfg.get("api_key", "") or os.getenv("LOCAL_AI_KEY") or ""
+
 
         return {
             "provider": provider,
@@ -228,5 +229,23 @@ class ClaudeClient:
             return {"success": True, "title": clean_title}
         return result
 
+    def suggest_category(self, note_title, note_content=""):
+        """
+        使用 AI 分析筆記標題與內容，自動歸類產生適合的分類名稱
+        """
+        system_prompt = (
+            "你是個人知識庫分類專家。請分析給定的筆記標題與內容，"
+            "直接輸出一個最適合的簡短分類名稱（例如：投資, 英文, CS, 閱讀筆記, 工作, 生活）。"
+            "切勿輸出任何額外說明、引號或標點符號，長度 6 字以內。"
+        )
+        prompt = f"筆記標題：{note_title}\n筆記內容：\n{note_content[:2000]}"
+        result = self.call_messages_api(prompt=prompt, system_prompt=system_prompt)
+        if result.get("success"):
+            cat = result.get("response", "").strip().strip('"\'「」《》 \n\r')
+            if cat:
+                return {"success": True, "category": cat}
+        return {"success": True, "category": "未分類"}
+
 # 類別別名以相容舊呼叫
 AIClient = ClaudeClient
+

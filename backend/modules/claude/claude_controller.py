@@ -99,4 +99,19 @@ def rag_chat(current_user):
         return jsonify({"error": result.get("error")}), 500
     return jsonify(result)
 
+@claude_bp.route('/auto-category', methods=['POST'])
+@token_required
+def auto_category(current_user):
+    req = request.get_json() or {}
+    note_id = req.get('note_id')
+
+    if not note_id:
+        return jsonify({"error": "note_id is required"}), 400
+
+    result = claude_service.auto_category(current_user, note_id)
+    if not result.get("success"):
+        return jsonify({"error": result.get("error")}), 500
+    return jsonify(result)
+
+
 

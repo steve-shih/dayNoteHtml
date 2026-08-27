@@ -205,7 +205,7 @@ export default function Home() {
       if (activeNote.is_url) {
         setNoteContent(activeNote.url || "");
       } else {
-        fetchNoteContent(activeNote.stored_filename);
+        fetchNoteContent(activeNote);
       }
       setIsEditingTxt(false);
     } else {
@@ -235,14 +235,53 @@ export default function Home() {
     }
   };
 
-  const fetchNoteContent = async (filename: string) => {
+  const fetchNoteContent = async (note: any) => {
+    if (!note) return;
+    if (note.content && typeof note.content === 'string') {
+      setNoteContent(note.content);
+      return;
+    }
     try {
-      const res = await axios.get(`/daynote/api/notes/${filename}?token=${localStorage.getItem('daynote_token')}`);
-      setNoteContent(res.data);
+      const res = await axios.get(`/daynote/api/notes/${note.id || note.stored_filename}`);
+      if (res.data && typeof res.data === 'object') {
+        setNoteContent(res.data.content || res.data.body || res.data.summary || res.data.title || '');
+      } else if (typeof res.data === 'string') {
+        setNoteContent(res.data);
+      }
     } catch (error) {
-      setNoteContent("載入筆記失敗。");
+      try {
+        const downloadRes = await axios.get(`/daynote/api/download/${note.stored_filename}`);
+        setNoteContent(typeof downloadRes.data === 'string' ? downloadRes.data : JSON.stringify(downloadRes.data));
+      } catch (e) {
+        setNoteContent(note.summary || note.title || "無法讀取內文");
+      }
     }
   };
+
+  const handleAiAutoCategory = async (noteId?: string) => {
+    const targetId = noteId || activeNote?.id;
+    if (!targetId) {
+      message.warning('請先選擇要分類的筆記！');
+      return;
+    }
+    const hide = message.loading('AI 正在分析內文產生自動分類...', 0);
+    try {
+      const res = await axios.post('/daynote/api/claude/auto-category', { note_id: targetId });
+      hide();
+      if (res.data && res.data.category) {
+        message.success(`AI 自動分類完成: ${res.data.category}`);
+        fetchCategories();
+        fetchNotes(activeCategory === 'all' ? null : activeCategory);
+        if (activeNote && activeNote.id === targetId) {
+          setActiveNote({ ...activeNote, category: res.data.category });
+        }
+      }
+    } catch (err: any) {
+      hide();
+      message.error(err.response?.data?.error || 'AI 分類產生失敗');
+    }
+  };
+
 
   const fetchGraphData = async () => {
     setGraphLoading(true);
@@ -824,6 +863,14 @@ export default function Home() {
                               title="Download"
                             />
                           )}
+                          <Button 
+                            type="text" 
+                            icon={<RobotOutlined style={{ color: '#722ed1' }} />}
+                            onClick={() => handleAiAutoCategory(activeNote.id)}
+                            title="AI 自動產生分類"
+                          >
+                            AI 分類
+                          </Button>
                           <Popconfirm
                             title="Delete Note"
                             description="Are you sure you want to delete this note?"

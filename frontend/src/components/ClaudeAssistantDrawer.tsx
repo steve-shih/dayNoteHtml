@@ -47,8 +47,9 @@ export default function ClaudeAssistantDrawer({
   const [apiKey, setApiKey] = useState('');
   const [model, setModel] = useState('claude-3-5-sonnet-20241022');
   const [maskedKey, setMaskedKey] = useState('');
-  const [ollamaUrl, setOllamaUrl] = useState('http://49.158.138.26:8001');
-  const [ollamaModel, setOllamaModel] = useState('llama3');
+  const [ollamaUrl, setOllamaUrl] = useState('http://localhost:11434');
+  const [ollamaModel, setOllamaModel] = useState('llama3:latest');
+
   const [ollamaKey, setOllamaKey] = useState('');
   const [configLoading, setConfigLoading] = useState(false);
 
@@ -398,14 +399,17 @@ export default function ClaudeAssistantDrawer({
                       <Input
                         value={ollamaUrl}
                         onChange={e => setOllamaUrl(e.target.value)}
-                        placeholder="http://49.158.138.26:8001 或 http://localhost:11434"
+                        placeholder="http://localhost:11434 或 http://127.0.0.1:11434"
                       />
+                      <Text type="secondary" style={{ fontSize: 12, marginTop: 4, display: 'block' }}>
+                        💡 本地電腦 Ollama 預設通訊埠為 11434 (例如 `http://localhost:11434`)。已檢測到本機已安裝: `llama3:latest`, `qwen2:latest`, `phi3:latest`！若從 K8s 連線請填寫對外 IP。
+                      </Text>
                     </Form.Item>
                     <Form.Item label="Ollama 模型名稱 (Model)">
                       <Input
                         value={ollamaModel}
                         onChange={e => setOllamaModel(e.target.value)}
-                        placeholder="llama3, mistral, gemma"
+                        placeholder="llama3:latest, qwen2:latest, phi3:latest"
                       />
                     </Form.Item>
                     <Form.Item label="API Key / Auth Token (選填)">
@@ -417,6 +421,7 @@ export default function ClaudeAssistantDrawer({
                     </Form.Item>
                   </>
                 )}
+
 
                 <Button type="primary" block icon={<SettingOutlined />} onClick={handleSaveConfig} loading={configLoading}>
                   儲存 AI 引擎設定

@@ -151,4 +151,21 @@ class ClaudeService:
             result["referenced_sources"] = referenced_sources
         return result
 
+    def auto_category(self, username, note_id):
+        note, msg, code = self.note_service.get_note_by_id(note_id, username)
+        if not note:
+            return {"success": False, "error": "Note not found"}
+
+        title = note.get("title") or note.get("original_filename", "")
+        content = note.get("content", "")
+
+        res = self.client.suggest_category(title, content)
+        if res.get("success"):
+            cat = res.get("category", "未分類")
+            self.note_service.category_repo.add_category(cat, username)
+            self.note_repo.update_note(note_id, username, {"category": cat})
+            return {"success": True, "category": cat}
+        return res
+
+
 
