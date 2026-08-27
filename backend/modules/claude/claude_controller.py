@@ -78,3 +78,18 @@ def fix_title(current_user):
         return jsonify({"error": result.get("error")}), 500
     return jsonify(result)
 
+@claude_bp.route('/rag', methods=['POST'])
+@token_required
+def rag_chat(current_user):
+    req = request.get_json() or {}
+    query = req.get('query', '')
+
+    if not query:
+        return jsonify({"error": "query is required"}), 400
+
+    result = claude_service.rag_chat(current_user, query)
+    if not result.get("success"):
+        return jsonify({"error": result.get("error")}), 500
+    return jsonify(result)
+
+

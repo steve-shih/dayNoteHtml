@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Drawer, Tabs, Input, Button, List, Space, Typography, Tag, Card, Form, Spin, message, Divider } from 'antd';
-import { RobotOutlined, SendOutlined, SettingOutlined, BulbOutlined } from '@ant-design/icons';
+import { RobotOutlined, SendOutlined, SettingOutlined, BulbOutlined, SearchOutlined, LinkOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
 const { Text, Paragraph } = Typography;
@@ -13,19 +13,34 @@ type ClaudeAssistantDrawerProps = {
   activeNoteId?: string;
   activeNoteTitle?: string;
   onApplyTags?: (tags: string[]) => void;
+  onSelectNote?: (noteId: string) => void;
+};
+
+type RagMessage = {
+  role: 'user' | 'claude';
+  content: string;
+  sources?: { id: string; title: string }[];
 };
 
 export default function ClaudeAssistantDrawer({
   open,
   onClose,
   activeNoteId,
-  activeNoteTitle
+  activeNoteTitle,
+  onSelectNote
 }: ClaudeAssistantDrawerProps) {
   const [messages, setMessages] = useState<{ role: 'user' | 'claude'; content: string }[]>([
     { role: 'claude', content: '你好！我是你的 Obsidian 知識庫 Claude AI 助手。我可以幫你總結筆記、建議標籤，或是回答任何相關問題！' }
   ]);
   const [inputPrompt, setInputPrompt] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // RAG 狀態
+  const [ragQuery, setRagQuery] = useState('');
+  const [ragMessages, setRagMessages] = useState<RagMessage[]>([
+    { role: 'claude', content: '🔍 歡迎使用 RAG 全庫知識問答！在下方輸入問題，我會自動檢索你的所有筆記內文並給予解答，同時提供點擊跳轉連結！' }
+  ]);
+  const [ragLoading, setRagLoading] = useState(false);
 
   // 設定頁狀態
   const [apiKey, setApiKey] = useState('');
@@ -98,6 +113,33 @@ export default function ClaudeAssistantDrawer({
     }
   };
 
+  const handleSendRag = async () => {
+    if (!ragQuery.trim()) return;
+    const q = ragQuery;
+    setRagQuery('');
+    setRagMessages(prev => [...prev, { role: 'user', content: q }]);
+    setRagLoading(true);
+
+    try {
+      const res = await axios.post('/daynote/api/claude/rag', { query: q });
+      if (res.data && res.data.response) {
+        setRagMessages(prev => [
+          ...prev,
+          {
+            role: 'claude',
+            content: res.data.response,
+            sources: res.data.referenced_sources || []
+          }
+        ]);
+      }
+    } catch (err: any) {
+      const errMsg = err.response?.data?.error || 'RAG 檢索問答失敗';
+      setRagMessages(prev => [...prev, { role: 'claude', content: `⚠️ 錯誤: ${errMsg}` }]);
+    } finally {
+      setRagLoading(false);
+    }
+  };
+
   const handleSummarize = async () => {
     if (!activeNoteId) {
       message.warning('請先在主畫面點選要分析的筆記！');
@@ -131,16 +173,81 @@ export default function ClaudeAssistantDrawer({
         </Space>
       }
       placement="right"
-      width={420}
+      width={450}
       onClose={onClose}
       open={open}
     >
       <Tabs
-        defaultActiveKey="chat"
+        defaultActiveKey="rag"
         items={[
           {
+            key: 'rag',
+            label: '🔍 RAG 全庫檢索',
+            children: (
+              <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 180px)' }}>
+                <div style={{ flex: 1, overflowY: 'auto', paddingRight: 4, marginBottom: 12 }}>
+                  <List
+                    dataSource={ragMessages}
+                    renderItem={item => (
+                      <div
+                        style={{
+                          marginBottom: 12,
+                          textAlign: item.role === 'user' ? 'right' : 'left'
+                        }}
+                      >
+                        <Card
+                          size="small"
+                          style={{
+                            display: 'inline-block',
+                            maxWidth: '90%',
+                            backgroundColor: item.role === 'user' ? '#1890ff' : '#f9f0ff',
+                            borderColor: item.role === 'user' ? '#1890ff' : '#d3ade6',
+                            color: item.role === 'user' ? '#ffffff' : '#000000',
+                            borderRadius: 12
+                          }}
+                        >
+                          <Paragraph style={{ margin: 0, color: 'inherit', whiteSpace: 'pre-wrap' }}>
+                            {item.content}
+                          </Paragraph>
+                          {item.sources && item.sources.length > 0 && (
+                            <div style={{ marginTop: 8, paddingTop: 6, borderTop: '1px solid #e8e8e8' }}>
+                              <Text type="secondary" style={{ fontSize: 11 }}>📌 引用筆記來源：</Text>
+                              <div style={{ marginTop: 4 }}>
+                                {item.sources.map(src => (
+                                  <Tag
+                                    key={src.id}
+                                    color="blue"
+                                    icon={<LinkOutlined />}
+                                    style={{ cursor: 'pointer', marginBottom: 4 }}
+                                    onClick={() => onSelectNote && onSelectNote(src.id)}
+                                  >
+                                    {src.title}
+                                  </Tag>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </Card>
+                      </div>
+                    )}
+                  />
+                  {ragLoading && <Spin tip="Claude 正在全庫搜尋與推理中..." style={{ display: 'block', margin: '10px 0' }} />}
+                </div>
+                <Space.Compact style={{ width: '100%' }}>
+                  <Input
+                    placeholder="輸入問題，檢索所有筆記內容..."
+                    value={ragQuery}
+                    onChange={e => setRagQuery(e.target.value)}
+                    onPressEnter={handleSendRag}
+                  />
+                  <Button type="primary" icon={<SearchOutlined />} onClick={handleSendRag} loading={ragLoading} />
+                </Space.Compact>
+              </div>
+            )
+          },
+          {
             key: 'chat',
-            label: '💬 AI 對話',
+            label: '💬 當前筆記對話',
             children: (
               <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 180px)' }}>
                 {activeNoteTitle && (
@@ -179,7 +286,7 @@ export default function ClaudeAssistantDrawer({
                 </div>
                 <Space.Compact style={{ width: '100%' }}>
                   <Input
-                    placeholder="詢問 Claude 筆記內容或相關主題..."
+                    placeholder="詢問當前筆記內容..."
                     value={inputPrompt}
                     onChange={e => setInputPrompt(e.target.value)}
                     onPressEnter={handleSendChat}

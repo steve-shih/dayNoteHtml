@@ -69,7 +69,9 @@ backend/
 | `POST` | `/api/claude/summarize` | 使用 Claude 進行筆記摘要與標籤建議 |
 | `POST` | `/api/claude/mindmap` | 使用 Claude 生成心智圖架構 |
 | `POST` | `/api/claude/fix-title` | 使用 Claude 一鍵分析筆記內文並修正最佳筆記標題 |
+| `POST` | `/api/claude/rag` | 進行全庫知識檢索 (RAG) 智慧問答並提供引用連結 |
 | `GET/POST` | `/api/claude/config` | 讀取或更新 `config.json` 中 Claude 參數 |
+
 
 
 ---

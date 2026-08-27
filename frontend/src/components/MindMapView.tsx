@@ -1,14 +1,15 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Card, Button, Input, Tree, Tag, Space, Typography, Spin, Modal, message } from 'antd';
-import { ClusterOutlined, RobotOutlined, DownOutlined } from '@ant-design/icons';
+import { Card, Button, Input, Tree, Tag, Space, Typography, Spin, Modal, message, Tooltip } from 'antd';
+import { ClusterOutlined, RobotOutlined, DownOutlined, ZoomInOutlined, ZoomOutOutlined, ReloadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
 const { Text } = Typography;
 
 type MindMapNode = {
   name: string;
+  note_id?: string;
   children?: MindMapNode[];
 };
 
@@ -17,19 +18,40 @@ type MindMapViewProps = {
   mindmapTree: MindMapNode | null;
   loading: boolean;
   onRefresh: () => void;
+  onSelectNote?: (noteTitleOrId: string) => void;
 };
 
-export default function MindMapView({ activeNoteId, mindmapTree, loading, onRefresh }: MindMapViewProps) {
+export default function MindMapView({ activeNoteId, mindmapTree, loading, onRefresh, onSelectNote }: MindMapViewProps) {
   const [aiModalOpen, setAiModalOpen] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [customMindmap, setCustomMindmap] = useState<MindMapNode | null>(null);
+  const [zoom, setZoom] = useState(1);
+
+  const handleNodeClick = (nodeName: string, noteId?: string) => {
+    if (onSelectNote) {
+      onSelectNote(noteId || nodeName);
+      message.info(`已切換檢視節點筆記：「${nodeName}」`);
+    }
+  };
 
   const transformToTreeData = (node: MindMapNode, keyPrefix = '0'): any => {
     if (!node) return [];
     return [{
       title: (
-        <span style={{ fontWeight: keyPrefix === '0' ? 'bold' : 'normal', fontSize: keyPrefix === '0' ? '15px' : '13px' }}>
+        <span
+          onClick={() => handleNodeClick(node.name, node.note_id)}
+          style={{
+            fontWeight: keyPrefix === '0' ? 'bold' : 'normal',
+            fontSize: keyPrefix === '0' ? '15px' : '13px',
+            cursor: 'pointer',
+            color: keyPrefix === '0' ? '#1890ff' : '#262626',
+            padding: '2px 6px',
+            borderRadius: '4px',
+            transition: 'all 0.2s'
+          }}
+          className="mindmap-node-hover"
+        >
           {keyPrefix === '0' ? '🧠 ' : '📌 '}{node.name}
         </span>
       ),
@@ -61,6 +83,11 @@ export default function MindMapView({ activeNoteId, mindmapTree, loading, onRefr
     }
   };
 
+  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+    const delta = e.deltaY < 0 ? 0.1 : -0.1;
+    setZoom(z => Math.max(0.4, Math.min(2.5, z + delta)));
+  };
+
   const currentData = customMindmap || mindmapTree;
   const treeData = currentData ? transformToTreeData(currentData) : [];
 
@@ -70,10 +97,14 @@ export default function MindMapView({ activeNoteId, mindmapTree, loading, onRefr
         <Space>
           <Text strong style={{ fontSize: 16 }}>🌳 心智圖視圖 (Mind Map)</Text>
           {customMindmap && <Tag color="gold">AI Generated</Tag>}
+          <Tag color="blue">縮放: {Math.round(zoom * 100)}%</Tag>
         </Space>
       }
       extra={
-        <Space>
+        <Space wrap>
+          <Button icon={<ZoomInOutlined />} onClick={() => setZoom(z => Math.min(z + 0.2, 2.5))} />
+          <Button icon={<ZoomOutOutlined />} onClick={() => setZoom(z => Math.max(z - 0.2, 0.4))} />
+          <Button icon={<ReloadOutlined />} onClick={() => setZoom(1.0)} title="重置縮放" />
           <Button
             type="primary"
             icon={<RobotOutlined />}
@@ -87,23 +118,34 @@ export default function MindMapView({ activeNoteId, mindmapTree, loading, onRefr
           </Button>
         </Space>
       }
-      styles={{ body: { padding: 24, minHeight: 450, backgroundColor: '#ffffff' } }}
+      styles={{ body: { padding: 24, minHeight: 550, backgroundColor: '#fafafa', overflow: 'hidden' } }}
     >
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: 80 }}><Spin tip="正在建立心智圖架構..." /></div>
-      ) : treeData.length > 0 ? (
-        <Tree
-          showLine={{ showLeafIcon: false }}
-          switcherIcon={<DownOutlined />}
-          defaultExpandAll
-          treeData={treeData}
-          style={{ fontSize: 14 }}
-        />
-      ) : (
-        <div style={{ textAlign: 'center', color: '#8c8c8c', padding: 60 }}>
-          目前的筆記尚無標題大綱，點擊上方按鈕讓 Claude 自動為你構建心智圖！
-        </div>
-      )}
+      <div
+        onWheel={handleWheel}
+        style={{
+          transform: `scale(${zoom})`,
+          transformOrigin: 'top left',
+          transition: 'transform 0.15s ease-out',
+          minHeight: '480px',
+          cursor: 'grab'
+        }}
+      >
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: 80 }}><Spin tip="正在建立心智圖架構..." /></div>
+        ) : treeData.length > 0 ? (
+          <Tree
+            showLine={{ showLeafIcon: false }}
+            switcherIcon={<DownOutlined />}
+            defaultExpandAll
+            treeData={treeData}
+            style={{ fontSize: 14, backgroundColor: 'transparent' }}
+          />
+        ) : (
+          <div style={{ textAlign: 'center', color: '#8c8c8c', padding: 60 }}>
+            目前的筆記尚無標題大綱，點擊上方按鈕讓 Claude 自動為你構建心智圖！
+          </div>
+        )}
+      </div>
 
       <Modal
         title="🤖 Claude AI 智慧心智圖生成"

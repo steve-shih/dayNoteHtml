@@ -354,3 +354,20 @@ paths:
         '200':
           description: Suggested clean title updated successfully
 
+  /api/claude/rag:
+    post:
+      summary: Knowledge base RAG search and AI question answering
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+      responses:
+        '200':
+          description: AI generated RAG response with referenced note sources
+
+

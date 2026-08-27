@@ -270,23 +270,27 @@ export default function Home() {
     }
   };
 
-  const handleSelectNoteById = async (noteId: string) => {
-    const target = notes.find(n => n.id === noteId);
+  const handleSelectNoteById = async (noteIdOrTitle: string) => {
+    let target = notes.find(n => n.id === noteIdOrTitle || n.title === noteIdOrTitle || n.original_filename === noteIdOrTitle);
+    if (!target) {
+      target = notes.find(n => n.title && n.title.toLowerCase().includes(noteIdOrTitle.toLowerCase()));
+    }
     if (target) {
       setActiveNote(target);
       setActiveView('editor');
     } else {
       try {
-        const res = await axios.get(`/daynote/api/notes/${noteId}`);
+        const res = await axios.get(`/daynote/api/notes/${noteIdOrTitle}`);
         if (res.data) {
           setActiveNote(res.data);
           setActiveView('editor');
         }
       } catch (e) {
-        message.error('無法載入此筆記');
+        message.warning(`無法載入筆記: ${noteIdOrTitle}`);
       }
     }
   };
+
 
   const loadAiSessions = async () => {
     try {
@@ -710,7 +714,9 @@ export default function Home() {
                 mindmapTree={mindmapTree}
                 loading={mindmapLoading}
                 onRefresh={() => fetchMindmapTree()}
+                onSelectNote={handleSelectNoteById}
               />
+
             ) : (
               <div style={{ flex: 1, display: 'flex', gap: 24, overflow: 'hidden' }}>
                 {/* Notes List Column */}
@@ -1017,7 +1023,9 @@ export default function Home() {
           onClose={() => setClaudeDrawerOpen(false)}
           activeNoteId={activeNote?.id}
           activeNoteTitle={activeNote?.title || activeNote?.original_filename}
+          onSelectNote={handleSelectNoteById}
         />
+
       </Layout>
     </ConfigProvider>
   );

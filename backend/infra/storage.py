@@ -73,20 +73,28 @@ def save_uploaded_file(file_obj):
 
 def read_local_file_content(stored_filename):
     """
-    讀取本地筆記實體檔案文字內容
+    讀取本地筆記實體檔案文字內容 (具備多路徑搜尋與備援解碼容錯)
     """
-    file_path = os.path.join(DATA_DIR, stored_filename)
-    if os.path.exists(file_path):
-        try:
-            with open(file_path, 'r', encoding='utf-8') as f:
-                return f.read()
-        except Exception:
-            try:
-                with open(file_path, 'r', encoding='latin-1') as f:
-                    return f.read()
-            except Exception as e:
-                return f"[檔案內容無法解析: {e}]"
+    if not stored_filename:
+        return ""
+
+    possible_paths = [
+        os.path.join(DATA_DIR, stored_filename),
+        os.path.join(os.getcwd(), 'data', stored_filename),
+        os.path.join('/app/data', stored_filename),
+        os.path.join('/app/backend/data', stored_filename)
+    ]
+
+    for file_path in possible_paths:
+        if os.path.exists(file_path) and os.path.isfile(file_path):
+            for enc in ['utf-8', 'utf-8-sig', 'latin-1', 'gbk']:
+                try:
+                    with open(file_path, 'r', encoding=enc, errors='ignore') as f:
+                        return f.read()
+                except Exception:
+                    continue
     return ""
+
 
 def write_local_file_content(stored_filename, content):
     """

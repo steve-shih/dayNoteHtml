@@ -303,6 +303,12 @@ export default function GraphView({ graphData, loading, onRefresh, onSelectNote 
     setHoveredNode(hovered || null);
   };
 
+  const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    const zoomDelta = e.deltaY < 0 ? 0.12 : -0.12;
+    setZoom(z => Math.max(0.3, Math.min(3.5, z + zoomDelta)));
+  };
+
   return (
     <Card
       style={{ backgroundColor: '#141414', borderColor: '#303030', borderRadius: 12, overflow: 'hidden' }}
@@ -339,10 +345,12 @@ export default function GraphView({ graphData, loading, onRefresh, onSelectNote 
         <canvas
           ref={canvasRef}
           onClick={handleCanvasClick}
+          onWheel={handleWheel}
           onMouseDown={e => {
             isDraggingCanvas.current = true;
             dragStart.current = { x: e.clientX - offset.x, y: e.clientY - offset.y };
           }}
+
           onMouseUp={() => isDraggingCanvas.current = false}
           onMouseLeave={() => {
             isDraggingCanvas.current = false;

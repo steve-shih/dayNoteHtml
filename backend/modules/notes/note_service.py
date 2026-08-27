@@ -41,13 +41,22 @@ class NoteService:
             content = note.get('url', '')
         elif note.get('stored_filename'):
             content = read_local_file_content(note.get('stored_filename'))
+        
+        # 內文備援: 如果檔名檔案讀取為空，嘗試讀取 MongoDB 內直接儲存的 content 欄位或內文摘要
+        if not content and note.get('content'):
+            content = note.get('content')
+        if not content and note.get('body'):
+            content = note.get('body')
+        if not content:
+            content = note.get('summary') or note.get('title') or ""
 
         tags, wikilinks = self.parse_tags_and_wikilinks(content)
         note['content'] = content
-        note['tags'] = tags
-        note['wikilinks'] = wikilinks
+        note['tags'] = note.get('tags') or tags
+        note['wikilinks'] = note.get('wikilinks') or wikilinks
 
         return note, "Success", 200
+
 
     def get_backlinks(self, note_id, username):
         """
