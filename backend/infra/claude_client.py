@@ -102,12 +102,15 @@ class ClaudeClient:
 
     def _call_ollama_api(self, ollama_cfg, user_content, system_prompt):
         base_url = ollama_cfg["url"]
-        model = ollama_cfg["model"]
+        model = ollama_cfg["model"] or "qwen2:latest"
         api_key = ollama_cfg["api_key"]
 
-        headers = {"content-type": "application/json"}
+        headers = {
+            "Content-Type": "application/json"
+        }
         if api_key:
             headers["Authorization"] = f"Bearer {api_key}"
+            headers["X-API-KEY"] = api_key
             headers["x-api-key"] = api_key
 
         messages = []
@@ -115,7 +118,24 @@ class ClaudeClient:
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": user_content})
 
-        # 優先嘗試 /api/chat 端點，備援 /v1/chat/completions 與 /api/generate
+        # 1. 優先嘗試 Custom Local AI Gateway 格式 (如 http://49.158.138.26:8001)
+        try:
+            url = f"{base_url}/api/chat"
+            payload = {
+                "user_id": "steve",
+                "session_id": "daynote",
+                "message": f"【系統提示】{system_prompt}\n\n【使用者需求】{user_content}" if system_prompt else user_content,
+                "model": model
+            }
+            res = requests.post(url, headers=headers, json=payload, timeout=120)
+            if res.status_code == 200:
+                data = res.json()
+                if "response" in data and isinstance(data["response"], str) and data["response"].strip():
+                    return {"success": True, "response": data["response"].strip()}
+        except Exception:
+            pass
+
+        # 2. 嘗試標準 Native Ollama /api/chat 端點
         try:
             url = f"{base_url}/api/chat"
             payload = {
@@ -123,30 +143,34 @@ class ClaudeClient:
                 "messages": messages,
                 "stream": False
             }
-            res = requests.post(url, headers=headers, json=payload, timeout=60)
+            res = requests.post(url, headers=headers, json=payload, timeout=120)
             if res.status_code == 200:
                 data = res.json()
                 content = data.get("message", {}).get("content", "")
-                return {"success": True, "response": content}
+                if content:
+                    return {"success": True, "response": content}
         except Exception:
             pass
 
+        # 3. 嘗試 /v1/chat/completions OpenAI 格式端點
         try:
             url = f"{base_url}/v1/chat/completions"
             payload = {
                 "model": model,
                 "messages": messages
             }
-            res = requests.post(url, headers=headers, json=payload, timeout=60)
+            res = requests.post(url, headers=headers, json=payload, timeout=120)
             if res.status_code == 200:
                 data = res.json()
                 choices = data.get("choices", [])
                 if choices:
                     content = choices[0].get("message", {}).get("content", "")
-                    return {"success": True, "response": content}
+                    if content:
+                        return {"success": True, "response": content}
         except Exception:
             pass
 
+        # 4. 嘗試 /api/generate 端點
         try:
             url = f"{base_url}/api/generate"
             payload = {
@@ -154,10 +178,11 @@ class ClaudeClient:
                 "prompt": f"{system_prompt}\n\n{user_content}",
                 "stream": False
             }
-            res = requests.post(url, headers=headers, json=payload, timeout=60)
+            res = requests.post(url, headers=headers, json=payload, timeout=120)
             if res.status_code == 200:
                 data = res.json()
-                return {"success": True, "response": data.get("response", "")}
+                if "response" in data and isinstance(data["response"], str) and data["response"].strip():
+                    return {"success": True, "response": data["response"].strip()}
         except Exception:
             pass
 
@@ -165,7 +190,8 @@ class ClaudeClient:
         if "localhost" in base_url or "127.0.0.1" in base_url:
             hint = " (💡 提示: 本網站目前部署於 GCP 雲端 K8s，雲端容器無法直接存取您個人電腦的 localhost:11434。若要使用您本機的 Ollama，請使用 Ngrok Tunnel 網址或對外公網 IP，或在設定頁面切換至 ☁️ Anthropic Claude API)"
 
-        return {"success": False, "error": f"無法連線至 Ollama 服務端點 ({base_url})。{hint}"}
+        return {"success": False, "error": f"無法連線至 Ollama / Local AI 服務端點 ({base_url})。{hint}"}
+
 
 
 
