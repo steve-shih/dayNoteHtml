@@ -3,6 +3,38 @@ import json
 import requests
 from config_loader import load_config
 
+def clean_ai_short_text(text, max_len=10):
+
+    if not text:
+        return ""
+    import re
+    raw = str(text).strip()
+
+    # 1. 優先嘗試擷取 「...」, "...", 《...》 或 '...' 內涵蓋的純主題字
+    quote_match = re.search(r'[「"《\'‘`](.*?)[」"》\'’`]', raw)
+    if quote_match and quote_match.group(1).strip():
+        raw = quote_match.group(1).strip()
+    
+    # 2. 如果包含冒號 (例如 "...would be: 錯誤紀錄")，取冒號後半段
+    if ":" in raw or "：" in raw:
+        parts = re.split(r'[:：]', raw)
+        if parts[-1].strip():
+            raw = parts[-1].strip()
+
+    # 3. 去除常見前綴詞與引號標點
+    raw = re.sub(r'^(例如|分類|標題|建議|Categorization|Category|Title|Based on|The current|is|would be)\s*[:：]?', '', raw, flags=re.I)
+    raw = raw.strip(' "\'「」《》()（）.\n\r\t')
+
+    # 4. 長度過長時自動擷取前 max_len 字元
+    if len(raw) > max_len:
+        sub_match = re.search(r'[「"《](.*?)[」"》]', raw)
+        if sub_match:
+            raw = sub_match.group(1).strip()
+        else:
+            raw = raw[:max_len]
+
+    return raw.strip(' "\'「」《》()（）.\n\r\t')
+
 class ClaudeClient:
     """
     統一 AI 客戶端 (支援 Anthropic Claude API 與 本地/遠端 Ollama 動態切換)
@@ -27,7 +59,6 @@ class ClaudeClient:
         ollama_url = ollama_cfg.get("url", "") or os.getenv("LOCAL_AI_URL") or "http://localhost:11434"
         ollama_model = ollama_cfg.get("model", "llama3:latest")
         ollama_key = ollama_cfg.get("api_key", "") or os.getenv("LOCAL_AI_KEY") or ""
-
 
         return {
             "provider": provider,
@@ -192,9 +223,6 @@ class ClaudeClient:
 
         return {"success": False, "error": f"無法連線至 Ollama / Local AI 服務端點 ({base_url})。{hint}"}
 
-
-
-
     def summarize_and_tag(self, note_title, note_content):
         """
         使用 AI 產生筆記摘要與標籤建議
@@ -256,10 +284,11 @@ class ClaudeClient:
         )
         prompt = f"現名稱：{note_title}\n筆記內容：\n{note_content[:2000]}"
         result = self.call_messages_api(prompt=prompt, system_prompt=system_prompt)
-        if result["success"]:
-            clean_title = result["response"].strip().strip('"\'「」《》 \n\r')
-            return {"success": True, "title": clean_title}
-        return result
+        if result.get("success"):
+            clean_title = clean_ai_short_text(result.get("response", ""), max_len=15)
+            if clean_title:
+                return {"success": True, "title": clean_title}
+        return {"success": True, "title": note_title}
 
     def suggest_category(self, note_title, note_content=""):
         """
@@ -267,17 +296,17 @@ class ClaudeClient:
         """
         system_prompt = (
             "你是個人知識庫分類專家。請分析給定的筆記標題與內容，"
-            "直接輸出一個最適合的簡短分類名稱（例如：投資, 英文, CS, 閱讀筆記, 工作, 生活）。"
+            "直接輸出一個最適合的簡短分類名稱（例如：投資, 英文, CS, 閱讀筆記, 工作, 生活, 錯誤紀錄）。"
             "切勿輸出任何額外說明、引號或標點符號，長度 6 字以內。"
         )
         prompt = f"筆記標題：{note_title}\n筆記內容：\n{note_content[:2000]}"
         result = self.call_messages_api(prompt=prompt, system_prompt=system_prompt)
         if result.get("success"):
-            cat = result.get("response", "").strip().strip('"\'「」《》 \n\r')
-            if cat:
+            cat = clean_ai_short_text(result.get("response", ""), max_len=8)
+            if cat and cat != "未分類":
                 return {"success": True, "category": cat}
         return {"success": True, "category": "未分類"}
-
 # 類別別名以相容舊呼叫
 AIClient = ClaudeClient
+
 
