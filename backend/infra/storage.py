@@ -88,10 +88,12 @@ def read_file_content(stored_filename, storage_type="local"):
         try:
             blob = gcs_bucket.blob(stored_filename)
             if blob.exists():
-                raw_text = blob.download_as_text(encoding='utf-8', errors='ignore')
+                raw_bytes = blob.download_as_bytes()
+                raw_text = raw_bytes.decode('utf-8', errors='ignore')
                 decoded = decode_content(raw_text)
                 if decoded:
                     return decoded
+
         except Exception as e:
             print(f"⚠️ [Infra-Storage] GCS 讀取失敗 ({stored_filename}): {e}")
 
