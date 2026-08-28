@@ -162,7 +162,8 @@ class ClaudeService:
         res = self.client.suggest_category(title, content)
         if res.get("success"):
             cat = res.get("category", "未分類")
-            self.note_service.category_repo.add_category(cat, username)
+            self.note_service.category_repo.add_category(cat, username, category_type="ai")
+
             self.note_repo.update_note(note_id, username, {"category": cat})
             return {"success": True, "category": cat}
         return res

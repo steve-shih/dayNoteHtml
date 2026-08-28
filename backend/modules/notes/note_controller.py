@@ -67,7 +67,8 @@ def upload_file(current_user):
         ai_client = AIClient()
         cat_res = ai_client.suggest_category(original_filename, file_content)
         category = cat_res.get("category", "未分類")
-        note_service.category_repo.add_category(category, current_user)
+        note_service.category_repo.add_category(category, current_user, category_type="ai")
+
 
     note_doc = {
         "id": file_id,

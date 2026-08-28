@@ -237,9 +237,32 @@ paths:
                   type: string
       responses:
         '201':
-          description: Web URL note saved
+  /api/categories:
+    get:
+      summary: Get all categories classified by dual types (ai vs user)
+      responses:
+        '200':
+          description: Array of category objects with name and type (ai vs user)
+    post:
+      summary: Add a custom user category
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                type:
+                  type: string
+                  example: user
+      responses:
+        '201':
+          description: Category created successfully
 
   /api/graph/nodes:
+
     get:
       summary: Get knowledge graph nodes and edges for Obsidian graph view
       responses:

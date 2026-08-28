@@ -42,11 +42,16 @@ backend/
   - 解析筆記內 Markdown 標題階層 (`#`, `##`, `###`) 與列表，轉化為視覺化心智圖。
   - 支援畫布按住平移 (Canvas Drag Panning)、滑鼠滾輪縮放與使用 AI 自動生成心智圖結構。
 
-### 3.2 多維歸類、雙向連結與 AI 自動分類 (Categorization, Tags & AI Auto-Category)
+### 3.2 雙軌多維歸類、雙向連結與 AI 自動分類 (Dual Categorization System)
+- **雙軌分類結構 (Dual Category System)**：
+  - 分類明確劃分為兩大類型：
+    1. **🤖 AI 自動分類 (`type: "ai"`)**：由 AI 分析內文自動產生的主題分類。
+    2. **👤 自訂分類 (`type: "user"`)**：由使用者手動建立與定義的個人分類。
 - **標籤 `#tag` 與 WikiLink `[[筆記名稱]]`**：
   - 後端儲存或更新筆記時，自動抽取內容中的 `#tag` 標籤與 `[[WikiLink]]` 連結。
 - **AI 一鍵自動分類 (`/api/claude/auto-category`)**：
-  - 支援點擊「🤖 AI 分類」按鈕或上傳選擇「AI自動分類」，自動分析筆記內文推導最適合的分類名稱並同步寫入 MongoDB。
+  - 支援點擊「🤖 AI 分類」按鈕或上傳選擇「AI自動分類」，自動分析筆記內文推導最適合的分類名稱並註記為 `type: "ai"` 寫入 MongoDB。
+
 
 - **雙向連結面板 (Backlinks Panel)**：
   - 提供目前開啟筆記的反向引用（哪些其他筆記引用了目前筆記）。

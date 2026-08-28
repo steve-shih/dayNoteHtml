@@ -33,9 +33,10 @@ axios.interceptors.response.use(
 );
 
 import { ConfigProvider, theme as antdTheme, Layout, Menu, Button, Modal, Upload, Select, Input, List, Typography, Space, message, Empty, Tag, Card, Popconfirm, Spin, Divider, Drawer, Radio, Checkbox, Tabs } from 'antd';
-import { UploadOutlined, FileTextOutlined, PlusOutlined, DownloadOutlined, FolderOpenOutlined, FullscreenOutlined, FullscreenExitOutlined, CloseOutlined, DeleteOutlined, RobotOutlined, SendOutlined, SaveOutlined, MenuOutlined, ArrowLeftOutlined, ExportOutlined, LinkOutlined } from '@ant-design/icons';
+import { UploadOutlined, FileTextOutlined, PlusOutlined, DownloadOutlined, FolderOpenOutlined, FullscreenOutlined, FullscreenExitOutlined, CloseOutlined, DeleteOutlined, RobotOutlined, SendOutlined, SaveOutlined, MenuOutlined, ArrowLeftOutlined, ExportOutlined, LinkOutlined, UserOutlined } from '@ant-design/icons';
 import type { UploadProps, MenuProps } from 'antd';
 import type { RcFile } from 'antd/es/upload';
+
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -43,6 +44,12 @@ import GraphView from '../components/GraphView';
 import MindMapView from '../components/MindMapView';
 import BacklinksPanel from '../components/BacklinksPanel';
 import ClaudeAssistantDrawer from '../components/ClaudeAssistantDrawer';
+
+type CategoryItem = {
+  name: string;
+  type: 'ai' | 'user';
+};
+
 
 const { Header, Sider, Content } = Layout;
 const { Title, Text } = Typography;
@@ -96,7 +103,8 @@ const THEMES = {
 };
 
 export default function Home() {
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
+
   const [notes, setNotes] = useState<Note[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [activeNote, setActiveNote] = useState<Note | null>(null);
@@ -216,11 +224,17 @@ export default function Home() {
   const fetchCategories = async () => {
     try {
       const res = await axios.get(`/daynote/api/categories`);
-      setCategories(res.data);
+      if (Array.isArray(res.data)) {
+        const formatted: CategoryItem[] = res.data.map((c: any) =>
+          typeof c === 'string' ? { name: c, type: (c.includes('AI') || c.includes('ai')) ? 'ai' : 'user' } : c
+        );
+        setCategories(formatted);
+      }
     } catch (error) {
       console.error("Fetch categories failed", error);
     }
   };
+
 
   const fetchNotes = async (category: string | null = null) => {
     try {
@@ -538,30 +552,63 @@ export default function Home() {
     fileList: fileList as any,
   };
 
+  const aiCategories = categories.filter(c => c.type === 'ai');
+  const userCategories = categories.filter(c => c.type !== 'ai');
+
   const menuItems: MenuProps['items'] = [
     { key: "all", icon: <FolderOpenOutlined />, label: "全部筆記" },
-    ...categories.map(cat => ({
-      key: cat,
-      icon: <FolderOpenOutlined />,
-      label: (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{cat}</span>
-          {!["未分類", "AI筆記", "WEB URL NOTE"].includes(cat) && (
-            <Popconfirm
-              title="刪除分類"
-              description="確定刪除此分類？底下的筆記將移至「未分類」。"
-              onConfirm={(e) => { e?.stopPropagation(); handleDeleteCategory(cat); }}
-              onCancel={(e) => e?.stopPropagation()}
-              okText="刪除"
-              cancelText="取消"
-            >
-              <DeleteOutlined style={{ color: '#ff4d4f' }} onClick={(e) => e.stopPropagation()} />
-            </Popconfirm>
-          )}
-        </div>
-      )
-    }))
+    {
+      type: 'group',
+      label: <span style={{ fontSize: 12, color: '#722ed1', fontWeight: 'bold' }}>🤖 AI 自動分類</span>,
+      children: aiCategories.map(cat => ({
+        key: cat.name,
+        icon: <RobotOutlined style={{ color: '#722ed1' }} />,
+        label: (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{cat.name}</span>
+            {!["未分類", "AI筆記", "WEB URL NOTE"].includes(cat.name) && (
+              <Popconfirm
+                title="刪除分類"
+                description="確定刪除此分類？底下的筆記將移至「未分類」。"
+                onConfirm={(e) => { e?.stopPropagation(); handleDeleteCategory(cat.name); }}
+                onCancel={(e) => e?.stopPropagation()}
+                okText="刪除"
+                cancelText="取消"
+              >
+                <DeleteOutlined style={{ color: '#ff4d4f' }} onClick={(e) => e.stopPropagation()} />
+              </Popconfirm>
+            )}
+          </div>
+        )
+      }))
+    },
+    {
+      type: 'group',
+      label: <span style={{ fontSize: 12, color: '#1677ff', fontWeight: 'bold' }}>👤 自訂分類</span>,
+      children: userCategories.map(cat => ({
+        key: cat.name,
+        icon: <UserOutlined style={{ color: '#1677ff' }} />,
+        label: (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{cat.name}</span>
+            {!["未分類", "AI筆記", "WEB URL NOTE"].includes(cat.name) && (
+              <Popconfirm
+                title="刪除分類"
+                description="確定刪除此分類？底下的筆記將移至「未分類」。"
+                onConfirm={(e) => { e?.stopPropagation(); handleDeleteCategory(cat.name); }}
+                onCancel={(e) => e?.stopPropagation()}
+                okText="刪除"
+                cancelText="取消"
+              >
+                <DeleteOutlined style={{ color: '#ff4d4f' }} onClick={(e) => e.stopPropagation()} />
+              </Popconfirm>
+            )}
+          </div>
+        )
+      }))
+    }
   ];
+
 
   const showViewer = !!activeNote;
   const showList = !isMobile || !showViewer;
@@ -833,9 +880,12 @@ export default function Home() {
                           >
 
                             {categories.map(cat => (
-                              <Option key={cat} value={cat}>{cat}</Option>
+                              <Option key={cat.name} value={cat.name}>
+                                {cat.type === 'ai' ? '🤖 ' : '👤 '}{cat.name}
+                              </Option>
                             ))}
-                            <Option value="NEW_CATEGORY"><PlusOutlined /> Add New Category</Option>
+                            <Option value="NEW_CATEGORY"><PlusOutlined /> 新增自訂分類</Option>
+
                           </Select>
                           
                           {!isMobile && (
@@ -1044,10 +1094,14 @@ export default function Home() {
                   allowClear
                   placeholder="Select category or leave empty for 未分類"
                 >
+                  <Option key="AI_AUTO" value="AI_AUTO">🤖 AI 自動分析產生分類</Option>
                   {categories.map(cat => (
-                    <Option key={cat} value={cat}>{cat}</Option>
+                    <Option key={cat.name} value={cat.name}>
+                      {cat.type === 'ai' ? '🤖 ' : '👤 '}{cat.name}
+                    </Option>
                   ))}
-                  <Option value="NEW_CATEGORY"><PlusOutlined /> Add New Category</Option>
+                  <Option value="NEW_CATEGORY"><PlusOutlined /> 新增自訂分類</Option>
+
                 </Select>
               </div>
             )}

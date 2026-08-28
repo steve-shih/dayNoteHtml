@@ -15,11 +15,13 @@ def get_categories(current_user):
 @token_required
 def add_category(current_user):
     req = request.get_json() or {}
-    category_name = req.get('category')
-    success, data, code = category_service.add_category(current_user, category_name)
+    category_name = req.get('category') or req.get('name')
+    category_type = req.get('type', 'user')
+    success, data, code = category_service.add_category(current_user, category_name, category_type)
     if not success:
         return jsonify({"error": data}), code
     return jsonify({"message": "Category added successfully", "categories": data})
+
 
 @category_bp.route('/<category>', methods=['DELETE'])
 @token_required
