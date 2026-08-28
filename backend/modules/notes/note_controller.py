@@ -57,10 +57,13 @@ def upload_file(current_user):
 
     file_id, original_filename, stored_filename, storage_type = save_uploaded_file(file)
 
+
+    from infra.storage import read_local_file_content
+    file_content = read_local_file_content(stored_filename)
+
+
     if category in ['AI_AUTO', 'AI自動分類', '', None]:
         from infra.claude_client import AIClient
-        from infra.storage import read_local_file_content
-        file_content = read_local_file_content(stored_filename)
         ai_client = AIClient()
         cat_res = ai_client.suggest_category(original_filename, file_content)
         category = cat_res.get("category", "未分類")
@@ -73,10 +76,12 @@ def upload_file(current_user):
         "stored_filename": stored_filename,
         "category": category,
         "title": original_filename,
+        "content": file_content,
         "upload_time": datetime.now().isoformat(),
         "storage_type": storage_type
     }
     note_service.note_repo.save_note(note_doc)
+
     note_doc.pop("_id", None)
     return jsonify({"message": "File uploaded successfully", "note": note_doc}), 201
 

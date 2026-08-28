@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Card, Button, Input, Tag, Spin, Space, Typography, Tooltip } from 'antd';
-import { ReloadOutlined, ZoomInOutlined, ZoomOutOutlined, FullscreenOutlined, FireOutlined } from '@ant-design/icons';
+import { Card, Button, Input, Tag, Spin, Space, Typography } from 'antd';
+import { ReloadOutlined, ZoomInOutlined, ZoomOutOutlined, FireOutlined, CompassOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
 
@@ -15,6 +15,7 @@ type Node = {
   y?: number;
   vx?: number;
   vy?: number;
+  isDragging?: boolean;
 };
 
 type Link = {
@@ -37,14 +38,17 @@ export default function GraphView({ graphData, loading, onRefresh, onSelectNote 
   const [hoveredNode, setHoveredNode] = useState<Node | null>(null);
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
+
   const isDraggingCanvas = useRef(false);
+  const draggedNodeRef = useRef<Node | null>(null);
   const dragStart = useRef({ x: 0, y: 0 });
+  const totalDragDist = useRef(0);
 
   const nodesRef = useRef<Node[]>([]);
   const linksRef = useRef<Link[]>([]);
   const animFrameId = useRef<number | null>(null);
 
-  // 初始化物理模型與高畫質佈局
+  // 初始化物理模型與佈局
   useEffect(() => {
     if (!graphData || !graphData.nodes) return;
 
@@ -66,9 +70,8 @@ export default function GraphView({ graphData, loading, onRefresh, onSelectNote 
     nodesRef.current = nodes;
     linksRef.current = graphData.links;
 
-    // 進行物理模擬多步跌代 (Force Simulation)
+    // 物理模擬多步跌代 (Force Simulation)
     for (let iter = 0; iter < 180; iter++) {
-      // 1. 斥力
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
           const n1 = nodes[i];
@@ -85,7 +88,6 @@ export default function GraphView({ graphData, loading, onRefresh, onSelectNote 
           }
         }
       }
-      // 2. 引力
       linksRef.current.forEach(link => {
         const sourceNode = nodes.find(n => n.id === link.source);
         const targetNode = nodes.find(n => n.id === link.target);
@@ -101,152 +103,105 @@ export default function GraphView({ graphData, loading, onRefresh, onSelectNote 
         }
       });
     }
+  }, [graphData]);
 
-    startAnimation();
-
+  // 高畫質動態渲染迴圈 (High-DPI Canvas Rendering Loop)
+  useEffect(() => {
+    const render = () => {
+      drawCanvas();
+      animFrameId.current = requestAnimationFrame(render);
+    };
+    animFrameId.current = requestAnimationFrame(render);
     return () => {
       if (animFrameId.current) cancelAnimationFrame(animFrameId.current);
     };
-  }, [graphData]);
+  }, [zoom, offset, searchTerm, hoveredNode]);
 
-  const startAnimation = () => {
-    const render = () => {
-      drawHighResCanvas();
-      animFrameId.current = requestAnimationFrame(render);
-    };
-    if (animFrameId.current) cancelAnimationFrame(animFrameId.current);
-    animFrameId.current = requestAnimationFrame(render);
-  };
-
-  // 高解析度 (High-DPI / Retina Scale) 畫布繪製
-  const drawHighResCanvas = () => {
+  const drawCanvas = () => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    const container = containerRef.current;
+    if (!canvas || !container) return;
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
+    const width = container.clientWidth;
+    const height = container.clientHeight;
 
-    if (canvas.width !== rect.width * dpr || canvas.height !== rect.height * dpr) {
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
+    if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
     }
 
     ctx.save();
     ctx.scale(dpr, dpr);
-    ctx.clearRect(0, 0, rect.width, rect.height);
+    ctx.clearRect(0, 0, width, height);
 
-    // 背景深色網格 Obsidian 質感
+    // 背景深色網格
     ctx.fillStyle = '#0f141c';
-    ctx.fillRect(0, 0, rect.width, rect.height);
+    ctx.fillRect(0, 0, width, height);
 
-    ctx.translate(offset.x + rect.width / 2, offset.y + rect.height / 2);
+    ctx.save();
+    ctx.translate(width / 2 + offset.x, height / 2 + offset.y);
     ctx.scale(zoom, zoom);
-    ctx.translate(-rect.width / 2, -rect.height / 2);
+    ctx.translate(-width / 2, -height / 2);
 
     const nodes = nodesRef.current;
     const links = linksRef.current;
 
-    // 計算當前 Hover 相關的節點集合
-    const connectedNodeIds = new Set<string>();
-    if (hoveredNode) {
-      connectedNodeIds.add(hoveredNode.id);
-      links.forEach(l => {
-        if (l.source === hoveredNode.id) connectedNodeIds.add(l.target);
-        if (l.target === hoveredNode.id) connectedNodeIds.add(l.source);
-      });
-    }
-
-    // 1. 繪製連線 Lines
+    // 繪製連線
     links.forEach(link => {
-      const source = nodes.find(n => n.id === link.source);
-      const target = nodes.find(n => n.id === link.target);
-      if (source && target) {
-        const isHighlight = hoveredNode && (link.source === hoveredNode.id || link.target === hoveredNode.id);
-        const isDim = hoveredNode && !isHighlight;
+      const sourceNode = nodes.find(n => n.id === link.source);
+      const targetNode = nodes.find(n => n.id === link.target);
+      if (!sourceNode || !targetNode) return;
 
-        ctx.beginPath();
-        ctx.moveTo(source.x!, source.y!);
-        ctx.lineTo(target.x!, target.y!);
+      const isConnectedToHovered = hoveredNode && (sourceNode.id === hoveredNode.id || targetNode.id === hoveredNode.id);
 
-        if (isHighlight) {
-          ctx.strokeStyle = '#40a9ff';
-          ctx.lineWidth = 2.5;
-          ctx.globalAlpha = 0.9;
-        } else if (isDim) {
-          ctx.strokeStyle = '#303030';
-          ctx.lineWidth = 0.8;
-          ctx.globalAlpha = 0.15;
-        } else {
-          ctx.strokeStyle = link.type === 'wikilink' ? '#1890ff' : link.type === 'tag' ? '#52c41a' : '#434343';
-          ctx.lineWidth = link.type === 'wikilink' ? 1.5 : 1.0;
-          ctx.globalAlpha = 0.45;
-        }
+      ctx.beginPath();
+      ctx.moveTo(sourceNode.x!, sourceNode.y!);
+      const midX = (sourceNode.x! + targetNode.x!) / 2;
+      const midY = (sourceNode.y! + targetNode.y!) / 2 - 15;
+      ctx.quadraticCurveTo(midX, midY, targetNode.x!, targetNode.y!);
 
-        ctx.stroke();
-        ctx.globalAlpha = 1.0;
-      }
+      ctx.strokeStyle = isConnectedToHovered ? '#1890ff' : 'rgba(255, 255, 255, 0.12)';
+      ctx.lineWidth = isConnectedToHovered ? 2.5 : 1;
+      ctx.stroke();
     });
 
-    // 2. 繪製節點 Nodes
+    // 繪製節點
     nodes.forEach(node => {
-      const isMatched = searchTerm && node.label.toLowerCase().includes(searchTerm.toLowerCase());
       const isHovered = hoveredNode?.id === node.id;
-      const isConnected = hoveredNode && connectedNodeIds.has(node.id);
-      const isDim = hoveredNode && !isConnected;
+      const isMatched = searchTerm && node.label.toLowerCase().includes(searchTerm.toLowerCase());
 
-      ctx.save();
-      if (isDim) ctx.globalAlpha = 0.2;
-
-      let radius = node.type === 'category' ? 14 : node.type === 'tag' ? 9 : 11;
-      if (isHovered) radius += 4;
-
-      let mainColor = '#1890ff'; // Note (Blue)
-      let glowColor = 'rgba(24, 144, 255, 0.5)';
-      if (node.type === 'category') {
-        mainColor = '#9254de'; // Category (Purple)
-        glowColor = 'rgba(146, 84, 222, 0.5)';
-      } else if (node.type === 'tag') {
-        mainColor = '#73d13d'; // Tag (Green)
-        glowColor = 'rgba(115, 209, 61, 0.5)';
-      }
+      let radius = node.type === 'category' ? 14 : node.type === 'tag' ? 8 : 10;
+      let color = node.type === 'category' ? '#9254de' : node.type === 'tag' ? '#73d13d' : '#1890ff';
+      let shadowColor = color;
 
       if (isMatched) {
-        mainColor = '#ff4d4f';
-        glowColor = 'rgba(255, 77, 79, 0.7)';
+        color = '#ff4d4f';
+        radius += 4;
+      }
+      if (isHovered) {
+        radius += 4;
       }
 
-      // 繪製發光外環 (Outer Glow)
-      const grad = ctx.createRadialGradient(node.x!, node.y!, radius * 0.3, node.x!, node.y!, radius * 2.2);
-      grad.addColorStop(0, mainColor);
-      grad.addColorStop(1, 'transparent');
-
+      ctx.save();
       ctx.beginPath();
-      ctx.arc(node.x!, node.y!, radius * 2.2, 0, 2 * Math.PI);
-      ctx.fillStyle = grad;
+      ctx.arc(node.x!, node.y!, radius, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.shadowColor = shadowColor;
+      ctx.shadowBlur = isHovered || isMatched ? 18 : 6;
       ctx.fill();
 
-      // 核心實體圓
-      ctx.beginPath();
-      ctx.arc(node.x!, node.y!, radius, 0, 2 * Math.PI);
-      ctx.fillStyle = mainColor;
-      ctx.shadowColor = mainColor;
-      ctx.shadowBlur = isHovered || isMatched ? 15 : 6;
-      ctx.fill();
-      ctx.shadowBlur = 0;
-
-      // 繪製標籤 (Label with backdrop)
+      // 繪製文字標籤
+      ctx.font = isHovered || isMatched ? 'bold 13px sans-serif' : '11px sans-serif';
       const labelText = node.label;
-      ctx.font = node.type === 'category' ? 'bold 12px Inter, sans-serif' : '11px Inter, sans-serif';
-
       const textWidth = ctx.measureText(labelText).width;
       const labelX = node.x!;
       const labelY = node.y! + radius + 14;
 
-      // 標籤背底膠囊
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
-      ctx.beginPath();
+      ctx.fillStyle = isHovered ? 'rgba(0, 0, 0, 0.85)' : 'rgba(0, 0, 0, 0.65)';
       ctx.roundRect(labelX - textWidth / 2 - 6, labelY - 10, textWidth + 12, 16, 4);
       ctx.fill();
 
@@ -260,32 +215,47 @@ export default function GraphView({ graphData, loading, onRefresh, onSelectNote 
     ctx.restore();
   };
 
-  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const getCanvasCoords = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) return { x: 0, y: 0 };
     const rect = canvas.getBoundingClientRect();
-    const clickX = (e.clientX - rect.left - offset.x - rect.width / 2) / zoom + rect.width / 2;
-    const clickY = (e.clientY - rect.top - offset.y - rect.height / 2) / zoom + rect.height / 2;
+    const mouseX = (e.clientX - rect.left - offset.x - rect.width / 2) / zoom + rect.width / 2;
+    const mouseY = (e.clientY - rect.top - offset.y - rect.height / 2) / zoom + rect.height / 2;
+    return { x: mouseX, y: mouseY };
+  };
 
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const { x, y } = getCanvasCoords(e);
+    totalDragDist.current = 0;
+
+    // 判斷是否按在某個節點上 (Node Dragging)
     const clickedNode = nodesRef.current.find(node => {
-      const dx = node.x! - clickX;
-      const dy = node.y! - clickY;
-      return Math.sqrt(dx * dx + dy * dy) <= 18;
+      const dx = node.x! - x;
+      const dy = node.y! - y;
+      return Math.sqrt(dx * dx + dy * dy) <= 22;
     });
 
-    if (clickedNode && clickedNode.type === 'note') {
-      onSelectNote(clickedNode.id);
+    if (clickedNode) {
+      draggedNodeRef.current = clickedNode;
+      clickedNode.isDragging = true;
+    } else {
+      isDraggingCanvas.current = true;
+      dragStart.current = { x: e.clientX - offset.x, y: e.clientY - offset.y };
     }
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    const mouseX = (e.clientX - rect.left - offset.x - rect.width / 2) / zoom + rect.width / 2;
-    const mouseY = (e.clientY - rect.top - offset.y - rect.height / 2) / zoom + rect.height / 2;
+    const { x, y } = getCanvasCoords(e);
+
+    if (draggedNodeRef.current) {
+      totalDragDist.current += 1;
+      draggedNodeRef.current.x = x;
+      draggedNodeRef.current.y = y;
+      return;
+    }
 
     if (isDraggingCanvas.current) {
+      totalDragDist.current += Math.abs(e.movementX) + Math.abs(e.movementY);
       setOffset({
         x: e.clientX - dragStart.current.x,
         y: e.clientY - dragStart.current.y
@@ -295,12 +265,25 @@ export default function GraphView({ graphData, loading, onRefresh, onSelectNote 
 
     // 懸停動態碰撞偵測
     const hovered = nodesRef.current.find(node => {
-      const dx = node.x! - mouseX;
-      const dy = node.y! - mouseY;
-      return Math.sqrt(dx * dx + dy * dy) <= 18;
+      const dx = node.x! - x;
+      const dy = node.y! - y;
+      return Math.sqrt(dx * dx + dy * dy) <= 20;
     });
 
     setHoveredNode(hovered || null);
+  };
+
+  const handleMouseUp = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (draggedNodeRef.current) {
+      draggedNodeRef.current.isDragging = false;
+      // 如果拖曳距離極小，判定為點擊節點跳轉
+      if (totalDragDist.current < 5 && draggedNodeRef.current.type === 'note') {
+        onSelectNote(draggedNodeRef.current.id);
+      }
+      draggedNodeRef.current = null;
+    }
+
+    isDraggingCanvas.current = false;
   };
 
   const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
@@ -331,6 +314,7 @@ export default function GraphView({ graphData, loading, onRefresh, onSelectNote 
           />
           <Button icon={<ZoomInOutlined />} onClick={() => setZoom(z => Math.min(z + 0.2, 2.5))} />
           <Button icon={<ZoomOutOutlined />} onClick={() => setZoom(z => Math.max(z - 0.2, 0.4))} />
+          <Button icon={<CompassOutlined />} onClick={() => { setZoom(1); setOffset({ x: 0, y: 0 }); }}>重置畫布</Button>
           <Button icon={<ReloadOutlined />} onClick={onRefresh} loading={loading}>重新佈局</Button>
         </Space>
       }
@@ -344,28 +328,25 @@ export default function GraphView({ graphData, loading, onRefresh, onSelectNote 
         )}
         <canvas
           ref={canvasRef}
-          onClick={handleCanvasClick}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
           onWheel={handleWheel}
-          onMouseDown={e => {
-            isDraggingCanvas.current = true;
-            dragStart.current = { x: e.clientX - offset.x, y: e.clientY - offset.y };
-          }}
-
-          onMouseUp={() => isDraggingCanvas.current = false}
           onMouseLeave={() => {
             isDraggingCanvas.current = false;
+            if (draggedNodeRef.current) draggedNodeRef.current.isDragging = false;
+            draggedNodeRef.current = null;
             setHoveredNode(null);
           }}
-          onMouseMove={handleMouseMove}
           style={{
             width: '100%',
             height: '100%',
-            cursor: hoveredNode ? 'pointer' : isDraggingCanvas.current ? 'grabbing' : 'grab',
+            cursor: hoveredNode ? 'pointer' : isDraggingCanvas.current || draggedNodeRef.current ? 'grabbing' : 'grab',
             display: 'block'
           }}
         />
 
-        {/* 底部圖例說明 */}
+        {/* 底部圖例與操作說明 */}
         <div
           style={{
             position: 'absolute',
@@ -385,7 +366,7 @@ export default function GraphView({ graphData, loading, onRefresh, onSelectNote 
           <span><span style={{ color: '#9254de' }}>●</span> 分類節點</span>
           <span><span style={{ color: '#1890ff' }}>●</span> 筆記節點</span>
           <span><span style={{ color: '#73d13d' }}>●</span> #標籤</span>
-          <span><span style={{ color: '#1890ff' }}>—</span> WikiLink</span>
+          <span style={{ color: '#aaa' }}>💡 提示: 滑鼠滾輪縮放、按住按鈕或節點可自由拖拽移動</span>
         </div>
       </div>
     </Card>

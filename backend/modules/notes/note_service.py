@@ -132,6 +132,7 @@ class NoteService:
 
         tags, wikilinks = self.parse_tags_and_wikilinks(new_content)
         self.note_repo.update_note(note_id, username, {
+            "content": new_content,
             "tags": tags,
             "wikilinks": wikilinks,
             "updated_at": datetime.now().isoformat()
@@ -159,6 +160,7 @@ class NoteService:
             "stored_filename": stored_filename,
             "category": category,
             "title": title,
+            "content": content,
             "upload_time": datetime.now().isoformat(),
             "storage_type": "local",
             "tags": tags,
@@ -167,6 +169,7 @@ class NoteService:
         self.note_repo.save_note(note_doc)
         note_doc.pop("_id", None)
         return note_doc
+
 
     def create_url_note(self, username, title, url, category="WEB URL NOTE"):
         file_id = str(uuid.uuid4())

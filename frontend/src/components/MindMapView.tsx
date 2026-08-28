@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Card, Button, Input, Tree, Tag, Space, Typography, Spin, Modal, message, Tooltip } from 'antd';
-import { ClusterOutlined, RobotOutlined, DownOutlined, ZoomInOutlined, ZoomOutOutlined, ReloadOutlined } from '@ant-design/icons';
+import React, { useState, useRef } from 'react';
+import { Card, Button, Input, Tree, Tag, Space, Typography, Spin, Modal, message } from 'antd';
+import { ClusterOutlined, RobotOutlined, DownOutlined, ZoomInOutlined, ZoomOutOutlined, ReloadOutlined, CompassOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
 const { Text } = Typography;
@@ -26,7 +26,12 @@ export default function MindMapView({ activeNoteId, mindmapTree, loading, onRefr
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [customMindmap, setCustomMindmap] = useState<MindMapNode | null>(null);
+
+  // 畫布拖拽與縮放狀態 (Pan & Zoom)
   const [zoom, setZoom] = useState(1);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const isDragging = useRef(false);
+  const dragStart = useRef({ x: 0, y: 0 });
 
   const handleNodeClick = (nodeName: string, noteId?: string) => {
     if (onSelectNote) {
@@ -46,9 +51,11 @@ export default function MindMapView({ activeNoteId, mindmapTree, loading, onRefr
             fontSize: keyPrefix === '0' ? '15px' : '13px',
             cursor: 'pointer',
             color: keyPrefix === '0' ? '#1890ff' : '#262626',
-            padding: '2px 6px',
+            padding: '2px 8px',
             borderRadius: '4px',
-            transition: 'all 0.2s'
+            backgroundColor: 'rgba(255, 255, 255, 0.85)',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+            display: 'inline-block'
           }}
           className="mindmap-node-hover"
         >
@@ -73,7 +80,7 @@ export default function MindMapView({ activeNoteId, mindmapTree, loading, onRefr
       });
       if (res.data && res.data.mindmap) {
         setCustomMindmap(res.data.mindmap);
-        message.success('Claude 成功為你生成心智圖！');
+        message.success('AI 成功為你生成心智圖！');
         setAiModalOpen(false);
       }
     } catch (err: any) {
@@ -86,6 +93,25 @@ export default function MindMapView({ activeNoteId, mindmapTree, loading, onRefr
   const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
     const delta = e.deltaY < 0 ? 0.1 : -0.1;
     setZoom(z => Math.max(0.4, Math.min(2.5, z + delta)));
+  };
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    // 忽略點擊 Tree 節點文字上的按壓
+    if ((e.target as HTMLElement).closest('.mindmap-node-hover')) return;
+    isDragging.current = true;
+    dragStart.current = { x: e.clientX - offset.x, y: e.clientY - offset.y };
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isDragging.current) return;
+    setOffset({
+      x: e.clientX - dragStart.current.x,
+      y: e.clientY - dragStart.current.y
+    });
+  };
+
+  const handleMouseUp = () => {
+    isDragging.current = false;
   };
 
   const currentData = customMindmap || mindmapTree;
@@ -104,30 +130,35 @@ export default function MindMapView({ activeNoteId, mindmapTree, loading, onRefr
         <Space wrap>
           <Button icon={<ZoomInOutlined />} onClick={() => setZoom(z => Math.min(z + 0.2, 2.5))} />
           <Button icon={<ZoomOutOutlined />} onClick={() => setZoom(z => Math.max(z - 0.2, 0.4))} />
-          <Button icon={<ReloadOutlined />} onClick={() => setZoom(1.0)} title="重置縮放" />
+          <Button icon={<CompassOutlined />} onClick={() => { setZoom(1.0); setOffset({ x: 0, y: 0 }); }} title="重置位置" />
           <Button
             type="primary"
             icon={<RobotOutlined />}
             onClick={() => setAiModalOpen(true)}
             style={{ background: 'linear-gradient(135deg, #722ed1, #1890ff)', border: 'none' }}
           >
-            Claude 生成心智圖
+            AI 生成心智圖
           </Button>
           <Button icon={<ClusterOutlined />} onClick={onRefresh} loading={loading}>
             解析筆記大綱
           </Button>
         </Space>
       }
-      styles={{ body: { padding: 24, minHeight: 550, backgroundColor: '#fafafa', overflow: 'hidden' } }}
+      styles={{ body: { padding: 24, minHeight: 580, backgroundColor: '#f0f2f5', overflow: 'hidden', position: 'relative' } }}
     >
       <div
         onWheel={handleWheel}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
         style={{
-          transform: `scale(${zoom})`,
+          transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
           transformOrigin: 'top left',
-          transition: 'transform 0.15s ease-out',
-          minHeight: '480px',
-          cursor: 'grab'
+          transition: isDragging.current ? 'none' : 'transform 0.1s ease-out',
+          minHeight: '520px',
+          cursor: isDragging.current ? 'grabbing' : 'grab',
+          userSelect: 'none'
         }}
       >
         {loading ? (
@@ -142,13 +173,31 @@ export default function MindMapView({ activeNoteId, mindmapTree, loading, onRefr
           />
         ) : (
           <div style={{ textAlign: 'center', color: '#8c8c8c', padding: 60 }}>
-            目前的筆記尚無標題大綱，點擊上方按鈕讓 Claude 自動為你構建心智圖！
+            目前的筆記尚無標題大綱，點擊上方按鈕讓 AI 自動為你構建心智圖！
           </div>
         )}
       </div>
 
+      {/* 底部操作小提示 */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 16,
+          left: 16,
+          background: 'rgba(255,255,255,0.85)',
+          backdropFilter: 'blur(8px)',
+          padding: '6px 12px',
+          borderRadius: 6,
+          border: '1px solid #d9d9d9',
+          color: '#595959',
+          fontSize: 12
+        }}
+      >
+        💡 提示: 滑鼠滾輪可自由縮放、按住滑鼠拖拽可平移心智圖畫布
+      </div>
+
       <Modal
-        title="🤖 Claude AI 智慧心智圖生成"
+        title="🤖 AI 智慧心智圖生成"
         open={aiModalOpen}
         onOk={handleGenerateAiMindMap}
         onCancel={() => setAiModalOpen(false)}

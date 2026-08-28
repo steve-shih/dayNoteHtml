@@ -36,15 +36,18 @@ backend/
 
 ### 3.1 知識網狀圖與心智圖 (Graph View & Mind Map)
 - **網狀關聯圖 (Graph View)**：
-  - 前端以互動式圖表呈現所有筆記、分類、標籤與 `[[WikiLink]]` 雙向連結關係。
-  - 支援節點縮放、拖曳、分類顏色區隔及點擊切換至對應筆記。
+  - 前端以高畫質 HTML5 Canvas 呈現所有筆記、分類、標籤與 `[[WikiLink]]` 雙向連結關係。
+  - 支援節點點擊拖拽移動 (Node Dragging)、畫布按住平移 (Canvas Panning)、滑鼠滾輪縮放與點擊跳轉至對應筆記。
 - **心智圖視圖 (Mind Map View)**：
   - 解析筆記內 Markdown 標題階層 (`#`, `##`, `###`) 與列表，轉化為視覺化心智圖。
-  - 支援折疊/展開節點與使用 Claude 自動生成心智圖結構。
+  - 支援畫布按住平移 (Canvas Drag Panning)、滑鼠滾輪縮放與使用 AI 自動生成心智圖結構。
 
-### 3.2 多維歸類與雙向連結 (Categorization, Tags & Backlinks)
+### 3.2 多維歸類、雙向連結與 AI 自動分類 (Categorization, Tags & AI Auto-Category)
 - **標籤 `#tag` 與 WikiLink `[[筆記名稱]]`**：
   - 後端儲存或更新筆記時，自動抽取內容中的 `#tag` 標籤與 `[[WikiLink]]` 連結。
+- **AI 一鍵自動分類 (`/api/claude/auto-category`)**：
+  - 支援點擊「🤖 AI 分類」按鈕或上傳選擇「AI自動分類」，自動分析筆記內文推導最適合的分類名稱並同步寫入 MongoDB。
+
 - **雙向連結面板 (Backlinks Panel)**：
   - 提供目前開啟筆記的反向引用（哪些其他筆記引用了目前筆記）。
 
