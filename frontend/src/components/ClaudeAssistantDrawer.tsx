@@ -401,9 +401,11 @@ export default function ClaudeAssistantDrawer({
                         onChange={e => setOllamaUrl(e.target.value)}
                         placeholder="http://localhost:11434 或 http://127.0.0.1:11434"
                       />
-                      <Text type="secondary" style={{ fontSize: 12, marginTop: 4, display: 'block' }}>
-                        💡 本地電腦 Ollama 預設通訊埠為 11434 (例如 `http://localhost:11434`)。已檢測到本機已安裝: `llama3:latest`, `qwen2:latest`, `phi3:latest`！若從 K8s 連線請填寫對外 IP。
-                      </Text>
+                      <div style={{ background: '#fffbe6', border: '1px solid #ffe58f', padding: '8px 12px', borderRadius: 6, marginTop: 6, fontSize: 12, color: '#d48800' }}>
+                        💡 <strong>雲端連線說明：</strong><br />
+                        本網站部署於 GCP 雲端 K8s。若要使用您個人電腦本機架設的 Ollama，請填寫您的 <strong>Ngrok Tunnel 網址 (如 https://xxx.ngrok-free.app)</strong> 或<strong>對外公網 IP</strong>（雲端容器無法直接穿透連至本機 localhost:11434）。亦可切換至上方 ☁️ <strong>Anthropic Claude</strong> 快速體驗！
+                      </div>
+
                     </Form.Item>
                     <Form.Item label="Ollama 模型名稱 (Model)">
                       <Input

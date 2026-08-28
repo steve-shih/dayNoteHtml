@@ -158,10 +158,16 @@ class ClaudeClient:
             if res.status_code == 200:
                 data = res.json()
                 return {"success": True, "response": data.get("response", "")}
-        except Exception as e:
-            return {"success": False, "error": f"連線至 Ollama 服務失敗 ({base_url}): {str(e)}"}
+        except Exception:
+            pass
 
-        return {"success": False, "error": f"無法連線至 Ollama 服務端點 ({base_url})"}
+        hint = ""
+        if "localhost" in base_url or "127.0.0.1" in base_url:
+            hint = " (💡 提示: 本網站目前部署於 GCP 雲端 K8s，雲端容器無法直接存取您個人電腦的 localhost:11434。若要使用您本機的 Ollama，請使用 Ngrok Tunnel 網址或對外公網 IP，或在設定頁面切換至 ☁️ Anthropic Claude API)"
+
+        return {"success": False, "error": f"無法連線至 Ollama 服務端點 ({base_url})。{hint}"}
+
+
 
     def summarize_and_tag(self, note_title, note_content):
         """

@@ -961,8 +961,8 @@ export default function Home() {
                             sandbox="allow-same-origin allow-scripts"
                             title={activeNote.original_filename}
                           />
-                        ) : activeNote.original_filename.endsWith('.txt') || activeNote.original_filename.endsWith('.md') || activeNote.original_filename.endsWith('.json') || activeNote.original_filename.endsWith('.csv') ? (
-                          <div style={{ background: colors.bgApp, padding: 24, borderRadius: 8, minHeight: '100%' }}>
+                        ) : (
+                          <div style={{ background: colors.bgApp, color: colors.textMain, padding: 24, borderRadius: 8, minHeight: '100%' }}>
                             {isEditingTxt ? (
                               <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                                 <Input.TextArea 
@@ -993,34 +993,32 @@ export default function Home() {
                                     onClick={() => { setTxtEditContent(noteContent); setIsEditingTxt(true); }}
                                   >編輯內容</Button>
                                 </div>
-                                {activeNote.original_filename.endsWith('.md') ? (
-                                  <div style={{ color: colors.textMain }}>
+                                {noteContent ? (
+                                  <div style={{ color: colors.textMain, fontSize: '15px', lineHeight: '1.7' }}>
                                     <ReactMarkdown remarkPlugins={[remarkGfm]} components={{
                                       table: ({node, ...props}) => <table style={{ borderCollapse: 'collapse', width: '100%', marginBottom: '1em' }} {...props} />,
                                       th: ({node, ...props}) => <th style={{ border: `1px solid ${colors.tableBorder}`, padding: '8px', background: colors.bgPanel }} {...props} />,
                                       td: ({node, ...props}) => <td style={{ border: `1px solid ${colors.tableBorder}`, padding: '8px' }} {...props} />,
                                       a: ({node, ...props}) => <a style={{ color: '#1677ff' }} target="_blank" rel="noopener noreferrer" {...props} />,
                                       blockquote: ({node, ...props}) => <blockquote style={{ borderLeft: '4px solid #1677ff', margin: 0, paddingLeft: '1em', color: '#8c8c8c' }} {...props} />,
-                                      code: ({node, inline, ...props}: any) => inline ? <code style={{ background: colors.bgPanel, padding: '2px 4px', borderRadius: '4px', fontFamily: 'monospace' }} {...props} /> : <pre style={{ background: colors.bgPanel, padding: '1em', borderRadius: '8px', overflowX: 'auto', fontFamily: 'monospace' }}><code {...props} /></pre>,
+                                      code: ({node, inline, ...props}: any) => inline ? <code style={{ background: colors.bgPanel, color: '#ff7875', padding: '2px 6px', borderRadius: '4px', fontFamily: 'monospace' }} {...props} /> : <pre style={{ background: colors.bgPanel, padding: '1em', borderRadius: '8px', overflowX: 'auto', fontFamily: 'monospace' }}><code {...props} /></pre>,
                                       img: ({node, ...props}) => <img style={{ maxWidth: '100%', borderRadius: '8px' }} {...props} />
                                     }}>
                                       {noteContent}
                                     </ReactMarkdown>
                                   </div>
                                 ) : (
-                                  <div style={{ fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>{noteContent}</div>
+                                  <div style={{ color: '#8c8c8c', padding: '40px', textAlign: 'center' }}>
+                                    (此筆記內文為空或正在載入中...)
+                                  </div>
                                 )}
                               </div>
                             )}
 
                             <BacklinksPanel activeNoteId={activeNote.id} onSelectNote={handleSelectNoteById} />
                           </div>
-                        ) : (
-                          <div style={{ background: colors.bgApp, padding: 24, borderRadius: 8, minHeight: '100%', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
-                            {noteContent}
-                            <BacklinksPanel activeNoteId={activeNote.id} onSelectNote={handleSelectNoteById} />
-                          </div>
                         )}
+
                       </div>
                     </>
                   ) : (
