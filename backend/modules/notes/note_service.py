@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 from modules.notes.note_repository import NoteRepository
 from modules.categories.category_repository import CategoryRepository
-from infra.storage import save_uploaded_file, read_local_file_content, write_local_file_content
+from infra.storage import save_uploaded_file, read_file_content, read_local_file_content, write_local_file_content
 
 class NoteService:
     """
@@ -37,7 +37,7 @@ class NoteService:
             elif note.get('content'):
                 content = note.get('content')
             elif note.get('stored_filename'):
-                content = read_local_file_content(note.get('stored_filename'))
+                content = read_file_content(note.get('stored_filename'), note.get('storage_type', 'local'))
 
             if not content:
                 content = note.get('body') or note.get('summary') or f"# {note.get('title', '未命名筆記')}\n\n歡迎使用 DayNote！點擊右上角「編輯內容」開始撰寫筆記。"
@@ -56,10 +56,11 @@ class NoteService:
         elif note.get('content'):
             content = note.get('content')
         elif note.get('stored_filename'):
-            content = read_local_file_content(note.get('stored_filename'))
+            content = read_file_content(note.get('stored_filename'), note.get('storage_type', 'local'))
 
         if not content:
             content = note.get('body') or note.get('summary') or f"# {note.get('title', '未命名筆記')}\n\n歡迎使用 DayNote！點擊右上角「編輯內容」開始撰寫筆記。"
+
 
         tags, wikilinks = self.parse_tags_and_wikilinks(content)
         note['content'] = content

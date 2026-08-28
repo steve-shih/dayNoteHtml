@@ -7,6 +7,7 @@ if sys.platform == 'win32':
 
 import os
 import uuid
+import base64
 from werkzeug.utils import secure_filename
 from google.cloud import storage
 
@@ -28,16 +29,9 @@ if GCS_BUCKET_NAME:
         print(f"⚠️ [Infra-Storage] GCS 初始化失敗: {e}")
 
 def is_allowed_file(filename):
-    """
-    檢查副檔名是否屬於允許上傳類型
-    """
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def save_uploaded_file(file_obj):
-    """
-    儲存上傳的檔案，優先上傳至 GCS，失敗或未設定時備援至本地檔案目錄
-    傳回 (file_id, original_filename, stored_filename, storage_type)
-    """
     original_filename = secure_filename(file_obj.filename)
     if not original_filename:
         original_filename = file_obj.filename
@@ -71,10 +65,40 @@ def save_uploaded_file(file_obj):
 
     return file_id, original_filename, stored_filename, storage_type
 
+def decode_content(raw_text):
+    if not raw_text:
+        return ""
+    if isinstance(raw_text, str) and raw_text.startswith("DAYNOTE_B64:"):
+        try:
+            b64_str = raw_text.replace("DAYNOTE_B64:", "").strip()
+            return base64.b64decode(b64_str).decode('utf-8', errors='ignore')
+        except Exception:
+            pass
+    return raw_text
+
+def read_file_content(stored_filename, storage_type="local"):
+    """
+    統一讀取筆記實體檔案文字內容 (支援 GCS Bucket 'petpa' 下載 + Base64 解碼 + 本地備援)
+    """
+    if not stored_filename:
+        return ""
+
+    # 1. 優先從 GCS Bucket 下載
+    if gcs_bucket:
+        try:
+            blob = gcs_bucket.blob(stored_filename)
+            if blob.exists():
+                raw_text = blob.download_as_text(encoding='utf-8', errors='ignore')
+                decoded = decode_content(raw_text)
+                if decoded:
+                    return decoded
+        except Exception as e:
+            print(f"⚠️ [Infra-Storage] GCS 讀取失敗 ({stored_filename}): {e}")
+
+    # 2. 備援本地檔案讀取
+    return read_local_file_content(stored_filename)
+
 def read_local_file_content(stored_filename):
-    """
-    讀取本地筆記實體檔案文字內容 (具備多路徑搜尋與備援解碼容錯)
-    """
     if not stored_filename:
         return ""
 
@@ -90,17 +114,32 @@ def read_local_file_content(stored_filename):
             for enc in ['utf-8', 'utf-8-sig', 'latin-1', 'gbk']:
                 try:
                     with open(file_path, 'r', encoding=enc, errors='ignore') as f:
-                        return f.read()
+                        raw = f.read()
+                        return decode_content(raw)
                 except Exception:
                     continue
     return ""
 
-
 def write_local_file_content(stored_filename, content):
     """
-    將內容寫入本地實體檔案
+    雙寫寫入內容至本地實體檔案與 GCS Bucket
     """
+    if not stored_filename:
+        return False
+
     file_path = os.path.join(DATA_DIR, stored_filename)
-    with open(file_path, 'w', encoding='utf-8') as f:
-        f.write(content)
+    try:
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(content)
+    except Exception as e:
+        print(f"⚠️ 本地寫入失敗: {e}")
+
+    if gcs_bucket:
+        try:
+            blob = gcs_bucket.blob(stored_filename)
+            blob.upload_from_string(content, content_type='text/plain; charset=utf-8')
+            print(f"✅ [Infra-Storage] 成功同步儲存至 GCS: {stored_filename}")
+        except Exception as e:
+            print(f"⚠️ GCS 同步寫入失敗: {e}")
+
     return True
