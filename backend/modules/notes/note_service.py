@@ -29,7 +29,21 @@ class NoteService:
         return tags, wikilinks
 
     def get_notes(self, username, category=None):
-        return self.note_repo.find_all_by_user(username, category)
+        notes = self.note_repo.find_all_by_user(username, category)
+        for note in notes:
+            content = ""
+            if note.get('is_url'):
+                content = note.get('url', '')
+            elif note.get('content'):
+                content = note.get('content')
+            elif note.get('stored_filename'):
+                content = read_local_file_content(note.get('stored_filename'))
+
+            if not content:
+                content = note.get('body') or note.get('summary') or f"# {note.get('title', '未命名筆記')}\n\n歡迎使用 DayNote！點擊右上角「編輯內容」開始撰寫筆記。"
+
+            note['content'] = content
+        return notes
 
     def get_note_by_id(self, note_id, username):
         note = self.note_repo.find_by_id(note_id, username)
@@ -39,16 +53,13 @@ class NoteService:
         content = ""
         if note.get('is_url'):
             content = note.get('url', '')
+        elif note.get('content'):
+            content = note.get('content')
         elif note.get('stored_filename'):
             content = read_local_file_content(note.get('stored_filename'))
-        
-        # 內文備援: 如果檔名檔案讀取為空，嘗試讀取 MongoDB 內直接儲存的 content 欄位或內文摘要
-        if not content and note.get('content'):
-            content = note.get('content')
-        if not content and note.get('body'):
-            content = note.get('body')
+
         if not content:
-            content = note.get('summary') or note.get('title') or ""
+            content = note.get('body') or note.get('summary') or f"# {note.get('title', '未命名筆記')}\n\n歡迎使用 DayNote！點擊右上角「編輯內容」開始撰寫筆記。"
 
         tags, wikilinks = self.parse_tags_and_wikilinks(content)
         note['content'] = content
@@ -56,6 +67,7 @@ class NoteService:
         note['wikilinks'] = note.get('wikilinks') or wikilinks
 
         return note, "Success", 200
+
 
 
     def get_backlinks(self, note_id, username):
